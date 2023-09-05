@@ -1,0 +1,378 @@
+table 60001 "MFC Deferral Header"
+{
+    Caption = 'Deferral Header';
+    DataCaptionFields = "Schedule Description";
+
+    fields
+    {
+
+        field(2; "Customer No."; Code[20])
+        {
+            Caption = 'Customer No.';
+            TableRelation = Customer."No.";
+            Editable = false;
+            NotBlank = true;
+        }
+
+        field(5; "Document No."; Code[20])
+        {
+            Caption = 'Document No.';
+
+            trigger OnValidate()
+            begin
+                TestNoSeries();
+            end;
+        }
+
+        field(7; "Deferral Code"; Code[10])
+        {
+            Caption = 'Deferral Code';
+            TableRelation = "Deferral Template"."Deferral Code";
+
+            trigger OnValidate()
+            var
+                DeferralTemplate: Record "Deferral Template";
+            Begin
+                Rec.TestStausOpen(Rec);
+                IF DeferralTemplate.Get(Rec."Deferral Code") then;
+                "Calc. Method" := DeferralTemplate."Calc. Method";
+                "No. of Periods" := DeferralTemplate."No. of Periods";
+                "Start Date" := WorkDate();
+            End;
+
+        }
+        field(8; "Amount to Defer"; Decimal)
+        {
+            AutoFormatExpression = "Currency Code";
+            AutoFormatType = 1;
+            Caption = 'Amount to Defer';
+
+            trigger OnValidate()
+            begin
+                Rec.TestStausOpen(Rec);
+                // if "Initial Amount to Defer" < 0 then begin// Negative amount
+                //     if "Amount to Defer" < "Initial Amount to Defer" then
+                //         Error(AmountToDeferErr);
+                //     if "Amount to Defer" > 0 then
+                //         Error(AmountToDeferErr)
+                // end;
+
+                // if "Initial Amount to Defer" >= 0 then begin// Positive amount
+                //     if "Amount to Defer" > "Initial Amount to Defer" then
+                //         Error(AmountToDeferErr);
+                //     if "Amount to Defer" < 0 then
+                //         Error(AmountToDeferErr);
+                // end;
+
+                if "Amount to Defer" = 0 then
+                    Error(ZeroAmountToDeferErr);
+            end;
+        }
+        field(9; "Amount to Defer (LCY)"; Decimal)
+        {
+            AutoFormatType = 1;
+            Caption = 'Amount to Defer (LCY)';
+        }
+        field(10; "Calc. Method"; Enum "Deferral Calculation Method")
+        {
+            Caption = 'Calc. Method';
+            trigger OnValidate()
+            Begin
+                Rec.TestStausOpen(Rec);
+            End;
+        }
+        field(11; "Start Date"; Date)
+        {
+            Caption = 'Start Date';
+
+            trigger OnValidate()
+            var
+                AccountingPeriod: Record "Accounting Period";
+                GenJnlBatch: Record "Gen. Journal Batch";
+                ThrowScheduleOutOfBoundError: Boolean;
+
+            begin
+                Rec.TestStausOpen(Rec);
+                if GenJnlCheckLine.DeferralPostingDateNotAllowed("Start Date") then
+                    Error(InvalidPostingDateErr, "Start Date");
+
+                if AccountingPeriod.IsEmpty() then
+                    exit;
+
+                AccountingPeriod.SetFilter("Starting Date", '>=%1', "Start Date");
+                ThrowScheduleOutOfBoundError := AccountingPeriod.IsEmpty();
+                OnValidateStartDateOnAfterCalcThrowScheduleOutOfBoundError(Rec, ThrowScheduleOutOfBoundError);
+                if ThrowScheduleOutOfBoundError then
+                    Error(DeferSchedOutOfBoundsErr);
+            end;
+        }
+        field(12; "No. of Periods"; Integer)
+        {
+            BlankZero = true;
+            Caption = 'No. of Periods';
+            NotBlank = true;
+            Editable = false;
+            trigger OnValidate()
+            begin
+                Rec.TestStausOpen(Rec);
+                if "No. of Periods" < 1 then
+                    Error(NumberofPeriodsErr);
+            end;
+        }
+        field(13; "Schedule Description"; Text[100])
+        {
+            Caption = 'Schedule Description';
+            trigger OnValidate()
+            Begin
+                Rec.TestStausOpen(Rec);
+            End;
+        }
+        // field(14; "Initial Amount to Defer"; Decimal)
+        // {
+        //     Caption = 'Initial Amount to Defer';
+        // }
+        field(15; "Currency Code"; Code[10])
+        {
+            Caption = 'Currency Code';
+            TableRelation = Currency.Code;
+            trigger OnValidate()
+            Begin
+                Rec.TestStausOpen(Rec);
+            End;
+        }
+        field(20; "Schedule Line Total"; Decimal)
+        {
+            CalcFormula = Sum("MFC Deferral Line".Amount WHERE(
+                                                            "Document No." = FIELD("Document No.")));
+
+            Caption = 'Schedule Line Total';
+            FieldClass = FlowField;
+        }
+        field(21; "Bal. Account No."; Code[20])
+        {
+            Caption = 'Bal. Account No.';
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+            trigger OnValidate()
+            Begin
+                Rec.TestStausOpen(Rec);
+            End;
+        }
+        field(22; Status; enum "MFC Deferral Status")
+        {
+            Caption = 'Status';
+            Editable = false;
+        }
+        field(23; "No. Series"; Code[20])
+        {
+            Caption = 'No. Series';
+            Editable = false;
+        }
+    }
+
+    keys
+    {
+        key(Key1; "Customer No.", "Document No.")
+        {
+            Clustered = true;
+        }
+    }
+
+    fieldgroups
+    {
+    }
+
+    trigger OnDelete()
+    var
+        DeferralLine: Record "MFC Deferral Line";
+        DeferralUtilities: Codeunit "MFC Deferral Utilities";
+    begin
+        // If the user deletes the header, all associated lines should also be deleted
+        DeferralUtilities.FilterDeferralLines(DeferralLine,
+          "Customer No.", "Document No.");
+        OnDeleteOnBeforeDeleteAll(Rec, DeferralLine);
+        DeferralLine.DeleteAll();
+    end;
+
+    trigger OnInsert()
+    var
+        IsHandled: Boolean;
+    begin
+        IsHandled := false;
+        OnBeforeInsert(Rec, IsHandled);
+        if IsHandled then
+            exit;
+
+        if "Document No." = '' then begin
+            CustSetup.Get();
+            CustSetup.TestField("Deferral Nos.");
+            NoSeriesMgt.InitSeries(CustSetup."Deferral Nos.", xRec."No. Series", 0D, "Document No.", "No. Series");
+            Rec."Bal. Account No." := CustSetup."Bal. Account No.";
+            Rec.Validate("Deferral Code", CustSetup."Deferral Template");
+        end;
+
+    End;
+
+    var
+
+        CustSetup: Record "Customisation Setup";
+        GenJnlCheckLine: Codeunit "Gen. Jnl.-Check Line";
+        DeferralUtilities: Codeunit "MFC Deferral Utilities";
+        NoSeriesMgt: Codeunit NoSeriesManagement;
+        AmountToDeferErr: Label 'The deferred amount cannot be greater than the document line amount.';
+        InvalidPostingDateErr: Label '%1 is not within the range of posting dates for your company.', Comment = '%1=The date passed in for the posting date.';
+        DeferSchedOutOfBoundsErr: Label 'The deferral schedule falls outside the accounting periods that have been set up for the company.';
+        SelectionMsg: Label 'You must specify a deferral code for this line before you can view the deferral schedule.';
+        NumberofPeriodsErr: Label 'You must specify one or more periods.';
+        ZeroAmountToDeferErr: Label 'The Amount to Defer cannot be 0.';
+
+    local procedure TestNoSeries()
+    var
+        Deferral: Record "MFC Deferral Header";
+        IsHandled: Boolean;
+    begin
+        IsHandled := false;
+        OnBeforeTestNoSeries(Rec, xRec, IsHandled);
+        if IsHandled then
+            exit;
+
+        if "Document No." <> xRec."Document No." then
+            if not Deferral.Get(Rec."Customer No.", Rec."Document No.") then begin
+                CustSetup.Get();
+                NoSeriesMgt.TestManual(CustSetup."Deferral Nos.");
+                "No. Series" := '';
+                Rec."Bal. Account No." := CustSetup."Bal. Account No.";
+                Rec.Validate("Deferral Code", CustSetup."Deferral Template");
+            end;
+    end;
+
+    procedure AssistEdit(OldDeferral: Record "MFC Deferral Header"): Boolean
+    var
+        Deferral: Record "MFC Deferral Header";
+    begin
+
+        Deferral := Rec;
+        CustSetup.Get();
+        CustSetup.TestField("Deferral Nos.");
+        if NoSeriesMgt.SelectSeries(CustSetup."Deferral Nos.", OldDeferral."No. Series", "No. Series") then begin
+            NoSeriesMgt.SetSeries(Deferral."Document No.");
+            Deferral."Bal. Account No." := CustSetup."Bal. Account No.";
+            Deferral.Validate("Deferral Code", CustSetup."Deferral Template");
+            Rec := Deferral;
+            OnAssistEditOnBeforeExit(Deferral);
+            exit(true);
+        end;
+
+    end;
+
+    procedure CalculateSchedule(): Boolean
+    var
+        DeferralDescription: Text[100];
+    begin
+        OnBeforeCalculateSchedule(Rec);
+        if "Deferral Code" = '' then begin
+            Message(SelectionMsg);
+            exit(false);
+        end;
+        Rec.TestField("Deferral Code");
+        Rec.TestField("Bal. Account No.");
+        Rec.TestField("Amount to Defer");
+        DeferralDescription := "Schedule Description";
+        DeferralUtilities.CreateDeferralSchedule(Rec."Deferral Code",
+           Rec."Customer No.", "Document No.", "Amount to Defer",
+            "Calc. Method", "Start Date", "No. of Periods", false, DeferralDescription, false, "Currency Code");
+        Rec.SetDocumentSheduleCreated(Rec);
+        exit(true);
+    end;
+
+    procedure TestStausOpen(Var DeferralHeader: Record "MFC Deferral Header")
+    begin
+        DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
+    end;
+
+    procedure ReopenDocument(Var DeferralHeader: Record "MFC Deferral Header")
+    begin
+        DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
+
+        DeferralHeader.Status := DeferralHeader.Status::Open;
+        DeferralHeader.Modify();
+    end;
+
+    procedure SetDocumentSheduleCreated(Var DeferralHeader: Record "MFC Deferral Header")
+    begin
+        DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
+
+        DeferralHeader.Status := DeferralHeader.Status::"Schedule Created";
+        DeferralHeader.Modify();
+    end;
+
+    procedure SetDocumentCertified(Var DeferralHeader: Record "MFC Deferral Header")
+    begin
+        DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
+
+        DeferralHeader.Status := DeferralHeader.Status::Certified;
+        DeferralHeader.Modify();
+    end;
+
+    procedure SetDocumentCompleted(Var DeferralHeader: Record "MFC Deferral Header")
+    begin
+        DeferralHeader.TestField(Status, DeferralHeader.Status::Certified);
+
+        DeferralHeader.Status := DeferralHeader.Status::Completed;
+        DeferralHeader.Modify();
+    end;
+
+    procedure SetDocumentShortClosed(Var DeferralHeader: Record "MFC Deferral Header")
+    begin
+        DeferralHeader.TestField(Status, DeferralHeader.Status::Certified);
+
+        DeferralHeader.Status := DeferralHeader.Status::"Short Closed";
+        DeferralHeader.Modify();
+    end;
+
+    procedure CloseDeferralDocument()
+    var
+        DeferralLine: Record "MFC Deferral Line";
+    begin
+        DeferralLine.SetRange("Customer No.", Rec."Customer No.");
+        DeferralLine.SetRange("Document No.", Rec."Document No.");
+        IF DeferralLine.IsEmpty() then
+            Exit;
+        DeferralLine.SetRange(Posted, false);
+        IF not DeferralLine.IsEmpty() then
+            Exit;
+
+        SetDocumentCompleted(Rec);
+
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeCalculateSchedule(var DeferralHeader: Record "MFC Deferral Header")
+    begin
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnDeleteOnBeforeDeleteAll(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line")
+    begin
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnValidateStartDateOnAfterCalcThrowScheduleOutOfBoundError(DeferralHeader: Record "MFC Deferral Header"; var ThrowScheduleOutOfBoundError: Boolean)
+    begin
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeTestNoSeries(var Deferral: Record "MFC Deferral Header"; xDeferral: Record "MFC Deferral Header"; var IsHandled: Boolean)
+    begin
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeInsert(var Deferral: Record "MFC Deferral Header"; var IsHandled: Boolean)
+    begin
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnAssistEditOnBeforeExit(var Deferral: Record "MFC Deferral Header")
+    begin
+    end;
+}
+
