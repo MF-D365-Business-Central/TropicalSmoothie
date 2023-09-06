@@ -1,11 +1,12 @@
-page 60003 "MFC Deferrals"
+page 60003 "MFCC01 Deferrals"
 {
+    Caption = 'Deferrals';
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Lists;
-    SourceTable = "MFC Deferral Header";
+    SourceTable = "MFCC01 Deferral Header";
     Editable = false;
-    CardPageId = "MFC Deferral Schedule";
+    CardPageId = "MFCC01 DeferralSchedule";
 
     layout
     {

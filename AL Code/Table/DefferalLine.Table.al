@@ -1,4 +1,4 @@
-table 60002 "MFC Deferral Line"
+table 60002 "MFCC01 Deferral Line"
 {
     Caption = 'Deferral Line';
 
@@ -117,14 +117,14 @@ table 60002 "MFC Deferral Line"
 
     procedure TestStausOpen()
     Var
-        DeferralHeader: Record "MFC Deferral Header";
+        DeferralHeader: Record "MFCC01 Deferral Header";
     begin
         DeferralHeader.Get(Rec."Customer No.", Rec."Document No.");
         DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeValidatePostingDate(var DeferralLine: Record "MFC Deferral Line"; xDeferralLine: Record "MFC Deferral Line"; CallingFieldNo: Integer; var IsHandled: Boolean);
+    local procedure OnBeforeValidatePostingDate(var DeferralLine: Record "MFCC01 Deferral Line"; xDeferralLine: Record "MFCC01 Deferral Line"; CallingFieldNo: Integer; var IsHandled: Boolean);
     begin
     end;
 }

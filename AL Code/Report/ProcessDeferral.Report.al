@@ -1,15 +1,16 @@
-report 60000 "Process Deferral"
+report 60000 "MFCC01 Process Deferral"
 {
+    Caption = 'Process Deferral';
     UsageCategory = ReportsAndAnalysis;
     ApplicationArea = All;
     ProcessingOnly = true;
 
     dataset
     {
-        dataitem("MFC Deferral Header"; "MFC Deferral Header")
+        dataitem("MFCC01 Deferral Header"; "MFCC01 Deferral Header")
         {
             DataItemTableView = where(Status = const(Certified));
-            dataitem("MFC Deferral Line"; "MFC Deferral Line")
+            dataitem("MFCC01 Deferral Line"; "MFCC01 Deferral Line")
             {
                 DataItemLink = "Customer No." = field("Customer No."), "Document No." = field("Document No.");
                 DataItemTableView = where(Posted = const(false));
@@ -25,7 +26,7 @@ report 60000 "Process Deferral"
 
                 trigger OnPostDataItem()
                 Begin
-                    "MFC Deferral Header".CloseDeferralDocument();
+                    "MFCC01 Deferral Header".CloseDeferralDocument();
                 End;
             }
         }
@@ -80,31 +81,31 @@ report 60000 "Process Deferral"
         GenJnlPostLine: Codeunit "Gen. Jnl.-Post Line";
         DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
     begin
-        DeferralTemplate.Get("MFC Deferral Header"."Deferral Code");
+        DeferralTemplate.Get("MFCC01 Deferral Header"."Deferral Code");
 
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := "MFC Deferral Line"."Posting Date";
-        GenJnlLine."Document No." := "MFC Deferral Header"."Document No." + '/' + Format("MFC Deferral Line"."Posting Date");
+        GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
+        GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No." + '/' + Format("MFCC01 Deferral Line"."Posting Date");
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
         GenJnlLine.Validate("Account No.", DeferralTemplate."Deferral Account");
 
         GenJnlLine.Validate("Bal. Account Type", GenJnlLine."Bal. Account Type"::"G/L Account");
-        GenJnlLine.Validate("Bal. Account No.", "MFC Deferral Header"."Bal. Account No.");
-        GenJnlLine.Validate("Currency Code", "MFC Deferral Line"."Currency Code");
-        GenJnlLine.Validate(Amount, "MFC Deferral Line".Amount);
+        GenJnlLine.Validate("Bal. Account No.", "MFCC01 Deferral Header"."Bal. Account No.");
+        GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
+        GenJnlLine.Validate(Amount, "MFCC01 Deferral Line".Amount);
 
         InitDefaultDimSource(DefaultDimSource);
         GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
         GenJnlLine."Dimension Set ID", 0);
 
-        "MFC Deferral Line".Posted := GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0;
-        "MFC Deferral Line".Modify();
+        "MFCC01 Deferral Line".Posted := GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0;
+        "MFCC01 Deferral Line".Modify();
     end;
 
     local procedure InitDefaultDimSource(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]])
     begin
         Clear(DefaultDimSource);
-        DimMgt.AddDimSource(DefaultDimSource, Database::"Customer", "MFC Deferral Header"."Customer No.");
+        DimMgt.AddDimSource(DefaultDimSource, Database::"Customer", "MFCC01 Deferral Header"."Customer No.");
     end;
 
 

@@ -1,4 +1,4 @@
-codeunit 60000 "MFC Deferral Utilities"
+codeunit 60000 "MFCC01 Deferral Utilities"
 {
 
     trigger OnRun()
@@ -39,8 +39,8 @@ codeunit 60000 "MFC Deferral Utilities"
     procedure CreateDeferralSchedule(DeferralCode: Code[10]; CustomerNo: Code[20]; DocumentNo: Code[20]; AmountToDefer: Decimal; CalcMethod: Enum "Deferral Calculation Method"; StartDate: Date; NoOfPeriods: Integer; ApplyDeferralPercentage: Boolean; DeferralDescription: Text[100]; AdjustStartDate: Boolean; CurrencyCode: Code[10])
     var
         DeferralTemplate: Record "Deferral Template";
-        DeferralHeader: Record "MFC Deferral Header";
-        DeferralLine: Record "MFC Deferral Line";
+        DeferralHeader: Record "MFCC01 Deferral Header";
+        DeferralLine: Record "MFCC01 Deferral Line";
         AdjustedStartDate: Date;
         AdjustedDeferralAmount: Decimal;
         IsHandled: Boolean;
@@ -116,7 +116,7 @@ codeunit 60000 "MFC Deferral Utilities"
         DeferralTemplate.FieldError("Calc. Method");
     end;
 
-    local procedure CalculateStraightline(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure CalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     var
         AccountingPeriod: Record "Accounting Period";
         AmountToDefer: Decimal;
@@ -198,7 +198,7 @@ codeunit 60000 "MFC Deferral Utilities"
         OnAfterCalculateStraightline(DeferralHeader, DeferralLine, DeferralTemplate);
     end;
 
-    local procedure CheckPostingDate(DeferralHeader: Record "MFC Deferral Header"; DeferralLine: Record "MFC Deferral Line")
+    local procedure CheckPostingDate(DeferralHeader: Record "MFCC01 Deferral Header"; DeferralLine: Record "MFCC01 Deferral Line")
     var
         IsHandled: Boolean;
     begin
@@ -211,7 +211,7 @@ codeunit 60000 "MFC Deferral Utilities"
             Error(InvalidPostingDateErr, DeferralLine."Posting Date");
     end;
 
-    local procedure CalculateEqualPerPeriod(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure CalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     var
         PeriodicCount: Integer;
         PostDate: Date;
@@ -244,7 +244,7 @@ codeunit 60000 "MFC Deferral Utilities"
         OnAfterCalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
     end;
 
-    local procedure CalculateDaysPerPeriod(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure CalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     var
         AccountingPeriod: Record "Accounting Period";
         AmountToDefer: Decimal;
@@ -353,7 +353,7 @@ codeunit 60000 "MFC Deferral Utilities"
         OnAfterCalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
     end;
 
-    local procedure CalculateUserDefined(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure CalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     var
         PeriodicCount: Integer;
         PostDate: Date;
@@ -376,7 +376,7 @@ codeunit 60000 "MFC Deferral Utilities"
         OnAfterCalculateUserDefined(DeferralHeader, DeferralLine, DeferralTemplate);
     end;
 
-    local procedure UpdateDeferralLineDescription(var DeferralLine: Record "MFC Deferral Line"; DeferralHeader: Record "MFC Deferral Header"; DeferralTemplate: Record "Deferral Template"; PostDate: Date)
+    local procedure UpdateDeferralLineDescription(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header"; DeferralTemplate: Record "Deferral Template"; PostDate: Date)
     var
         IsHandled: Boolean;
     begin
@@ -388,7 +388,7 @@ codeunit 60000 "MFC Deferral Utilities"
         DeferralLine.Description := CreateRecurringDescription(PostDate, DeferralTemplate."Period Description");
     end;
 
-    procedure FilterDeferralLines(var DeferralLine: Record "MFC Deferral Line"; CustomerNo: Code[20]; DocumentNo: Code[20])
+    procedure FilterDeferralLines(var DeferralLine: Record "MFCC01 Deferral Line"; CustomerNo: Code[20]; DocumentNo: Code[20])
     begin
         DeferralLine.SetRange("Customer No.", CustomerNo);
         DeferralLine.SetRange("Document No.", DocumentNo);
@@ -463,7 +463,7 @@ codeunit 60000 "MFC Deferral Utilities"
         OnAfterSetStartDate(DeferralTemplate, StartDate, AdjustedStartDate);
     end;
 
-    procedure SetDeferralRecords(var DeferralHeader: Record "MFC Deferral Header"; CustomerNo: Code[20]; DocumentNo: Code[20]; CalcMethod: Enum "Deferral Calculation Method"; NoOfPeriods: Integer; AdjustedDeferralAmount: Decimal; AdjustedStartDate: Date; DeferralCode: Code[10]; DeferralDescription: Text[100]; AmountToDefer: Decimal; AdjustStartDate: Boolean; CurrencyCode: Code[10])
+    procedure SetDeferralRecords(var DeferralHeader: Record "MFCC01 Deferral Header"; CustomerNo: Code[20]; DocumentNo: Code[20]; CalcMethod: Enum "Deferral Calculation Method"; NoOfPeriods: Integer; AdjustedDeferralAmount: Decimal; AdjustedStartDate: Date; DeferralCode: Code[10]; DeferralDescription: Text[100]; AmountToDefer: Decimal; AdjustStartDate: Boolean; CurrencyCode: Code[10])
     begin
         if not DeferralHeader.Get(Customerno, DocumentNo) then begin
             // Need to create the header record.
@@ -489,7 +489,7 @@ codeunit 60000 "MFC Deferral Utilities"
 
     procedure RemoveOrSetDeferralSchedule(Customerno: Code[20]; DocumentNo: Code[20]; DeferralCode: Code[10]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10]; AdjustStartDate: Boolean)
     var
-        DeferralHeader: Record "MFC Deferral Header";
+        DeferralHeader: Record "MFCC01 Deferral Header";
         DeferralTemplate: Record "Deferral Template";
         OldDeferralPostingDate: Date;
         UseDeferralCalculationMethod: Enum "Deferral Calculation Method";
@@ -530,8 +530,8 @@ codeunit 60000 "MFC Deferral Utilities"
 
     procedure DeferralCodeOnValidate(DeferralCode: Code[10]; customerno: Code[20]; DocumentNo: Code[20]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10])
     var
-        DeferralHeader: Record "MFC Deferral Header";
-        DeferralLine: Record "MFC Deferral Line";
+        DeferralHeader: Record "MFCC01 Deferral Header";
+        DeferralLine: Record "MFCC01 Deferral Line";
         DeferralTemplate: Record "Deferral Template";
         IsHandled: Boolean;
     begin
@@ -558,7 +558,7 @@ codeunit 60000 "MFC Deferral Utilities"
 
     procedure DeferralCodeOnDelete(CustomerNo: COde[20]; DocumentNo: Code[20])
     var
-        DeferralHeader: Record "MFC Deferral Header";
+        DeferralHeader: Record "MFCC01 Deferral Header";
     begin
 
         // Deferral Additions
@@ -571,8 +571,8 @@ codeunit 60000 "MFC Deferral Utilities"
     procedure OpenLineScheduleEdit(DeferralCode: Code[10]; CustomerNo: Code[20]; DocumentNo: Code[20]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10]): Boolean
     var
         DeferralTemplate: Record "Deferral Template";
-        DeferralHeader: Record "MFC Deferral Header";
-        DeferralSchedule: Page "MFC Deferral Schedule";
+        DeferralHeader: Record "MFCC01 Deferral Header";
+        DeferralSchedule: Page "MFCC01 DeferralSchedule";
         Changed: Boolean;
         IsHandled: Boolean;
     begin
@@ -606,7 +606,7 @@ codeunit 60000 "MFC Deferral Utilities"
     // procedure OpenLineScheduleView(DeferralCode: Code[10]; CustomerNo :Code[20];DocumentNo : Code[20)
     // var
     //     DeferralTemplate: Record "Deferral Template";
-    //     PostedDeferralHeader: Record "Posted MFC Deferral Header";
+    //     PostedDeferralHeader: Record "Posted MFCC01 Deferral Header";
     // begin
     //     // On view nothing will happen if the record does not exist
     //     if DeferralCode <> '' then
@@ -617,7 +617,7 @@ codeunit 60000 "MFC Deferral Utilities"
 
     // procedure OpenLineScheduleArchive(DeferralCode: Code[10]; DeferralDocType: Integer; DocumentType: Integer; DocumentNo: Code[20]; DocNoOccurence: Integer; VersionNo: Integer; LineNo: Integer)
     // var
-    //     DeferralHeaderArchive: Record "MFC Deferral Header Archive";
+    //     DeferralHeaderArchive: Record "MFCC01 Deferral Header Archive";
     // begin
     //     // On view nothing will happen if the record does not exist
     //     if DeferralCode <> '' then
@@ -627,7 +627,7 @@ codeunit 60000 "MFC Deferral Utilities"
 
     local procedure RemoveDeferralLines(CustomerNo: Code[20]; DocumentNo: Code[20])
     var
-        DeferralLine: Record "MFC Deferral Line";
+        DeferralLine: Record "MFCC01 Deferral Line";
     begin
         FilterDeferralLines(DeferralLine, CustomerNo, DocumentNo);
         DeferralLine.DeleteAll();
@@ -647,9 +647,9 @@ codeunit 60000 "MFC Deferral Utilities"
         DeferralTemplate.TestField("No. of Periods");
     end;
 
-    procedure RoundDeferralAmount(var DeferralHeader: Record "MFC Deferral Header"; CurrencyCode: Code[10]; CurrencyFactor: Decimal; PostingDate: Date; var AmtToDefer: Decimal; var AmtToDeferLCY: Decimal)
+    procedure RoundDeferralAmount(var DeferralHeader: Record "MFCC01 Deferral Header"; CurrencyCode: Code[10]; CurrencyFactor: Decimal; PostingDate: Date; var AmtToDefer: Decimal; var AmtToDeferLCY: Decimal)
     var
-        DeferralLine: Record "MFC Deferral Line";
+        DeferralLine: Record "MFCC01 Deferral Line";
         CurrencyExchangeRate: Record "Currency Exchange Rate";
         UseDate: Date;
         DeferralCount: Integer;
@@ -700,7 +700,7 @@ codeunit 60000 "MFC Deferral Utilities"
         AmountRoundingPrecision := Currency."Amount Rounding Precision";
     end;
 
-    procedure InitializeDeferralHeaderAndSetPostDate(var DeferralLine: Record "MFC Deferral Line"; DeferralHeader: Record "MFC Deferral Header"; PeriodicCount: Integer; var PostDate: Date)
+    procedure InitializeDeferralHeaderAndSetPostDate(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header"; PeriodicCount: Integer; var PostDate: Date)
     var
         AccountingPeriod: Record "Accounting Period";
     begin
@@ -742,7 +742,7 @@ codeunit 60000 "MFC Deferral Utilities"
 
     procedure GetDeferralStartDate(CustomerNo: Code[20]; DocumentNo: Code[20]; DeferralCode: Code[10]; PostingDate: Date): Date
     var
-        DeferralHeader: Record "MFC Deferral Header";
+        DeferralHeader: Record "MFCC01 Deferral Header";
         DeferralTemplate: Record "Deferral Template";
     begin
         if DeferralHeader.Get(CustomerNo, DocumentNo) then
@@ -839,27 +839,27 @@ codeunit 60000 "MFC Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateDaysPerPeriod(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateEqualPerPeriod(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateStraightline(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateUserDefined(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCreateDeferralSchedule(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template"; CalcMethod: Enum "Deferral Calculation Method")
+    local procedure OnAfterCreateDeferralSchedule(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template"; CalcMethod: Enum "Deferral Calculation Method")
     begin
     end;
 
@@ -871,22 +871,22 @@ codeunit 60000 "MFC Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateDaysPerPeriod(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateEqualPerPeriod(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateStraightline(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateUserDefined(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
     begin
     end;
 
@@ -912,7 +912,7 @@ codeunit 60000 "MFC Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCheckPostingDate(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: record "MFC Deferral Line"; var IsHandled: Boolean)
+    local procedure OnBeforeCheckPostingDate(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: record "MFCC01 Deferral Line"; var IsHandled: Boolean)
     begin
     end;
 
@@ -922,42 +922,42 @@ codeunit 60000 "MFC Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateEqualPerPeriodOnBeforeDeferralLineInsert(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: record "MFC Deferral Line")
+    local procedure OnCalculateEqualPerPeriodOnBeforeDeferralLineInsert(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateStraightlineOnAfterCalcSecondPeriodDate(DeferralHeader: Record "MFC Deferral Header"; PostDate: Date; var FirstPeriodDate: Date; var SecondPeriodDate: Date)
+    local procedure OnCalculateStraightlineOnAfterCalcSecondPeriodDate(DeferralHeader: Record "MFCC01 Deferral Header"; PostDate: Date; var FirstPeriodDate: Date; var SecondPeriodDate: Date)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateStraightlineOnBeforeDeferralLineInsert(var DeferralLine: Record "MFC Deferral Line"; DeferralHeader: Record "MFC Deferral Header")
+    local procedure OnCalculateStraightlineOnBeforeDeferralLineInsert(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateStraightlineOnBeforeCalcPeriodicDeferralAmount(var DeferralHeader: Record "MFC Deferral Header"; var PeriodicDeferralAmount: Decimal; AmountRoundingPrecision: Decimal; var IsHandled: Boolean);
+    local procedure OnCalculateStraightlineOnBeforeCalcPeriodicDeferralAmount(var DeferralHeader: Record "MFCC01 Deferral Header"; var PeriodicDeferralAmount: Decimal; AmountRoundingPrecision: Decimal; var IsHandled: Boolean);
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateDaysPerPeriodOnAfterCalcEndDate(var DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line"; DeferralTemplate: Record "Deferral Template"; var EndDate: Date)
+    local procedure OnCalculateDaysPerPeriodOnAfterCalcEndDate(var DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template"; var EndDate: Date)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateDaysPerPeriodOnBeforeDeferralLineInsert(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: record "MFC Deferral Line")
+    local procedure OnCalculateDaysPerPeriodOnBeforeDeferralLineInsert(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateUserDefinedOnBeforeDeferralLineInsert(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: record "MFC Deferral Line")
+    local procedure OnCalculateUserDefinedOnBeforeDeferralLineInsert(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnSetDeferralRecordsOnBeforeDeferralHeaderModify(var DeferralHeader: Record "MFC Deferral Header")
+    local procedure OnSetDeferralRecordsOnBeforeDeferralHeaderModify(var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
     end;
 
@@ -967,7 +967,7 @@ codeunit 60000 "MFC Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeUpdateDeferralLineDescription(var DeferralLine: Record "MFC Deferral Line"; DeferralHeader: Record "MFC Deferral Header"; DeferralTemplate: Record "Deferral Template"; PostDate: Date; var IsHandled: Boolean)
+    local procedure OnBeforeUpdateDeferralLineDescription(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header"; DeferralTemplate: Record "Deferral Template"; PostDate: Date; var IsHandled: Boolean)
     begin
     end;
 
@@ -977,12 +977,12 @@ codeunit 60000 "MFC Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnInitializeDeferralHeaderAndSetPostDateAfterInitDeferralLine(var DeferralLine: Record "MFC Deferral Line")
+    local procedure OnInitializeDeferralHeaderAndSetPostDateAfterInitDeferralLine(var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnOpenLineScheduleEditOnBeforeDeferralScheduleSetParameters(var DeferralSchedule: Page "MFC Deferral Schedule"; Customerno: COde[20]; DocumentNo: Code[20]; DeferralHeader: Record "MFC Deferral Header"; var IsHandled: Boolean)
+    local procedure OnOpenLineScheduleEditOnBeforeDeferralScheduleSetParameters(var DeferralSchedule: Page "MFCC01 DeferralSchedule"; Customerno: COde[20]; DocumentNo: Code[20]; DeferralHeader: Record "MFCC01 Deferral Header"; var IsHandled: Boolean)
     begin
     end;
 }

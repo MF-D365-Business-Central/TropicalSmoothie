@@ -1,9 +1,10 @@
-page 60000 "Customisation Setup"
+page 60000 "MFCC01 Customisation Setup"
 {
+    Caption = 'Customisation Setup';
     PageType = Card;
     ApplicationArea = Basic, Suite;
     UsageCategory = Administration;
-    SourceTable = "Customisation Setup";
+    SourceTable = "MFCC01 Customisation Setup";
     DeleteAllowed = false;
     InsertAllowed = false;
     layout
@@ -29,6 +30,10 @@ page 60000 "Customisation Setup"
                 {
                     ToolTip = 'Specifies the value of the Deferral Nos. field.';
                 }
+                // field("Agreement Nos."; Rec."Agreement Nos.")
+                // {
+                //     ToolTip = 'Specifies the value of the Agreement Nos. field.';
+                // }
             }
         }
     }

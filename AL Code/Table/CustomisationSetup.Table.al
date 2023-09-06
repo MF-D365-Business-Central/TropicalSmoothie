@@ -1,5 +1,6 @@
-table 60000 "Customisation Setup"
+table 60000 "MFCC01 Customisation Setup"
 {
+    Caption = 'Customisation Setup';
     DataClassification = CustomerContent;
 
     fields
@@ -13,16 +14,23 @@ table 60000 "Customisation Setup"
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(11; "Deferral Nos."; Code[20])
-        {
-            DataClassification = CustomerContent;
-            TableRelation = "No. Series".Code;
-        }
+
         field(12; "Deferral Template"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "Deferral Template"."Deferral Code";
         }
+
+        field(50; "Deferral Nos."; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "No. Series".Code;
+        }
+        // field(51; "Agreement Nos."; Code[20])
+        // {
+        //     DataClassification = CustomerContent;
+        //     TableRelation = "No. Series".Code;
+        // }
     }
 
     keys

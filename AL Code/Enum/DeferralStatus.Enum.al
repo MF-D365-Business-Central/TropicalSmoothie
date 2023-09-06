@@ -1,4 +1,4 @@
-enum 60000 "MFC Deferral Status"
+enum 60000 "MFCC01 Deferral Status"
 {
     Extensible = true;
 

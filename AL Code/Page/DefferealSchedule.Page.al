@@ -1,8 +1,8 @@
-page 60001 "MFC Deferral Schedule"
+page 60001 "MFCC01 DeferralSchedule"
 {
-    Caption = 'MFC Deferral Schedule';
+    Caption =  'Deferral Schedule';
     PageType = Card;
-    SourceTable = "MFC Deferral Header";
+    SourceTable = "MFCC01 Deferral Header";
 
     layout
     {
@@ -71,7 +71,7 @@ page 60001 "MFC Deferral Schedule"
                     ToolTip = 'Specifies the value of the Status field.';
                 }
             }
-            part(DeferralSheduleSubform; "MFC Deferral Schedule Subform")
+            part(DeferralSheduleSubform; "MFCC01 DeferralScheduleSubform")
             {
                 ApplicationArea = Suite;
                 SubPageLink =
@@ -185,17 +185,17 @@ page 60001 "MFC Deferral Schedule"
 
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeInitForm(var DeferralHeader: Record "MFC Deferral Header"; DisplayCustomerNo: Code[20]; DisplayDocumentNo: Code[20]; var StartDateCalcMethod: Text; var IsHandled: Boolean)
+    local procedure OnBeforeInitForm(var DeferralHeader: Record "MFCC01 Deferral Header"; DisplayCustomerNo: Code[20]; DisplayDocumentNo: Code[20]; var StartDateCalcMethod: Text; var IsHandled: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnOnQueryClosePageOnAfterCalcShowNoofPeriodsError(DeferralHeader: Record "MFC Deferral Header"; DeferralLine: Record "MFC Deferral Line"; var ShowNoofPeriodsError: Boolean)
+    local procedure OnOnQueryClosePageOnAfterCalcShowNoofPeriodsError(DeferralHeader: Record "MFCC01 Deferral Header"; DeferralLine: Record "MFCC01 Deferral Line"; var ShowNoofPeriodsError: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnOnQueryClosePageOnAfterDeferralLineSetFilters(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line")
+    local procedure OnOnQueryClosePageOnAfterDeferralLineSetFilters(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 }

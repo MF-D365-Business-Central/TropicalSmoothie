@@ -1,4 +1,4 @@
-table 60001 "MFC Deferral Header"
+table 60001 "MFCC01 Deferral Header"
 {
     Caption = 'Deferral Header';
     DataCaptionFields = "Schedule Description";
@@ -142,7 +142,7 @@ table 60001 "MFC Deferral Header"
         }
         field(20; "Schedule Line Total"; Decimal)
         {
-            CalcFormula = Sum("MFC Deferral Line".Amount WHERE(
+            CalcFormula = Sum("MFCC01 Deferral Line".Amount WHERE(
                                                             "Document No." = FIELD("Document No.")));
 
             Caption = 'Schedule Line Total';
@@ -157,7 +157,7 @@ table 60001 "MFC Deferral Header"
                 Rec.TestStausOpen(Rec);
             End;
         }
-        field(22; Status; enum "MFC Deferral Status")
+        field(22; Status; enum "MFCC01 Deferral Status")
         {
             Caption = 'Status';
             Editable = false;
@@ -183,8 +183,8 @@ table 60001 "MFC Deferral Header"
 
     trigger OnDelete()
     var
-        DeferralLine: Record "MFC Deferral Line";
-        DeferralUtilities: Codeunit "MFC Deferral Utilities";
+        DeferralLine: Record "MFCC01 Deferral Line";
+        DeferralUtilities: Codeunit "MFCC01 Deferral Utilities";
     begin
         // If the user deletes the header, all associated lines should also be deleted
         DeferralUtilities.FilterDeferralLines(DeferralLine,
@@ -214,9 +214,9 @@ table 60001 "MFC Deferral Header"
 
     var
 
-        CustSetup: Record "Customisation Setup";
+        CustSetup: Record "MFCC01 Customisation Setup";
         GenJnlCheckLine: Codeunit "Gen. Jnl.-Check Line";
-        DeferralUtilities: Codeunit "MFC Deferral Utilities";
+        DeferralUtilities: Codeunit "MFCC01 Deferral Utilities";
         NoSeriesMgt: Codeunit NoSeriesManagement;
         AmountToDeferErr: Label 'The deferred amount cannot be greater than the document line amount.';
         InvalidPostingDateErr: Label '%1 is not within the range of posting dates for your company.', Comment = '%1=The date passed in for the posting date.';
@@ -227,7 +227,7 @@ table 60001 "MFC Deferral Header"
 
     local procedure TestNoSeries()
     var
-        Deferral: Record "MFC Deferral Header";
+        Deferral: Record "MFCC01 Deferral Header";
         IsHandled: Boolean;
     begin
         IsHandled := false;
@@ -245,9 +245,9 @@ table 60001 "MFC Deferral Header"
             end;
     end;
 
-    procedure AssistEdit(OldDeferral: Record "MFC Deferral Header"): Boolean
+    procedure AssistEdit(OldDeferral: Record "MFCC01 Deferral Header"): Boolean
     var
-        Deferral: Record "MFC Deferral Header";
+        Deferral: Record "MFCC01 Deferral Header";
     begin
 
         Deferral := Rec;
@@ -284,12 +284,12 @@ table 60001 "MFC Deferral Header"
         exit(true);
     end;
 
-    procedure TestStausOpen(Var DeferralHeader: Record "MFC Deferral Header")
+    procedure TestStausOpen(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
     end;
 
-    procedure ReopenDocument(Var DeferralHeader: Record "MFC Deferral Header")
+    procedure ReopenDocument(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
 
@@ -297,7 +297,7 @@ table 60001 "MFC Deferral Header"
         DeferralHeader.Modify();
     end;
 
-    procedure SetDocumentSheduleCreated(Var DeferralHeader: Record "MFC Deferral Header")
+    procedure SetDocumentSheduleCreated(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
 
@@ -305,7 +305,7 @@ table 60001 "MFC Deferral Header"
         DeferralHeader.Modify();
     end;
 
-    procedure SetDocumentCertified(Var DeferralHeader: Record "MFC Deferral Header")
+    procedure SetDocumentCertified(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
 
@@ -313,7 +313,7 @@ table 60001 "MFC Deferral Header"
         DeferralHeader.Modify();
     end;
 
-    procedure SetDocumentCompleted(Var DeferralHeader: Record "MFC Deferral Header")
+    procedure SetDocumentCompleted(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::Certified);
 
@@ -321,7 +321,7 @@ table 60001 "MFC Deferral Header"
         DeferralHeader.Modify();
     end;
 
-    procedure SetDocumentShortClosed(Var DeferralHeader: Record "MFC Deferral Header")
+    procedure SetDocumentShortClosed(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::Certified);
 
@@ -331,7 +331,7 @@ table 60001 "MFC Deferral Header"
 
     procedure CloseDeferralDocument()
     var
-        DeferralLine: Record "MFC Deferral Line";
+        DeferralLine: Record "MFCC01 Deferral Line";
     begin
         DeferralLine.SetRange("Customer No.", Rec."Customer No.");
         DeferralLine.SetRange("Document No.", Rec."Document No.");
@@ -346,32 +346,32 @@ table 60001 "MFC Deferral Header"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateSchedule(var DeferralHeader: Record "MFC Deferral Header")
+    local procedure OnBeforeCalculateSchedule(var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnDeleteOnBeforeDeleteAll(DeferralHeader: Record "MFC Deferral Header"; var DeferralLine: Record "MFC Deferral Line")
+    local procedure OnDeleteOnBeforeDeleteAll(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnValidateStartDateOnAfterCalcThrowScheduleOutOfBoundError(DeferralHeader: Record "MFC Deferral Header"; var ThrowScheduleOutOfBoundError: Boolean)
+    local procedure OnValidateStartDateOnAfterCalcThrowScheduleOutOfBoundError(DeferralHeader: Record "MFCC01 Deferral Header"; var ThrowScheduleOutOfBoundError: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeTestNoSeries(var Deferral: Record "MFC Deferral Header"; xDeferral: Record "MFC Deferral Header"; var IsHandled: Boolean)
+    local procedure OnBeforeTestNoSeries(var Deferral: Record "MFCC01 Deferral Header"; xDeferral: Record "MFCC01 Deferral Header"; var IsHandled: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeInsert(var Deferral: Record "MFC Deferral Header"; var IsHandled: Boolean)
+    local procedure OnBeforeInsert(var Deferral: Record "MFCC01 Deferral Header"; var IsHandled: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAssistEditOnBeforeExit(var Deferral: Record "MFC Deferral Header")
+    local procedure OnAssistEditOnBeforeExit(var Deferral: Record "MFCC01 Deferral Header")
     begin
     end;
 }

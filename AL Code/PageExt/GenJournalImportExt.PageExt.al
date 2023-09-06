@@ -1,4 +1,4 @@
-pageextension 60001 "Gen Journal Import Ext" extends "General Journal"
+pageextension 60001 "MFCC01GenJournalImportExt" extends "General Journal"
 {
     actions
     {

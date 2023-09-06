@@ -1,8 +1,8 @@
-page 60002 "MFC Deferral Schedule Subform"
+page 60002 "MFCC01 DeferralScheduleSubform"
 {
     Caption = 'Deferral Schedule Detail';
     PageType = ListPart;
-    SourceTable = "MFC Deferral Line";
+    SourceTable = "MFCC01 Deferral Line";
     Editable = false;
     layout
     {
@@ -83,9 +83,9 @@ page 60002 "MFC Deferral Schedule Subform"
         CalcTotal(Rec, TotalDeferral);
     end;
 
-    local procedure CalcTotal(var DeferralLine: Record "MFC Deferral Line"; var TotalDeferral: Decimal)
+    local procedure CalcTotal(var DeferralLine: Record "MFCC01 Deferral Line"; var TotalDeferral: Decimal)
     var
-        DeferralLineTemp: Record "MFC Deferral Line";
+        DeferralLineTemp: Record "MFCC01 Deferral Line";
         ShowTotalDeferral: Boolean;
     begin
         DeferralLineTemp.CopyFilters(DeferralLine);
