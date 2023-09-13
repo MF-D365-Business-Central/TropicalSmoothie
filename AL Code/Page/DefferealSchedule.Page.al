@@ -11,6 +11,11 @@ page 60001 "MFCC01 DeferralSchedule"
 
             group(General)
             {
+                field("Agreement No."; Rec."Agreement No.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Agreement No. field.';
+                }
 
                 field("Customer No."; Rec."Customer No.")
                 {

@@ -2,9 +2,17 @@ table 60001 "MFCC01 Deferral Header"
 {
     Caption = 'Deferral Header';
     DataCaptionFields = "Schedule Description";
-
+    DrillDownPageId = "MFCC01 Deferrals";
+    LookupPageId = "MFCC01 Deferrals";
     fields
     {
+        field(1; "Agreement No."; Code[20])
+        {
+            Caption = 'Agreement No.';
+            TableRelation = Customer."No.";
+            Editable = false;
+            NotBlank = true;
+        }
 
         field(2; "Customer No."; Code[20])
         {
@@ -171,7 +179,7 @@ table 60001 "MFCC01 Deferral Header"
 
     keys
     {
-        key(Key1; "Customer No.", "Document No.")
+        key(Key1; "Agreement No.", "Document No.")
         {
             Clustered = true;
         }
@@ -214,7 +222,7 @@ table 60001 "MFCC01 Deferral Header"
 
     var
 
-        CustSetup: Record "MFCC01 Customisation Setup";
+        CustSetup: Record "MFCC01 Customization Setup";
         GenJnlCheckLine: Codeunit "Gen. Jnl.-Check Line";
         DeferralUtilities: Codeunit "MFCC01 Deferral Utilities";
         NoSeriesMgt: Codeunit NoSeriesManagement;

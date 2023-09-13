@@ -33,27 +33,37 @@ page 60005 "MFCC01 Agreement"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Opening Date field.';
                 }
-                field("Effective Date"; Rec."Effective Date")
+                field("Term Expiration Date"; Rec."Term Expiration Date")
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Effective Date field.';
-                }
-
-                field("Renewal Fee-First($)(OTF)"; Rec."Renewal Fee-First($)(OTF)")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Renewal Fee-First($)(Only 1 time fee) field.';
-                }
-                field("Renewal FA Effective Date"; Rec."Renewal FA Effective Date")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Renewal FA Effective Date field.';
+                    ToolTip = 'Specifies the value of the Term Expiration Date field.';
                 }
                 field("Royalty Reporting Start Date"; Rec."Royalty Reporting Start Date")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Royalty Reporting Start Date field.';
                 }
+                field("Effective Date"; Rec."Effective Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Effective Date field.';
+                }
+
+                field("Franchising Commission"; Rec."Franchising Commission")
+                {
+                    ToolTip = 'Specifies the value of the Franchising Commission field.';
+                }
+                field("SalesPerson Commission"; Rec."SalesPerson Commission")
+                {
+                    ToolTip = 'Specifies the value of the SalesPerson Commission field.';
+                }
+
+
+                field("Renewal FA Effective Date"; Rec."Renewal FA Effective Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Renewal FA Effective Date field.';
+                }
+
                 field("Royalty Bank Account"; Rec."Royalty Bank Account")
                 {
                     ApplicationArea = All;
@@ -94,6 +104,19 @@ page 60005 "MFCC01 Agreement"
 
     actions
     {
+        area(Navigation)
+        {
+            action(Deferrals)
+            {
+                ApplicationArea = All;
+                Image = Installments;
+                Promoted = true;
+                PromotedCategory = New;
+                RunPageMode = View;
+                RunObject = Page "MFCC01 Deferrals";
+                RunPageLink = "Agreement No." = field("No."), "Customer No." = field("No.");
+            }
+        }
         area(Processing)
         {
             action(ReOpen)

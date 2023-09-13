@@ -14,6 +14,10 @@ page 60003 "MFCC01 Deferrals"
         {
             repeater(Cotnrol1)
             {
+                field("Agreement No."; Rec."Agreement No.")
+                {
+                    ToolTip = 'Specifies the value of the Agreement No. field.';
+                }
 
                 field("Customer No."; Rec."Customer No.")
                 {

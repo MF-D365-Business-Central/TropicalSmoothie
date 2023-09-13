@@ -18,20 +18,17 @@ page 60006 "MFCC01 Agreement Lines"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Description field.';
                 }
-                field("Local Advertizing fee"; Rec."Local Advertizing fee")
+                field("Royalty Fees"; Rec."Royalty Fees")
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Local Advertizing fee field.';
+                    ToolTip = 'Specifies the value of the Royalty Fees field.';
                 }
-                field("National Advertizing Fee"; Rec."National Advertizing Fee")
+                field("Local Fees"; Rec."Local Fees")
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the National Advertizing Fee field.';
+                    ToolTip = 'Specifies the value of the Local Fees field.';
                 }
-                field("Franchising Commission"; Rec."Franchising Commission")
+                field("National Fees"; Rec."National Fees")
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Franchising Commission field.';
+                    ToolTip = 'Specifies the value of the National Fees field.';
                 }
                 field("Starting Date"; Rec."Starting Date")
                 {

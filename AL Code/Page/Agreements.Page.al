@@ -35,11 +35,11 @@ page 60004 "MFCC01 Agreements"
                     ToolTip = 'Specifies the value of the Effective Date field.';
                 }
 
-                field("Renewal Fee-First($)(OTF)"; Rec."Renewal Fee-First($)(OTF)")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Renewal Fee-First($)(Only 1 time fee) field.';
-                }
+                // field("Renewal Fee-First($)(OTF)"; Rec."Renewal Fee-First($)(OTF)")
+                // {
+                //     ApplicationArea = All;
+                //     ToolTip = 'Specifies the value of the Renewal Fee-First($)(Only 1 time fee) field.';
+                // }
                 field("Renewal FA Effective Date"; Rec."Renewal FA Effective Date")
                 {
                     ApplicationArea = All;
@@ -78,6 +78,19 @@ page 60004 "MFCC01 Agreements"
 
     actions
     {
+        area(Navigation)
+        {
+            action(Deferrals)
+            {
+                ApplicationArea = All;
+                Image = Installments;
+                Promoted = true;
+                PromotedCategory = New;
+                RunPageMode = View;
+                RunObject = Page "MFCC01 Deferrals";
+                RunPageLink = "Agreement No." = field("No."), "Customer No." = field("No.");
+            }
+        }
         area(Processing)
         {
             action(ReOpen)

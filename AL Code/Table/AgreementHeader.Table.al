@@ -2,14 +2,15 @@ table 60003 "MFCC01 Agreement Header"
 {
     Caption = 'Agreement Header';
     DataClassification = CustomerContent;
-
+    DrillDownPageId = "MFCC01 Agreements";
+    LookupPageId = "MFCC01 Agreements";
     fields
     {
         field(1; "Customer No."; Code[20])
         {
             Editable = false;
             DataClassification = CustomerContent;
-            TableRelation = Customer."No.";
+            TableRelation = "MFCC01 Agreement Header"."No.";
         }
         field(2; "No."; Code[20])
         {
@@ -66,9 +67,9 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusOpen(Rec);
             End;
         }
-        field(15; "Renewal Fee-First($)(OTF)"; Decimal)
+        field(15; "Agreement Amount"; Decimal)
         {
-            Caption = 'Renewal Fee-First($)(Only 1 time fee)';
+            Caption = 'Agreement Amount';
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
@@ -86,6 +87,7 @@ table 60003 "MFCC01 Agreement Header"
         field(17; Status; Enum "MFCC01 Agreement Status")
         {
             DataClassification = CustomerContent;
+            Editable = false;
             trigger OnValidate()
             Begin
                 TestStatusOpen(Rec);
@@ -111,10 +113,38 @@ table 60003 "MFCC01 Agreement Header"
             End;
         }
 
+        field(20; "Franchising Commission"; Decimal)
+        {
+            DataClassification = CustomerContent;
+            trigger OnValidate()
+            Begin
+                TestStatusOpen(Rec);
+            End;
+        }
+        field(21; "SalesPerson Commission"; Decimal)
+        {
+            DataClassification = CustomerContent;
+            trigger OnValidate()
+            Begin
+                TestStatusOpen(Rec);
+            End;
+        }
 
         field(23; "No. Series"; Code[20])
         {
             Caption = 'No. Series';
+            Editable = false;
+        }
+
+        field(50; "Posted Agreement Amount"; Decimal)
+        {
+            Caption = 'Posted Agreement Amount';
+            Editable = false;
+        }
+
+        field(51; "Posted Comission Amount"; Decimal)
+        {
+            Caption = 'Posted Comission Amount';
             Editable = false;
         }
     }
@@ -157,6 +187,7 @@ table 60003 "MFCC01 Agreement Header"
         AgreementLine: Record "MFCC01 Agreement Line";
         AgreementUsers: Record "MFCC01 Agreement Users";
     begin
+        Rec.TestStatusOpen(Rec);
         AgreementLine.SetRange("Customer No.", Rec."Customer No.");
         AgreementLine.SetRange("Agreement No.", Rec."No.");
         IF Not AgreementLine.IsEmpty() then
@@ -168,12 +199,10 @@ table 60003 "MFCC01 Agreement Header"
             AgreementUsers.DeleteAll();
     end;
 
-
     local procedure CheckDates()
     var
         AgreementLine: Record "MFCC01 Agreement Line";
     begin
-
         AgreementLine.SetRange("Customer No.", Rec."Customer No.");
         AgreementLine.SetRange("Agreement No.", Rec."No.");
         IF AgreementLine.FindSet() then
@@ -193,11 +222,6 @@ table 60003 "MFCC01 Agreement Header"
 
             Until AgreementLine.Next() = 0;
 
-
-
-
-
-
     end;
 
     trigger OnRename()
@@ -207,7 +231,7 @@ table 60003 "MFCC01 Agreement Header"
 
     var
 
-        CustSetup: Record "MFCC01 Customisation Setup";
+        CustSetup: Record "MFCC01 Customization Setup";
         NoSeriesMgt: Codeunit NoSeriesManagement;
         OpenDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Opening Date %2';
         EffDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Effective Date %2';
@@ -264,12 +288,19 @@ table 60003 "MFCC01 Agreement Header"
     end;
 
     procedure SetStatusActive(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    var
+        CZSetup: Record "MFCC01 Customization Setup";
     begin
+        CZSetup.GetRecordonce();
+        CZSetup.TestField("Commission Def. Account");
+        CZSetup.TestField("Commission Payable Account");
+        CZSetup.TestField("Agreement Def. Account");
+
         CheckLinesExist(AgreementHeader, true);
         AgreementHeader.TestField(Status, AgreementHeader.Status::Open);
         AgreementHeader.Status := AgreementHeader.Status::Active;
         AgreementHeader.Modify();
-
+        OnaferActivateEvent(AgreementHeader);
     end;
 
     procedure SetStatusTerminate(Var AgreementHeader: Record "MFCC01 Agreement Header")
@@ -290,10 +321,7 @@ table 60003 "MFCC01 Agreement Header"
         Found := Not AgreementLine.IsEmpty();
         IF ShowError and (Not Found) then
             Error(NoLinesError);
-
     end;
-
-
 
     [IntegrationEvent(false, false)]
     local procedure OnBeforeTestNoSeries(var AgreementHeader: Record "MFCC01 Agreement Header"; xAgreementHeader: Record "MFCC01 Agreement Header"; var IsHandled: Boolean)
@@ -307,6 +335,11 @@ table 60003 "MFCC01 Agreement Header"
 
     [IntegrationEvent(false, false)]
     local procedure OnAssistEditOnBeforeExit(var AgreementHeader: Record "MFCC01 Agreement Header")
+    begin
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnaferActivateEvent(var AgreementHeader: Record "MFCC01 Agreement Header")
     begin
     end;
 }

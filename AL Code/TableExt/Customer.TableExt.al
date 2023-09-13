@@ -1,5 +1,6 @@
 tableextension 60000 MFCC01Customer extends Customer
 {
+    LookupPageId = "Currency Card";
     fields
     {
         // Add changes to table fields here

@@ -27,7 +27,7 @@ table 60004 "MFCC01 Agreement Line"
                 TestStatusOpen();
             End;
         }
-        field(10; "Local Advertizing fee"; Decimal)
+        field(10; "Royalty Fees"; Decimal)
         {
             DataClassification = CustomerContent;
             trigger OnValidate()
@@ -35,7 +35,7 @@ table 60004 "MFCC01 Agreement Line"
                 TestStatusOpen();
             End;
         }
-        field(11; "National Advertizing Fee"; Decimal)
+        field(11; "Local Fees"; Decimal)
         {
             DataClassification = CustomerContent;
             trigger OnValidate()
@@ -44,7 +44,7 @@ table 60004 "MFCC01 Agreement Line"
             End;
         }
 
-        field(12; "Franchising Commission"; Decimal)
+        field(12; "National Fees"; Decimal)
         {
             DataClassification = CustomerContent;
             trigger OnValidate()
@@ -135,7 +135,7 @@ table 60004 "MFCC01 Agreement Line"
 
     trigger OnDelete()
     begin
-
+        Rec.TestStatusOpen();
     end;
 
     trigger OnRename()
