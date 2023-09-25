@@ -5,16 +5,17 @@
             "name": "Microsoft cloud sandbox",
             "request": "launch",
             "type": "al",
-            "tenant": "120aeae9-286f-438a-bbf3-de3ab96fcf5d",
+            "tenant": "19c1a10d-6a49-4541-892b-7c45efdeca3a",
             "environmentType": "Sandbox",
-            "environmentName": "IntgTest",
+            "environmentName": "Sandbox",
             "startupObjectId": 22,
             "startupObjectType": "Page",
             "breakOnError": "All",
             "launchBrowser": true,
             "enableLongRunningSqlStatements": true,
             "enableSqlInformationDebugger": true,
-            "schemaUpdateMode": "ForceSync"
+            "schemaUpdateMode": "Synchronize"
+            
         }
     ]
 }

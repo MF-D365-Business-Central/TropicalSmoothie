@@ -20,17 +20,6 @@ table 60003 "MFCC01 Agreement Header"
                 TestNoSeries();
             end;
         }
-
-
-        // field(11; "Opening Date"; Date)
-        // {
-        //     DataClassification = CustomerContent;
-        //     trigger OnValidate()
-        //     Begin
-        //         TestStatusOpen(Rec);
-        //         CheckDates();
-        //     End;
-        // }
         field(12; "Term Expiration Date"; Date)
         {
             DataClassification = CustomerContent;
@@ -39,7 +28,6 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusOpen(Rec);
             End;
         }
-
         field(13; "Royalty Reporting Start Date"; Date)
         {
             DataClassification = CustomerContent;
@@ -48,8 +36,6 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusOpen(Rec);
             End;
         }
-
-
         field(16; "License Type"; Enum "MFCC01 License Type")
         {
             DataClassification = CustomerContent;
@@ -68,7 +54,6 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusOpen(Rec);
             End;
         }
-
         field(18; "Franchise Bank Account"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -87,7 +72,6 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusOpen(Rec);
             End;
         }
-
         field(20; "Agreement Amount"; Decimal)
         {
             DataClassification = CustomerContent;
@@ -105,19 +89,16 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusOpen(Rec);
             End;
         }
-
         field(23; "No. Series"; Code[20])
         {
             Caption = 'No. Series';
             Editable = false;
         }
-
         field(50; "Posted Agreement Amount"; Decimal)
         {
             Caption = 'Posted Agreement Amount';
             Editable = false;
         }
-
         field(51; "Posted Comission Amount"; Decimal)
         {
             Caption = 'Posted Comission Amount';
@@ -146,7 +127,6 @@ table 60003 "MFCC01 Agreement Header"
             Caption = 'Posted Revenue Statistical Amount';
             Editable = false;
         }
-
         field(55; PostedCommissionExpenseAmount; Decimal)
         {
             Caption = 'Posted Commission Expense  Amount';

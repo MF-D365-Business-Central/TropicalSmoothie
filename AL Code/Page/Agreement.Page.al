@@ -106,13 +106,36 @@ page 60005 "MFCC01 Agreement"
                 RunObject = Page "MFCC01 Deferrals";
                 RunPageLink = "Agreement No." = field("No."), "Customer No." = field("No.");
             }
-            action(Entries)
+            group(Entries)
             {
-                ApplicationArea = All;
-                Image = Entries;
-                RunPageMode = View;
-                RunObject = Page "General Ledger Entries";
-                RunPageLink = "Document No." = field("No.");
+
+                action(GLntries)
+                {
+                    Caption = 'G/L Entries';
+                    ApplicationArea = All;
+                    Image = Entries;
+                    RunPageMode = View;
+                    RunObject = Page "General Ledger Entries";
+                    RunPageLink = "Document No." = field("No.");
+                }
+                action(Statntries)
+                {
+                    Caption = 'Statistical Ledger Entries';
+                    ApplicationArea = All;
+                    Image = Entries;
+                    RunPageMode = View;
+                    RunObject = Page "Statistical Ledger Entry List";
+                    RunPageLink = "Document No." = field("No.");
+                }
+                action(Franchisentries)
+                {
+                    Caption = 'Franchise Ledger Entries';
+                    ApplicationArea = All;
+                    Image = Entries;
+                    RunPageMode = View;
+                    RunObject = Page "MFCC01 FranchiseLedgerEntries";
+                    RunPageLink = "Document No." = field("No.");
+                }
             }
         }
         area(Processing)

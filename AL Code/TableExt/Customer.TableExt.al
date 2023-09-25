@@ -17,15 +17,7 @@ tableextension 60000 MFCC01Customer extends Customer
         {
             DataClassification = CustomerContent;
         }
-        // field(60003; "First Agreement No."; Date)
-        // {
-        //     DataClassification = CustomerContent;
-        // }
-        // field(60004; "Last Agreement No."; Date)
-        // {
-        //     Editable = false;
-        //     DataClassification = CustomerContent;
-        // }
+
     }
 
 

@@ -16,7 +16,10 @@ codeunit 60002 "MFCC01 Agreement Management"
     var
         AccountType: Enum "Gen. Journal Account Type";
         BalAccountType: Enum "Gen. Journal Account Type";
+        DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
     begin
+
+
         CZSetup.GetRecordonce();
         GLEntry.LockTable();
         IF AgreementHeader."Posted Agreement Amount" = 0 then
@@ -28,14 +31,14 @@ codeunit 60002 "MFCC01 Agreement Management"
                 AgreementHeader."Posted Comission Amount" := AgreementHeader."SalesPerson Commission";
             End;
 
-        IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup."Revenue Statistical Account", BalAccountType::"G/L Account", CZSetup.DeferredRevenueStatisticalAcc, CZSetup.NonGapInitialRevenueRecognised) then Begin
+        IF PostStatsAmounts(AgreementHeader, CZSetup."Revenue Statistical Account", CZSetup.DeferredRevenueStatisticalAcc, CZSetup.NonGapInitialRevenueRecognised) then Begin
             AgreementHeader.PostedRevenueStatisticalAmount := CZSetup.NonGapInitialRevenueRecognised;
         End;
 
-        IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup."Commission Expense Account", BalAccountType::"G/L Account", CZSetup.CommissionDeferredExpenseAcc, AgreementHeader."SalesPerson Commission") then Begin
+        IF PostStatsAmounts(AgreementHeader, CZSetup."Commission Expense Account", CZSetup.CommissionDeferredExpenseAcc, AgreementHeader."SalesPerson Commission") then Begin
             AgreementHeader.PostedCommissionExpenseAmount := AgreementHeader."SalesPerson Commission";
         End;
-
+        DeferralUtility.CreatedeferralScheduleFromAgreement(AgreementHeader);
         AgreementHeader.Modify(true);
     end;
 
@@ -74,6 +77,44 @@ codeunit 60002 "MFCC01 Agreement Management"
         Exit(GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0);
     end;
 
+
+    local procedure PostStatsAmounts(Var AgreementHeader: Record "MFCC01 Agreement Header"; AccountNo: Code[20];
+     BalAccountNo: Code[20]; Amount: Decimal): Boolean
+    var
+        StatisticalJnlLine: Record "Statistical Acc. Journal Line";
+        StatAccJnlLinePost: Codeunit "Stat. Acc. Jnl. Line Post";
+        DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
+    begin
+
+        StatisticalJnlLine.Init();
+        StatisticalJnlLine."Posting Date" := WorkDate();
+        StatisticalJnlLine."Document No." := AgreementHeader."No.";
+
+
+        StatisticalJnlLine.Validate("Statistical Account No.", AccountNo);
+        StatisticalJnlLine.Validate(Amount, Amount);
+        //Customer Dimensions
+        InitDefaultDimSource(DefaultDimSource, AgreementHeader);
+        StatisticalJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', StatisticalJnlLine."Shortcut Dimension 1 Code", StatisticalJnlLine."Shortcut Dimension 2 Code",
+        StatisticalJnlLine."Dimension Set ID", 0);
+        Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine);
+        Commit();
+        StatisticalJnlLine.Init();
+        StatisticalJnlLine."Posting Date" := WorkDate();
+        StatisticalJnlLine."Document No." := AgreementHeader."No.";
+
+        //Posting to Customer Account
+        StatisticalJnlLine.Validate("Statistical Account No.", BalAccountNo);
+        StatisticalJnlLine.Validate(Amount, -Amount);
+        //Customer Dimensions
+        InitDefaultDimSource(DefaultDimSource, AgreementHeader);
+        StatisticalJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', StatisticalJnlLine."Shortcut Dimension 1 Code", StatisticalJnlLine."Shortcut Dimension 2 Code",
+        StatisticalJnlLine."Dimension Set ID", 0);
+        Exit(Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine));
+
+
+    end;
+
     local procedure InitDefaultDimSource(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]]; AgreementHeader: Record "MFCC01 Agreement Header")
     begin
         Clear(DefaultDimSource);
@@ -81,8 +122,26 @@ codeunit 60002 "MFCC01 Agreement Management"
     end;
 
 
+    [EventSubscriber(ObjectType::Table, Database::"Statistical Ledger Entry", 'OnBeforeInsertEvent', '', false, false)]
+    local procedure TBL_2633_OnBeforeInsertEvent(var Rec: Record "Statistical Ledger Entry"; RunTrigger: Boolean)
+    begin
+        Rec."Entry No." := InitNextEntryNo();
+    end;
+
+    local procedure InitNextEntryNo() NextEntryNo: Integer
+    var
+        LastStatisticalLedgerEntry: Record "Statistical Ledger Entry";
+    begin
+        LastStatisticalLedgerEntry.LockTable();
+        if LastStatisticalLedgerEntry.FindLast() then;
+        NextEntryNo := LastStatisticalLedgerEntry."Entry No." + 1;
+
+    end;
+
     var
         CZSetup: Record "MFCC01 Customization Setup";
         DimMgt: Codeunit DimensionManagement;
         GLEntry: Record "G/L Entry";
+
+
 }
