@@ -58,7 +58,7 @@ table 60005 "MFCC01 Agreement Users"
 
     keys
     {
-        key(Key1; "Customer No.", "Agreement No.", "Line No.")
+        key(Key1;  "Agreement No.", "Line No.")
         {
             Clustered = true;
         }
@@ -70,7 +70,7 @@ table 60005 "MFCC01 Agreement Users"
     Var
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
-        AgreementHeader.Get(Rec."Customer No.", Rec."Agreement No.");
+        AgreementHeader.Get(Rec."Agreement No.");
         AgreementHeader.TestField(Status, AgreementHeader.Status::Open);
     end;
 

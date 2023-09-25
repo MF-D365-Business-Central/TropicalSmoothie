@@ -27,26 +27,32 @@ table 60004 "MFCC01 Agreement Line"
                 TestStatusOpen();
             End;
         }
-        field(10; "Royalty Fees"; Decimal)
+        field(10; "Royalty Fees %"; Decimal)
         {
             DataClassification = CustomerContent;
+            MinValue = 0;
+            MaxValue = 100;
             trigger OnValidate()
             Begin
                 TestStatusOpen();
             End;
         }
-        field(11; "Local Fees"; Decimal)
+        field(11; "Local Fees %"; Decimal)
         {
             DataClassification = CustomerContent;
+            MinValue = 0;
+            MaxValue = 100;
             trigger OnValidate()
             Begin
                 TestStatusOpen();
             End;
         }
 
-        field(12; "National Fees"; Decimal)
+        field(12; "National Fees %"; Decimal)
         {
             DataClassification = CustomerContent;
+            MinValue = 0;
+            MaxValue = 100;
             trigger OnValidate()
             Begin
                 TestStatusOpen();
@@ -74,7 +80,7 @@ table 60004 "MFCC01 Agreement Line"
 
     keys
     {
-        key(Key1; "Customer No.", "Agreement No.", "Line No.")
+        key(Key1; "Agreement No.", "Line No.")
         {
             Clustered = true;
         }
@@ -93,7 +99,7 @@ table 60004 "MFCC01 Agreement Line"
     Var
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
-        AgreementHeader.Get(Rec."Customer No.", Rec."Agreement No.");
+        AgreementHeader.Get(Rec."Agreement No.");
         AgreementHeader.TestField(Status, AgreementHeader.Status::Open);
     end;
 
@@ -106,20 +112,16 @@ table 60004 "MFCC01 Agreement Line"
             Error(EndDateErrorLbl, Rec."Ending Date", Rec."Starting Date");
 
 
-        AgreementHeader.Get(Rec."Customer No.", Rec."Agreement No.");
+        AgreementHeader.Get(Rec."Agreement No.");
+        Rec."Customer No." := AgreementHeader."Customer No.";
         IF (Rec."Starting Date" <> 0D) And
-             (Rec."Starting Date" < AgreementHeader."Opening Date") then
-            Error(OpenDateSTDateErrorLbl, Rec."Starting Date", AgreementHeader."Opening Date");
-        IF (Rec."Starting Date" <> 0D) And
-         (Rec."Starting Date" < AgreementHeader."Effective Date") then
-            Error(EffDateSTDateErrorLbl, Rec."Starting Date", AgreementHeader."Effective Date");
+             (Rec."Starting Date" < AgreementHeader."Royalty Reporting Start Date") then
+            Error(OpenDateSTDateErrorLbl, Rec."Starting Date", AgreementHeader."Royalty Reporting Start Date");
 
         IF (Rec."Ending Date" <> 0D) And
-            (Rec."Ending Date" < AgreementHeader."Opening Date") then
+            (Rec."Ending Date" < AgreementHeader."Royalty Reporting Start Date") then
             Error(OpenDateEDDateErrorLbl, Rec."Ending Date", Rec."Starting Date");
-        IF (Rec."Ending Date" <> 0D) And
-             (Rec."Ending Date" < AgreementHeader."Effective Date") then
-            Error(EffDateEDDateErrorLbl, Rec."Ending Date", AgreementHeader."Opening Date");
+
 
     end;
 

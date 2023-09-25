@@ -1,4 +1,4 @@
-enum 60005 "MFCC01 Sales Staging"
+enum 60005 "MFCC01 Staging Status"
 {
     Extensible = true;
 

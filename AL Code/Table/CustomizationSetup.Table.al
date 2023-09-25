@@ -26,11 +26,11 @@ table 60000 "MFCC01 Customization Setup"
             DataClassification = CustomerContent;
             TableRelation = "No. Series".Code;
         }
-        // field(51; "Agreement Nos."; Code[20])
-        // {
-        //     DataClassification = CustomerContent;
-        //     TableRelation = "No. Series".Code;
-        // }
+        field(49; "Agreement Nos."; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "No. Series".Code;
+        }
 
         field(51; "Local Department Code"; Code[20])
         {
@@ -74,6 +74,34 @@ table 60000 "MFCC01 Customization Setup"
         {
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+
+        field(59; DeferredRevenueStatisticalAcc; Code[20])
+        {
+            Caption = 'Deferred Revenue Statistical Account';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(60; "Revenue Statistical Account"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(61; CommissionDeferredExpenseAcc; Code[20])
+        {
+            Caption = 'Commission Deferred Expense Account';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(62; "Commission Expense Account"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(63; NonGapInitialRevenueRecognised; Decimal)
+        {
+            Caption = 'Non Gap Initial Revenue Recognised';
+            DataClassification = CustomerContent;
         }
     }
 

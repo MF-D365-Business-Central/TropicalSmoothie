@@ -8,7 +8,6 @@ table 60002 "MFCC01 Deferral Line"
         {
             Caption = 'Customer No.';
             TableRelation = Customer;
-            NotBlank = true;
 
         }
         field(5; "Document No."; Code[20])
@@ -42,6 +41,7 @@ table 60002 "MFCC01 Deferral Line"
                 AccountingPeriod.SetFilter("Starting Date", '>=%1', "Posting Date");
                 if AccountingPeriod.IsEmpty() then
                     Error(DeferSchedOutOfBoundsErr);
+                CopyHeaderFields();
             end;
         }
         field(8; Description; Text[100])
@@ -60,7 +60,7 @@ table 60002 "MFCC01 Deferral Line"
                 if Amount = 0 then
                     Error(ZeroAmountToDeferErr);
 
-                if DeferralHeader.Get("Customer No.", "Document No.") then begin
+                if DeferralHeader.Get("Document No.") then begin
                     if DeferralHeader."Amount to Defer" > 0 then
                         if Amount < 0 then
                             Error(AmountToDeferPositiveErr);
@@ -88,7 +88,7 @@ table 60002 "MFCC01 Deferral Line"
 
     keys
     {
-        key(Key1; "Customer No.", "Document No.", "Posting Date")
+        key(Key1; "Document No.", "Posting Date")
         {
             Clustered = true;
         }
@@ -105,8 +105,8 @@ table 60002 "MFCC01 Deferral Line"
     end;
 
     var
-        DeferralHeader: Record "Deferral Header";
-        DeferralUtilities: Codeunit "Deferral Utilities";
+        DeferralHeader: Record "MFCC01 Deferral Header";
+        DeferralUtilities: Codeunit "MFCC01 Deferral Utilities";
         InvalidPostingDateErr: Label '%1 is not within the range of posting dates for deferrals for your company. Check the user setup for the allowed deferrals posting dates.', Comment = '%1=The date passed in for the posting date.';
         DeferSchedOutOfBoundsErr: Label 'The deferral schedule falls outside the accounting periods that have been set up for the company.';
         InvalidDeferralLineDateErr: Label 'The posting date for this deferral schedule line is not valid.';
@@ -116,11 +116,20 @@ table 60002 "MFCC01 Deferral Line"
 
 
     procedure TestStausOpen()
-    Var
-        DeferralHeader: Record "MFCC01 Deferral Header";
+
     begin
-        DeferralHeader.Get(Rec."Customer No.", Rec."Document No.");
+        GetDeferralHeader();
         DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
+    end;
+
+    local procedure GetDeferralHeader()
+    begin
+        DeferralHeader.Get( Rec."Document No.");
+    end;
+
+    local procedure CopyHeaderFields()
+    begin
+        Rec."Customer No." := DeferralHeader."Customer No.";
     end;
 
     [IntegrationEvent(false, false)]

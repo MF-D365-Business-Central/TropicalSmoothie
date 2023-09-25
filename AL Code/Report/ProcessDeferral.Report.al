@@ -12,7 +12,7 @@ report 60000 "MFCC01 Process Deferral"
             DataItemTableView = where(Status = const(Certified));
             dataitem("MFCC01 Deferral Line"; "MFCC01 Deferral Line")
             {
-                DataItemLink = "Customer No." = field("Customer No."), "Document No." = field("Document No.");
+                DataItemLink = "Document No." = field("Document No.");
                 DataItemTableView = where(Posted = const(false));
                 trigger OnPreDataItem()
                 Begin
@@ -71,6 +71,8 @@ report 60000 "MFCC01 Process Deferral"
     Begin
         IF PostingDate = 0D then
             PostingDate := Today();
+
+        GLEntry.LockTable();
     End;
 
     local procedure PostDeferralLine()
@@ -88,12 +90,20 @@ report 60000 "MFCC01 Process Deferral"
         GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No." + '/' + Format("MFCC01 Deferral Line"."Posting Date");
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
         GenJnlLine.Validate("Account No.", DeferralTemplate."Deferral Account");
-
-        GenJnlLine.Validate("Bal. Account Type", GenJnlLine."Bal. Account Type"::"G/L Account");
-        GenJnlLine.Validate("Bal. Account No.", "MFCC01 Deferral Header"."Bal. Account No.");
         GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
         GenJnlLine.Validate(Amount, "MFCC01 Deferral Line".Amount);
+        InitDefaultDimSource(DefaultDimSource);
+        GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
+        GenJnlLine."Dimension Set ID", 0);
+        "MFCC01 Deferral Line".Posted := GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0;
 
+        GenJnlLine.Init();
+        GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
+        GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No." + '/' + Format("MFCC01 Deferral Line"."Posting Date");
+        GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
+        GenJnlLine.Validate("Account No.", "MFCC01 Deferral Header"."Bal. Account No.");
+        GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
+        GenJnlLine.Validate(Amount, -"MFCC01 Deferral Line".Amount);
         InitDefaultDimSource(DefaultDimSource);
         GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
         GenJnlLine."Dimension Set ID", 0);
@@ -113,4 +123,5 @@ report 60000 "MFCC01 Process Deferral"
     var
         PostingDate: Date;
         DimMgt: Codeunit DimensionManagement;
+        GLEntry: Record "G/L Entry";
 }

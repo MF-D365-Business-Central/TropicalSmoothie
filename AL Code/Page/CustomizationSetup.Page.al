@@ -30,6 +30,10 @@ page 60000 "MFCC01 Customization Setup"
                 {
                     ToolTip = 'Specifies the value of the Deferral Nos. field.';
                 }
+                field("Agreement Nos."; Rec."Agreement Nos.")
+                {
+                    ToolTip = 'Specifies the value of the Agreement Nos. field.';
+                }
             }
             group(Journal)
             {
@@ -63,6 +67,26 @@ page 60000 "MFCC01 Customization Setup"
                 field("Agreement Def. Account"; Rec."Agreement Def. Account")
                 {
                     ToolTip = 'Specifies the value of the Agreement Def. Account field.';
+                }
+                field(DeferredRevenueStatisticalAcc; Rec.DeferredRevenueStatisticalAcc)
+                {
+                    ToolTip = 'Specifies the value of the Deferred Revenue Statistical Account field.';
+                }
+                field("Revenue Statistical Account"; Rec."Revenue Statistical Account")
+                {
+                    ToolTip = 'Specifies the value of the Revenue Statistical Account field.';
+                }
+                field(CommissionDeferredExpenseAcc; Rec.CommissionDeferredExpenseAcc)
+                {
+                    ToolTip = 'Specifies the value of the Commission Deferred Expense Account field.';
+                }
+                field("Commission Expense Account"; Rec."Commission Expense Account")
+                {
+                    ToolTip = 'Specifies the value of the Commission Expense Account field.';
+                }
+                field(NonGapInitialRevenueRecognised; Rec.NonGapInitialRevenueRecognised)
+                {
+                    ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognised field.';
                 }
             }
             group(Dimensions)

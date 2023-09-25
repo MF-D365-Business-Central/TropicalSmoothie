@@ -18,18 +18,19 @@ page 60006 "MFCC01 Agreement Lines"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Description field.';
                 }
-                field("Royalty Fees"; Rec."Royalty Fees")
+                field("Royalty Fees %"; Rec."Royalty Fees %")
                 {
-                    ToolTip = 'Specifies the value of the Royalty Fees field.';
+                    ToolTip = 'Specifies the value of the Royalty Fees % field.';
                 }
-                field("Local Fees"; Rec."Local Fees")
+                field("Local Fees %"; Rec."Local Fees %")
                 {
-                    ToolTip = 'Specifies the value of the Local Fees field.';
+                    ToolTip = 'Specifies the value of the Local Fees % field.';
                 }
-                field("National Fees"; Rec."National Fees")
+                field("National Fees %"; Rec."National Fees %")
                 {
-                    ToolTip = 'Specifies the value of the National Fees field.';
+                    ToolTip = 'Specifies the value of the National Fees % field.';
                 }
+
                 field("Starting Date"; Rec."Starting Date")
                 {
                     ApplicationArea = All;

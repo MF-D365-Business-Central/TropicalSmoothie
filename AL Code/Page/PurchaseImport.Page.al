@@ -1,11 +1,12 @@
-page 60008 "MFCC01 Sales Staging"
+page 60012 "MFCC01 Purchase Import"
 {
-    Caption = 'Sales Staging';
+    Caption = 'Purchase Import';
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Administration;
-    SourceTable = "MFCC01 Sales Staging";
-
+    SourceTable = "MFCC01 Sales Import";
+    InsertAllowed = false;
+    DelayedInsert = true;
     layout
     {
         area(Content)
@@ -16,6 +17,10 @@ page 60008 "MFCC01 Sales Staging"
                 field("Entry No."; Rec."Entry No.")
                 {
                     ToolTip = 'Specifies the value of the Entry No. field.';
+                }
+                field("Document Type"; Rec."Document Type")
+                {
+                    ToolTip = 'Specifies the value of the Document Type field.';
                 }
                 field("Document No."; Rec."Document No.")
                 {
@@ -65,6 +70,11 @@ page 60008 "MFCC01 Sales Staging"
                 {
                     ToolTip = 'Specifies the value of the Quantity field.';
                 }
+                field(Status; Rec.Status)
+                {
+                    ToolTip = 'Specifies the value of the Status field.';
+                }
+
             }
         }
     }
@@ -78,8 +88,35 @@ page 60008 "MFCC01 Sales Staging"
                 ApplicationArea = All;
                 Image = Import;
                 Caption = 'Import';
-                RunObject = report MFCC01SalesInvocieExcelImport;
+                RunObject = report MFCC01PurchaseExcelImport;
 
+            }
+
+            action(Create)
+            {
+                ApplicationArea = All;
+                Image = Create;
+                Caption = 'Create';
+                trigger OnAction()
+                var
+                    PurchaseImport: Codeunit "MFCC01 Purchase Import";
+                Begin
+                    PurchaseImport.GenerateInvoice();
+                End;
+
+            }
+
+            action(Post)
+            {
+                ApplicationArea = All;
+                Image = Post;
+                Caption = 'Post';
+                trigger OnAction()
+                var
+                    PurchaseImport: Codeunit "MFCC01 Purchase Import";
+                Begin
+                    PurchaseImport.PostDocuments();
+                End;
             }
         }
     }

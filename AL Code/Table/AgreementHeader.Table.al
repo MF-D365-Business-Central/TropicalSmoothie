@@ -8,40 +8,29 @@ table 60003 "MFCC01 Agreement Header"
     {
         field(1; "Customer No."; Code[20])
         {
-            Editable = false;
             DataClassification = CustomerContent;
-            TableRelation = "MFCC01 Agreement Header"."No.";
+            TableRelation = Customer."No.";
         }
         field(2; "No."; Code[20])
         {
             DataClassification = CustomerContent;
-            NotBlank = true;
-            // trigger OnValidate()
-            // begin
-
-            //     TestNoSeries();
-            // end;
-        }
-
-        field(10; "Effective Date"; Date)
-        {
-            DataClassification = CustomerContent;
+            //NotBlank = true;
             trigger OnValidate()
-            Begin
-                TestStatusOpen(Rec);
-                CheckDates();
-            End;
+            begin
+                TestNoSeries();
+            end;
         }
 
-        field(11; "Opening Date"; Date)
-        {
-            DataClassification = CustomerContent;
-            trigger OnValidate()
-            Begin
-                TestStatusOpen(Rec);
-                CheckDates();
-            End;
-        }
+
+        // field(11; "Opening Date"; Date)
+        // {
+        //     DataClassification = CustomerContent;
+        //     trigger OnValidate()
+        //     Begin
+        //         TestStatusOpen(Rec);
+        //         CheckDates();
+        //     End;
+        // }
         field(12; "Term Expiration Date"; Date)
         {
             DataClassification = CustomerContent;
@@ -59,26 +48,12 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusOpen(Rec);
             End;
         }
-        field(14; "Renewal FA Effective Date"; Date)
-        {
-            DataClassification = CustomerContent;
-            trigger OnValidate()
-            Begin
-                TestStatusOpen(Rec);
-            End;
-        }
-        field(15; "Agreement Amount"; Decimal)
-        {
-            Caption = 'Agreement Amount';
-            DataClassification = CustomerContent;
-            trigger OnValidate()
-            Begin
-                TestStatusOpen(Rec);
-            End;
-        }
+
+
         field(16; "License Type"; Enum "MFCC01 License Type")
         {
             DataClassification = CustomerContent;
+            Editable = false;
             trigger OnValidate()
             Begin
                 TestStatusOpen(Rec);
@@ -94,7 +69,7 @@ table 60003 "MFCC01 Agreement Header"
             End;
         }
 
-        field(18; "Franchie Bank Account"; Code[20])
+        field(18; "Franchise Bank Account"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "Customer Bank Account".Code where("Customer No." = field("Customer No."));
@@ -113,9 +88,10 @@ table 60003 "MFCC01 Agreement Header"
             End;
         }
 
-        field(20; "Franchising Commission"; Decimal)
+        field(20; "Agreement Amount"; Decimal)
         {
             DataClassification = CustomerContent;
+            Caption = 'Agreement Amount';//RGU
             trigger OnValidate()
             Begin
                 TestStatusOpen(Rec);
@@ -147,11 +123,41 @@ table 60003 "MFCC01 Agreement Header"
             Caption = 'Posted Comission Amount';
             Editable = false;
         }
+        field(52; "RoyaltyscheduleNo."; Code[20])
+        {
+            Caption = 'Royalty Schedule No.';
+            TableRelation = "MFCC01 Deferral Header"."Document No.";
+            trigger OnValidate()
+            Begin
+                TestStatusOpen(Rec);
+            End;
+        }
+        field(53; "ComissionscheduleNo."; Code[20])
+        {
+            Caption = 'Comission Schedule No.';
+            TableRelation = "MFCC01 Deferral Header"."Document No.";
+            trigger OnValidate()
+            Begin
+                TestStatusOpen(Rec);
+            End;
+        }
+        field(54; PostedRevenueStatisticalAmount; Decimal)
+        {
+            Caption = 'Posted Revenue Statistical Amount';
+            Editable = false;
+        }
+
+        field(55; PostedCommissionExpenseAmount; Decimal)
+        {
+            Caption = 'Posted Commission Expense  Amount';
+            Editable = false;
+        }
+
     }
 
     keys
     {
-        key(Key1; "Customer No.", "No.")
+        key(Key1; "No.")
         {
             Clustered = true;
         }
@@ -168,11 +174,11 @@ table 60003 "MFCC01 Agreement Header"
         if IsHandled then
             exit;
 
-        // if "No." = '' then begin
-        //     CustSetup.Get();
-        //     CustSetup.TestField("Agreement Nos.");
-        //     NoSeriesMgt.InitSeries(CustSetup."Agreement Nos.", xRec."No. Series", 0D, "No.", "No. Series");
-        // end;
+        if "No." = '' then begin
+            CustSetup.Get();
+            CustSetup.TestField("Agreement Nos.");
+            NoSeriesMgt.InitSeries(CustSetup."Agreement Nos.", xRec."No. Series", 0D, "No.", "No. Series");
+        end;
     End;
 
 
@@ -189,14 +195,17 @@ table 60003 "MFCC01 Agreement Header"
     begin
         Rec.TestStatusOpen(Rec);
         AgreementLine.SetRange("Customer No.", Rec."Customer No.");
-        AgreementLine.SetRange("Agreement No.", Rec."No.");
         IF Not AgreementLine.IsEmpty() then
             AgreementLine.DeleteAll();
 
         AgreementUsers.SetRange("Customer No.", Rec."Customer No.");
-        AgreementUsers.SetRange("Agreement No.", Rec."No.");
         IF Not AgreementUsers.IsEmpty() then
             AgreementUsers.DeleteAll();
+    end;
+
+    trigger OnRename()
+    begin
+
     end;
 
     local procedure CheckDates()
@@ -208,26 +217,29 @@ table 60003 "MFCC01 Agreement Header"
         IF AgreementLine.FindSet() then
             repeat
                 IF (AgreementLine."Ending Date" <> 0D) And (
-                     AgreementLine."Starting Date" < Rec."Opening Date") then
-                    Error(OpenDateSTDateErrorLbl, AgreementLine."Starting Date", Rec."Opening Date");
-                IF (AgreementLine."Ending Date" <> 0D) And (
-                     AgreementLine."Starting Date" < Rec."Effective Date") then
-                    Error(EffDateSTDateErrorLbl, AgreementLine."Starting Date", Rec."Effective Date");
-                IF (AgreementLine."Ending Date" <> 0D) AND (AgreementLine."Ending Date" < Rec."Opening Date")
+                     AgreementLine."Starting Date" < Rec."Royalty Reporting Start Date") then
+                    Error(OpenDateSTDateErrorLbl, AgreementLine."Starting Date", Rec."Royalty Reporting Start Date");
+
+                IF (AgreementLine."Ending Date" <> 0D) AND (AgreementLine."Ending Date" < Rec."Royalty Reporting Start Date")
                      then
-                    Error(OpenDateEDDateErrorLbl, AgreementLine."Ending Date", Rec."Opening Date");
-                IF (AgreementLine."Ending Date" <> 0D) AND
-                    (AgreementLine."Ending Date" < Rec."Effective Date") then
-                    Error(EffDateEDDateErrorLbl, AgreementLine."Ending Date", Rec."Effective Date");
+                    Error(OpenDateEDDateErrorLbl, AgreementLine."Ending Date", Rec."Royalty Reporting Start Date");
+
 
             Until AgreementLine.Next() = 0;
 
     end;
 
-    trigger OnRename()
+    local procedure CheckActiveAgreement()
+    var
+        AgreementHeader: Record "MFCC01 Agreement Header";
     begin
-
+        AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
+        AgreementHeader.SetRange(Status, AgreementHeader.Status::Active);
+        IF Not AgreementHeader.FindFirst() then
+            Exit;
+        Error(DuplicateAgreementErr, AgreementHeader."No.");
     end;
+
 
     var
 
@@ -235,9 +247,9 @@ table 60003 "MFCC01 Agreement Header"
         NoSeriesMgt: Codeunit NoSeriesManagement;
         OpenDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Opening Date %2';
         EffDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Effective Date %2';
-
         OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Opening Date %2';
         EffDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Effective Date %2';
+        DuplicateAgreementErr: Label 'There is Agreement %1 is active. you can not Setup Multiple Active Agreements.';
 
     local procedure TestNoSeries()
     var
@@ -249,13 +261,13 @@ table 60003 "MFCC01 Agreement Header"
         if IsHandled then
             exit;
 
-        // if "No." <> xRec."No." then
-        //     if not AgreementHeader.Get(Rec."Customer No.", Rec."No.") then begin
-        //         CustSetup.Get();
-        //         NoSeriesMgt.TestManual(CustSetup."Agreement Nos.");
-        //         "No. Series" := '';
+        if "No." <> xRec."No." then
+            if not AgreementHeader.Get(Rec."No.") then begin
+                CustSetup.Get();
+                NoSeriesMgt.TestManual(CustSetup."Agreement Nos.");
+                "No. Series" := '';
 
-        //     end;
+            end;
     end;
 
     procedure AssistEdit(OldAgreementHeader: Record "MFCC01 Agreement Header"): Boolean
@@ -263,15 +275,15 @@ table 60003 "MFCC01 Agreement Header"
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
 
-        // AgreementHeader := Rec;
-        // CustSetup.Get();
-        // CustSetup.TestField("Agreement Nos.");
-        // if NoSeriesMgt.SelectSeries(CustSetup."Agreement Nos.", OldAgreementHeader."No. Series", "No. Series") then begin
-        //     NoSeriesMgt.SetSeries(AgreementHeader."No.");
-        //     Rec := AgreementHeader;
-        //     OnAssistEditOnBeforeExit(AgreementHeader);
-        //     exit(true);
-        // end;
+        AgreementHeader := Rec;
+        CustSetup.Get();
+        CustSetup.TestField("Agreement Nos.");
+        if NoSeriesMgt.SelectSeries(CustSetup."Agreement Nos.", OldAgreementHeader."No. Series", "No. Series") then begin
+            NoSeriesMgt.SetSeries(AgreementHeader."No.");
+            Rec := AgreementHeader;
+            OnAssistEditOnBeforeExit(AgreementHeader);
+            exit(true);
+        end;
 
     end;
 
@@ -291,6 +303,7 @@ table 60003 "MFCC01 Agreement Header"
     var
         CZSetup: Record "MFCC01 Customization Setup";
     begin
+        CheckActiveAgreement();
         CZSetup.GetRecordonce();
         CZSetup.TestField("Commission Def. Account");
         CZSetup.TestField("Commission Payable Account");
@@ -316,7 +329,7 @@ table 60003 "MFCC01 Agreement Header"
         AgreementLine: Record "MFCC01 Agreement Line";
         NoLinesError: Label 'Agreement Lines does not exist.';
     begin
-        AgreementLine.SetRange("Customer No.", Rec."Customer No.");
+
         AgreementLine.SetRange("Agreement No.", Rec."No.");
         Found := Not AgreementLine.IsEmpty();
         IF ShowError and (Not Found) then

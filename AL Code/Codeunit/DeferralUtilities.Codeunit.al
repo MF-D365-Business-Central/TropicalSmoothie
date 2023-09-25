@@ -465,7 +465,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
 
     procedure SetDeferralRecords(var DeferralHeader: Record "MFCC01 Deferral Header"; CustomerNo: Code[20]; DocumentNo: Code[20]; CalcMethod: Enum "Deferral Calculation Method"; NoOfPeriods: Integer; AdjustedDeferralAmount: Decimal; AdjustedStartDate: Date; DeferralCode: Code[10]; DeferralDescription: Text[100]; AmountToDefer: Decimal; AdjustStartDate: Boolean; CurrencyCode: Code[10])
     begin
-        if not DeferralHeader.Get(Customerno, DocumentNo) then begin
+        if not DeferralHeader.Get(DocumentNo) then begin
             // Need to create the header record.
 
             DeferralHeader."Customer No." := CustomerNo;
@@ -497,7 +497,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     begin
         if DocumentNo = '' then
             // If the user cleared the deferral code, we should remove the saved schedule...
-            if DeferralHeader.Get(Customerno, DocumentNo) then begin
+            if DeferralHeader.Get(DocumentNo) then begin
                 DeferralHeader.Delete();
                 RemoveDeferralLines(Customerno, DocumentNo);
             end;
@@ -514,7 +514,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
                 UseDeferralCalculationMethod := DeferralTemplate."Calc. Method";
                 UseNoOfPeriods := DeferralTemplate."No. of Periods";
                 DeferralHeader.SetLoadFields("Calc. Method", "No. of Periods");
-                if DeferralHeader.Get(Customerno, DocumentNo) then begin
+                if DeferralHeader.Get(DocumentNo) then begin
                     UseDeferralCalculationMethod := DeferralHeader."Calc. Method";
                     if DeferralHeader."No. of Periods" >= 1 then
                         UseNoOfPeriods := DeferralHeader."No. of Periods";
@@ -562,7 +562,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     begin
 
         // Deferral Additions
-        if DeferralHeader.Get(CustomerNo, DocumentNo) then begin
+        if DeferralHeader.Get(DocumentNo) then begin
             DeferralHeader.Delete();
             RemoveDeferralLines(CustomerNo, DocumentNo);
         end;
@@ -580,7 +580,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             Message(SelectDeferralCodeMsg)
         else
             if DeferralTemplate.Get(DeferralCode) then
-                if DeferralHeader.Get(CustomerNo, DocumentNo) then begin
+                if DeferralHeader.Get(DocumentNo) then begin
                     IsHandled := false;
                     OnOpenLineScheduleEditOnBeforeDeferralScheduleSetParameters(DeferralSchedule, CustomerNo, DocumentNo, DeferralHeader, IsHandled);
                     if not IsHandled then
@@ -593,7 +593,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
                       DeferralTemplate."Calc. Method", PostingDate, DeferralTemplate."No. of Periods", true,
                       GetDeferralDescription(CustomerNo, DocumentNo, Description), true, CurrencyCode);
                     Commit();
-                    if DeferralHeader.Get(CustomerNo, DocumentNo) then begin
+                    if DeferralHeader.Get(DocumentNo) then begin
                         DeferralSchedule.SetParameter(CustomerNo, DocumentNo);
                         DeferralSchedule.RunModal();
                         Changed := DeferralSchedule.GetParameter();
@@ -745,7 +745,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader: Record "MFCC01 Deferral Header";
         DeferralTemplate: Record "Deferral Template";
     begin
-        if DeferralHeader.Get(CustomerNo, DocumentNo) then
+        if DeferralHeader.Get(DocumentNo) then
             exit(DeferralHeader."Start Date");
 
         if DeferralTemplate.Get(DeferralCode) then
@@ -836,6 +836,45 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         if Customerno <> '' then
             exit(CopyStr(StrSubstNo(DescriptionTok, Customerno, Description), 1, 100));
         exit(CopyStr(StrSubstNo(DescriptionTok, DocumentNo, Description), 1, 100));
+    end;
+
+    procedure CreatedeferralScheduleFromAgreement(Var Agreementheader: Record "MFCC01 Agreement Header")
+    var
+        DeferralHeader: Record "MFCC01 Deferral Header";
+        CZSetup: Record "MFCC01 Customization Setup";
+    begin
+        Agreementheader.TestField(Status, Agreementheader.Status::Active);
+        CZSetup.GetRecordonce();
+        IF Agreementheader."RoyaltyscheduleNo." = '' then Begin
+            CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, false);
+            DeferralHeader.CalculateSchedule();
+            Agreementheader."RoyaltyscheduleNo." := DeferralHeader."Document No.";
+        End;
+
+        IF Agreementheader."ComissionScheduleNo." = '' then Begin
+            CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, true);
+            DeferralHeader.CalculateSchedule();
+            Agreementheader."ComissionScheduleNo." := DeferralHeader."Document No.";
+        End;
+        Agreementheader.Modify();
+    end;
+
+    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Agreementheader: Record "MFCC01 Agreement Header"; CZSetup: Record "MFCC01 Customization Setup"; Commision: Boolean)
+
+    begin
+        DeferralHeader.Init();
+        DeferralHeader."Document No." := '';
+        DeferralHeader.Insert(true);
+        DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
+        DeferralHeader."Start Date" := Agreementheader."Royalty Reporting Start Date";
+        IF not Commision then
+            DeferralHeader.validate("Amount to Defer", Agreementheader."Agreement Amount")
+        else
+            DeferralHeader.validate("Amount to Defer", Agreementheader."SalesPerson Commission");
+        DeferralHeader."Agreement No." := Agreementheader."No.";
+        DeferralHeader."Customer No." := Agreementheader."Customer No.";
+        DeferralHeader.Modify(true)
+
     end;
 
     [IntegrationEvent(false, false)]

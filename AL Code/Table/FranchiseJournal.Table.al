@@ -43,6 +43,7 @@ table 60008 "MFCC01 Franchise Journal"
             trigger OnValidate()
             Begin
                 CreateDim();
+                CopyAgreement();
             End;
 
         }
@@ -64,6 +65,7 @@ table 60008 "MFCC01 Franchise Journal"
         field(13; "Net Sales"; Decimal)
         {
             DataClassification = CustomerContent;
+            MinValue = 0;
             trigger OnValidate()
             Begin
                 CalcAmounts();
@@ -212,6 +214,17 @@ table 60008 "MFCC01 Franchise Journal"
         OnAfterValidateShortcutDimCode(Rec, xRec, FieldNumber, ShortcutDimCode, CurrFieldNo);
     end;
 
+    local procedure CopyAgreement()
+    var
+        AgreementHeader: Record "MFCC01 Agreement Header";
+    begin
+        AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
+        AgreementHeader.SetRange(Status, AgreementHeader.Status::Active);
+        IF Not AgreementHeader.FindFirst() then
+            Clear(AgreementHeader);
+        Rec."Agreement ID" := AgreementHeader."No.";
+    end;
+
     local procedure CreateDim()
     var
         DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
@@ -315,16 +328,16 @@ table 60008 "MFCC01 Franchise Journal"
         AgreementLine: Record "MFCC01 Agreement Line";
     begin
 
-        AgreementLine.SetRange("Customer No.", Rec."Customer No.");
+
         AgreementLine.SetRange("Agreement No.", Rec."Agreement ID");
         AgreementLine.SetFilter("Starting Date", '<=%1', Rec."Document Date");
         AgreementLine.SetFilter("Ending Date", '>=%1', Rec."Document Date");
         IF not AgreementLine.FindFirst() then
             Clear(AgreementLine);
 
-        Rec."Royalty Fee" := (AgreementLine."Royalty Fees" * Rec."Net Sales") / 100;
-        Rec."Ad Fee" := (AgreementLine."Local Fees" * Rec."Net Sales") / 100;
-        Rec."Other Fee" := (AgreementLine."National Fees" * Rec."Net Sales") / 100;
+        Rec."Royalty Fee" := (AgreementLine."Royalty Fees %" * Rec."Net Sales") / 100;
+        Rec."Ad Fee" := (AgreementLine."Local Fees %" * Rec."Net Sales") / 100;
+        Rec."Other Fee" := (AgreementLine."National Fees %" * Rec."Net Sales") / 100;
 
 
     end;

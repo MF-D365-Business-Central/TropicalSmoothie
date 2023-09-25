@@ -204,6 +204,16 @@ page 60010 "MFCC01 Franchise Journal"
                     Rec.ShowDimensions();
                 end;
             }
+            action(Entries)
+            {
+                ApplicationArea = All;
+                Image = Entries;
+                Promoted = true;
+                PromotedCategory = New;
+                RunPageMode = View;
+                RunObject = Page "General Ledger Entries";
+                RunPageLink = "Document No." = field("Agreement ID");
+            }
         }
     }
 

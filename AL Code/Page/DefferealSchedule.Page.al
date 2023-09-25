@@ -1,6 +1,6 @@
 page 60001 "MFCC01 DeferralSchedule"
 {
-    Caption =  'Deferral Schedule';
+    Caption = 'Deferral Schedule';
     PageType = Card;
     SourceTable = "MFCC01 Deferral Header";
 
@@ -11,6 +11,17 @@ page 60001 "MFCC01 DeferralSchedule"
 
             group(General)
             {
+
+                field("Document No."; Rec."Document No.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Document No. field.';
+                    trigger OnAssistEdit()
+                    begin
+                        if Rec.AssistEdit(xRec) then
+                            CurrPage.Update();
+                    end;
+                }
                 field("Agreement No."; Rec."Agreement No.")
                 {
                     ApplicationArea = All;
@@ -21,16 +32,6 @@ page 60001 "MFCC01 DeferralSchedule"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Customer No. field.';
-                }
-                field("Document No."; Rec."Document No.")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Document No. field.';
-                    trigger OnAssistEdit()
-                    begin
-                        if Rec.AssistEdit(xRec) then
-                            CurrPage.Update();
-                    end;
                 }
                 field("Deferral Code"; Rec."Deferral Code")
                 {

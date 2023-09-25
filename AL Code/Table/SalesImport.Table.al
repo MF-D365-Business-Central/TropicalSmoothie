@@ -1,4 +1,4 @@
-table 60006 "MFCC01 Sales Staging"
+table 60006 "MFCC01 Sales Import"
 {
     DataClassification = CustomerContent;
 
@@ -91,7 +91,7 @@ table 60006 "MFCC01 Sales Staging"
         }
 
         // Job purpose
-        field(90; Status; Enum "MFCC01 Sales Staging")
+        field(90; Status; Enum "MFCC01 Staging Status")
         {
             DataClassification = CustomerContent;
         }

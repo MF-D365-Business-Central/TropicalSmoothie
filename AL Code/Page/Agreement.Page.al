@@ -2,7 +2,6 @@ page 60005 "MFCC01 Agreement"
 {
     Caption = 'Agreement';
     PageType = Card;
-    UsageCategory = Administration;
     SourceTable = "MFCC01 Agreement Header";
     ApplicationArea = suite;
 
@@ -13,11 +12,7 @@ page 60005 "MFCC01 Agreement"
             group(General)
             {
 
-                field("Customer No."; Rec."Customer No.")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Customer No. field.';
-                }
+
                 field("No."; Rec."No.")
                 {
                     ApplicationArea = All;
@@ -28,40 +23,30 @@ page 60005 "MFCC01 Agreement"
                             CurrPage.Update();
                     end;
                 }
-                field("Opening Date"; Rec."Opening Date")
+                field("Customer No."; Rec."Customer No.")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Opening Date field.';
+                    ToolTip = 'Specifies the value of the Customer No. field.';
                 }
-                field("Term Expiration Date"; Rec."Term Expiration Date")
-                {
-                    ToolTip = 'Specifies the value of the Term Expiration Date field.';
-                }
+
                 field("Royalty Reporting Start Date"; Rec."Royalty Reporting Start Date")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Royalty Reporting Start Date field.';
                 }
-                field("Effective Date"; Rec."Effective Date")
+                field("Term Expiration Date"; Rec."Term Expiration Date")
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Effective Date field.';
+                    ToolTip = 'Specifies the value of the Term Expiration Date field.';
+                }
+                field("Agreement Amount"; Rec."Agreement Amount")
+                {
+                    ToolTip = 'Specifies the value of the Agreement Amount field.';
                 }
 
-                field("Franchising Commission"; Rec."Franchising Commission")
-                {
-                    ToolTip = 'Specifies the value of the Franchising Commission field.';
-                }
+
                 field("SalesPerson Commission"; Rec."SalesPerson Commission")
                 {
                     ToolTip = 'Specifies the value of the SalesPerson Commission field.';
-                }
-
-
-                field("Renewal FA Effective Date"; Rec."Renewal FA Effective Date")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Renewal FA Effective Date field.';
                 }
 
                 field("Royalty Bank Account"; Rec."Royalty Bank Account")
@@ -69,16 +54,25 @@ page 60005 "MFCC01 Agreement"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Royalty Bank Account field.';
                 }
-                field("Franchie Bank Account"; Rec."Franchie Bank Account")
+                field("Franchise Bank Account"; Rec."Franchise Bank Account")
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Franchie Bank Account field.';
+                    ToolTip = 'Specifies the value of the Franchise Bank Account field.';
                 }
+
                 field("License Type"; Rec."License Type")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the License Type field.';
                 }
+                field("ComissionscheduleNo."; Rec."ComissionscheduleNo.")
+                {
+                    ToolTip = 'Specifies the value of the Comission schedule No. field.';
+                }
+                field("RoyaltyscheduleNo."; Rec."RoyaltyscheduleNo.")
+                {
+                    ToolTip = 'Specifies the value of the Royalty schedule No. field.';
+                }
+
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
@@ -89,15 +83,13 @@ page 60005 "MFCC01 Agreement"
             {
                 UpdatePropagation = Both;
                 ApplicationArea = Suite;
-                SubPageLink =
-                              "Customer No." = FIELD("Customer No."), "Agreement No." = field("No.");
+                SubPageLink = "Agreement No." = field("No.");
             }
             part(Users; "MFCC01 Agreement Users")
             {
                 UpdatePropagation = Both;
                 ApplicationArea = Suite;
-                SubPageLink =
-                              "Customer No." = FIELD("Customer No."), "Agreement No." = field("No.");
+                SubPageLink = "Agreement No." = field("No.");
             }
         }
     }
@@ -110,11 +102,17 @@ page 60005 "MFCC01 Agreement"
             {
                 ApplicationArea = All;
                 Image = Installments;
-                Promoted = true;
-                PromotedCategory = New;
                 RunPageMode = View;
                 RunObject = Page "MFCC01 Deferrals";
                 RunPageLink = "Agreement No." = field("No."), "Customer No." = field("No.");
+            }
+            action(Entries)
+            {
+                ApplicationArea = All;
+                Image = Entries;
+                RunPageMode = View;
+                RunObject = Page "General Ledger Entries";
+                RunPageLink = "Document No." = field("No.");
             }
         }
         area(Processing)
@@ -150,6 +148,20 @@ page 60005 "MFCC01 Agreement"
                 trigger OnAction()
                 begin
                     Rec.SetStatusTerminate(Rec);
+                end;
+            }
+            action(CreateSchedule)
+            {
+                Caption = 'Create Schedule';
+                ApplicationArea = All;
+                Image = Installments;
+                Promoted = true;
+                PromotedCategory = Process;
+                trigger OnAction()
+                var
+                    DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
+                begin
+                    DeferralUtility.CreatedeferralScheduleFromAgreement(Rec);
                 end;
             }
         }

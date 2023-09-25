@@ -9,17 +9,15 @@ table 60001 "MFCC01 Deferral Header"
         field(1; "Agreement No."; Code[20])
         {
             Caption = 'Agreement No.';
-            TableRelation = Customer."No.";
-            Editable = false;
-            NotBlank = true;
+            TableRelation = "MFCC01 Agreement Header"."No.";
+
         }
 
         field(2; "Customer No."; Code[20])
         {
             Caption = 'Customer No.';
-            TableRelation = Customer."No.";
-            Editable = false;
-            NotBlank = true;
+            TableRelation = Customer;
+
         }
 
         field(5; "Document No."; Code[20])
@@ -179,7 +177,7 @@ table 60001 "MFCC01 Deferral Header"
 
     keys
     {
-        key(Key1; "Agreement No.", "Document No.")
+        key(Key1; "Document No.")
         {
             Clustered = true;
         }

@@ -23,6 +23,7 @@ pageextension 60000 "MFCC01 Customer Card" extends "Customer Card"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Opening Date field.';
                 }
+
             }
         }
     }
