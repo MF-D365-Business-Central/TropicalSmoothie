@@ -30,14 +30,16 @@ codeunit 60002 "MFCC01 Agreement Management"
             IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup."Commission Payable Account", BalAccountType::"G/L Account", CZSetup."Commission Def. Account", AgreementHeader."SalesPerson Commission") then Begin
                 AgreementHeader."Posted Comission Amount" := AgreementHeader."SalesPerson Commission";
             End;
+        IF AgreementHeader.PostedRevenueStatisticalAmount = 0 then
+            IF PostStatsAmounts(AgreementHeader, CZSetup."Revenue Statistical Account", CZSetup.DeferredRevenueStatisticalAcc, CZSetup.NonGapInitialRevenueRecognised) then Begin
+                IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueStatisticalAcc, '', AgreementHeader."Agreement Amount") then
+                    AgreementHeader.PostedRevenueStatisticalAmount := CZSetup.NonGapInitialRevenueRecognised;
+            End;
+        IF AgreementHeader.PostedCommissionExpenseAmount = 0 then
+            IF PostStatsAmounts(AgreementHeader, CZSetup."Commission Expense Account", CZSetup.CommissionDeferredExpenseAcc, AgreementHeader."SalesPerson Commission") then Begin
+                AgreementHeader.PostedCommissionExpenseAmount := AgreementHeader."SalesPerson Commission";
+            End;
 
-        IF PostStatsAmounts(AgreementHeader, CZSetup."Revenue Statistical Account", CZSetup.DeferredRevenueStatisticalAcc, CZSetup.NonGapInitialRevenueRecognised) then Begin
-            AgreementHeader.PostedRevenueStatisticalAmount := CZSetup.NonGapInitialRevenueRecognised;
-        End;
-
-        IF PostStatsAmounts(AgreementHeader, CZSetup."Commission Expense Account", CZSetup.CommissionDeferredExpenseAcc, AgreementHeader."SalesPerson Commission") then Begin
-            AgreementHeader.PostedCommissionExpenseAmount := AgreementHeader."SalesPerson Commission";
-        End;
         DeferralUtility.CreatedeferralScheduleFromAgreement(AgreementHeader);
         AgreementHeader.Modify(true);
     end;
@@ -97,22 +99,26 @@ codeunit 60002 "MFCC01 Agreement Management"
         InitDefaultDimSource(DefaultDimSource, AgreementHeader);
         StatisticalJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', StatisticalJnlLine."Shortcut Dimension 1 Code", StatisticalJnlLine."Shortcut Dimension 2 Code",
         StatisticalJnlLine."Dimension Set ID", 0);
-        Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine);
+        IF BalAccountNo <> '' then
+            Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine)
+        else
+            Exit(Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine));
         Commit();
-        StatisticalJnlLine.Init();
-        StatisticalJnlLine."Posting Date" := WorkDate();
-        StatisticalJnlLine."Document No." := AgreementHeader."No.";
+        IF BalAccountNo <> '' then Begin
+            StatisticalJnlLine.Init();
+            StatisticalJnlLine."Posting Date" := WorkDate();
+            StatisticalJnlLine."Document No." := AgreementHeader."No.";
 
-        //Posting to Customer Account
-        StatisticalJnlLine.Validate("Statistical Account No.", BalAccountNo);
-        StatisticalJnlLine.Validate(Amount, -Amount);
-        //Customer Dimensions
-        InitDefaultDimSource(DefaultDimSource, AgreementHeader);
-        StatisticalJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', StatisticalJnlLine."Shortcut Dimension 1 Code", StatisticalJnlLine."Shortcut Dimension 2 Code",
-        StatisticalJnlLine."Dimension Set ID", 0);
-        Exit(Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine));
+            //Posting to Customer Account
+            StatisticalJnlLine.Validate("Statistical Account No.", BalAccountNo);
+            StatisticalJnlLine.Validate(Amount, -Amount);
+            //Customer Dimensions
+            InitDefaultDimSource(DefaultDimSource, AgreementHeader);
+            StatisticalJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', StatisticalJnlLine."Shortcut Dimension 1 Code", StatisticalJnlLine."Shortcut Dimension 2 Code",
+            StatisticalJnlLine."Dimension Set ID", 0);
+            Exit(Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine));
 
-
+        End;
     end;
 
     local procedure InitDefaultDimSource(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]]; AgreementHeader: Record "MFCC01 Agreement Header")
