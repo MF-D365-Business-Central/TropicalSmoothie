@@ -25,6 +25,7 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         NoSeriesMgt: Codeunit NoSeriesManagement;
         GenJnlPostLine: Codeunit "Gen. Jnl.-Post Line";
         NoSeriesMgt2: array[10] of Codeunit NoSeriesManagement;
+        DimMgt: Codeunit DimensionManagement;
         LastDocNo: Code[20];
         LastPostedDocNo: Code[20];
         NoOfPostingNoSeries: Integer;
@@ -126,23 +127,29 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
     var
         AccountType: Enum "Gen. Journal Account Type";
         BalanceAmount: Decimal;
+        DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
     begin
         IF GlobalFranchiseLedgerEntry."Royalty Fee" <> 0 then Begin
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."Royalty Account", Sign() * GlobalFranchiseLedgerEntry."Royalty Fee");
+            GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
+
             PostJournal();
             BalanceAmount := Sign() * GlobalFranchiseLedgerEntry."Royalty Fee";
         End;
         IF GlobalFranchiseLedgerEntry."Ad Fee" <> 0 then Begin
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."Local Account", Sign() * GlobalFranchiseLedgerEntry."Ad Fee");
+            GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Local Department Code");
+
             PostJournal();
             BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Ad Fee";
         End;
         IF GlobalFranchiseLedgerEntry."Other Fee" <> 0 then Begin
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."National Account", Sign() * GlobalFranchiseLedgerEntry."Other Fee");
+            GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."National Department Code");
             PostJournal();
             BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Other Fee";

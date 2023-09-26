@@ -162,11 +162,11 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
 
     end;
 
-
-    procedure ShowDim()
+    procedure ShowDimensions()
     var
-        myInt: Integer;
+        DimMgt: Codeunit DimensionManagement;
     begin
-
+        DimMgt.ShowDimensionSet("Dimension Set ID", StrSubstNo('%1 %2', TableCaption(), "Entry No."));
     end;
+
 }

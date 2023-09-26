@@ -107,8 +107,17 @@ page 60011 "MFCC01 FranchiseLedgerEntries"
                 Image = Dimensions;
                 trigger OnAction()
                 begin
-                    Rec.ShowDim();
+                    Rec.ShowDimensions();
                 end;
+            }
+            action(GLntries)
+            {
+                Caption = 'G/L Entries';
+                ApplicationArea = All;
+                Image = Entries;
+                RunPageMode = View;
+                RunObject = Page "General Ledger Entries";
+                RunPageLink = "Document No." = field("DOcument No.");
             }
         }
     }

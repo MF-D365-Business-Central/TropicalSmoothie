@@ -25,6 +25,7 @@ table 60003 "MFCC01 Agreement Header"
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
+                CheckDates();
                 TestStatusOpen(Rec);
             End;
         }
@@ -33,6 +34,7 @@ table 60003 "MFCC01 Agreement Header"
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
+                CheckDates();
                 TestStatusOpen(Rec);
             End;
         }
@@ -192,6 +194,11 @@ table 60003 "MFCC01 Agreement Header"
     var
         AgreementLine: Record "MFCC01 Agreement Line";
     begin
+        IF (Rec."Term Expiration Date" <> 0D) And (
+                     Rec."Term Expiration Date" < Rec."Royalty Reporting Start Date") then
+            Error(RoyaltyDateStDateErrorLbl, Rec."Term Expiration Date", Rec."Royalty Reporting Start Date");
+
+
         AgreementLine.SetRange("Customer No.", Rec."Customer No.");
         AgreementLine.SetRange("Agreement No.", Rec."No.");
         IF AgreementLine.FindSet() then
@@ -225,10 +232,9 @@ table 60003 "MFCC01 Agreement Header"
 
         CustSetup: Record "MFCC01 Customization Setup";
         NoSeriesMgt: Codeunit NoSeriesManagement;
-        OpenDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Opening Date %2';
-        EffDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Effective Date %2';
-        OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Opening Date %2';
-        EffDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Effective Date %2';
+        OpenDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Royalty Reporting Start Date %2';
+        OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Royalty Reporting Start Date %2';
+        RoyaltyDateStDateErrorLbl: Label 'Term Expiration Date %1 must not be less then Royalty Reporting Start Date %2';
         DuplicateAgreementErr: Label 'There is Agreement %1 is active. you can not Setup Multiple Active Agreements.';
 
     local procedure TestNoSeries()
