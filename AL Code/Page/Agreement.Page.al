@@ -28,11 +28,15 @@ page 60005 "MFCC01 Agreement"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Customer No. field.';
                 }
+                field("Agreement Date"; Rec."Agreement Date")
+                {
+                    ToolTip = 'Specifies the value of the Agreement Date field.';
+                }
 
-                field("Royalty Reporting Start Date"; Rec."Royalty Reporting Start Date")
+                field("Franchise Revenue Start Date"; Rec."Franchise Revenue Start Date")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Royalty Reporting Start Date field.';
+                    ToolTip = 'Specifies the value of the Franchise Revenue Start Date field.';
                 }
                 field("Term Expiration Date"; Rec."Term Expiration Date")
                 {
@@ -47,6 +51,10 @@ page 60005 "MFCC01 Agreement"
                 field("SalesPerson Commission"; Rec."SalesPerson Commission")
                 {
                     ToolTip = 'Specifies the value of the SalesPerson Commission field.';
+                }
+                field(NonGapInitialRevenueRecognised; Rec.NonGapInitialRevenueRecognised)
+                {
+                    ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognised field.';
                 }
 
                 field("Royalty Bank Account"; Rec."Royalty Bank Account")
@@ -134,13 +142,25 @@ page 60005 "MFCC01 Agreement"
                     Image = Entries;
                     RunPageMode = View;
                     RunObject = Page "MFCC01 FranchiseLedgerEntries";
-                    RunPageLink = "Document No." = field("No.");
+                    RunPageLink = "Agreement ID" = field("No.");
                 }
             }
         }
         area(Processing)
         {
-            action(ReOpen)
+
+            action(Sign)
+            {
+                ApplicationArea = All;
+                Image = Signature;
+                Promoted = true;
+                PromotedCategory = Process;
+                trigger OnAction()
+                begin
+                    Rec.SetStatusSigned(Rec);
+                end;
+            }
+            action(Open)
             {
                 ApplicationArea = All;
                 Image = ReOpen;
@@ -149,17 +169,6 @@ page 60005 "MFCC01 Agreement"
                 trigger OnAction()
                 begin
                     Rec.SetStatusOpen(Rec);
-                end;
-            }
-            action(Activate)
-            {
-                ApplicationArea = All;
-                Image = ReleaseDoc;
-                Promoted = true;
-                PromotedCategory = Process;
-                trigger OnAction()
-                begin
-                    Rec.SetStatusActive(Rec);
                 end;
             }
             action(Terminate)

@@ -7,6 +7,8 @@ codeunit 60013 "MFCC01 FA Import"
 
     var
         FAImport: Record "MFCC01 FA Import";
+        Text006: label 'Processing Entry...\\';
+        Window: Dialog;
 
     procedure CreateAsset()
     var
@@ -19,30 +21,33 @@ codeunit 60013 "MFCC01 FA Import"
     begin
         LineNo := 10000;
         FAImport.Reset();
-
+        Window.Open(Text006 + '@1@@@@@@@@@@@@@@@@@@@@@@@@@\');
         FAImport.SetRange(Status, FAImport.Status::New);
         FAImport.SetFilter(Category, '<>%1', '');
+        FAImport.SetFilter("Starting Date", '<>%1', 0D);
         IF FAImport.FindSet(true) then
             repeat
+                Window.Update(1, FAImport."Entry No.");
                 FixedAsset.Init();
                 FixedAsset."No." := '';
                 FixedAsset.insert(true);
-                FixedAsset.Description := FAImport.Description;
-                FixedAsset.validate("FA Class Code", 'TANGIBLE');
-                FixedAsset.validate("FA Subclass Code", 'EQUIPMENT');
+                FixedAsset.Description := CopyStr(FAImport.Description, 1, 100);
+                FixedAsset.validate("FA Class Code", FAImport."FA Class Code");
+                FixedAsset.validate("FA Subclass Code", FAImport."FA SubClass Code");
                 FixedAsset.Modify();
                 FADespriciationBook.Init();
                 FADespriciationBook."FA No." := FixedAsset."No.";
                 FADespriciationBook.validate("Depreciation Book Code", 'COMPANY');
-                FADespriciationBook.validate("Depreciation Starting Date", FAImport."In Service Date");
+                FADespriciationBook.validate("Depreciation Starting Date", FAImport."Starting Date");
                 FADespriciationBook.validate("No. of Depreciation Months", FAImport."Useful Life In Months");
-
+                FADespriciationBook.Validate("FA Posting Group", FAImport."FA Posting Group");
                 FADespriciationBook.Insert(true);
 
                 FAImport.Status := FAImport.Status::Created;
                 FAImport."FA No." := FixedAsset."No.";
                 FAImport.Modify();
             Until FAImport.Next() = 0;
+        Window.Close();
     end;
 
     procedure PostbookValue()
@@ -55,72 +60,107 @@ codeunit 60013 "MFCC01 FA Import"
         FAImport: Record "MFCC01 FA Import";
         GenJnlTemplate: Record "Gen. Journal Template";
         FixedAssetAcquisitionWizard: Codeunit "Fixed Asset Acquisition Wizard";
+        GenJnlPostLine: Codeunit "Gen. Jnl.-Post line";
     begin
+        Window.Open(Text006 + '@1@@@@@@@@@@@@@@@@@@@@@@@@@\');
         FAImport.SetRange(Status, FAImport.Status::Created);
         FAImport.SetFilter(Category, '<>%1', '');
+        FAImport.SetFilter("Book Value", '<>%1', 0);
         IF FAImport.FindSet(true) then
             repeat
+                Window.Update(1, FAImport."Entry No.");
                 FAGenJournalLine.Init();
                 FAGenJournalLine."Journal Template Name" := FixedAssetAcquisitionWizard.SelectFATemplate();
                 FAGenJournalLine."Journal Batch Name" := FixedAssetAcquisitionWizard.GetGenJournalBatchName(
                     CopyStr(FAImport.GetFilter("FA No."), 1, 20));
-
 
                 FAGenJournalLine.Validate("Line No.", FAGenJournalLine.GetNewLineNo(FAGenJournalLine."Journal Template Name", FAGenJournalLine."Journal Batch Name"));
                 FAGenJournalLine.Validate("Document No.", GenerateLineDocNo(FAGenJournalLine."Journal Batch Name", FAGenJournalLine."Posting Date", FAGenJournalLine."Journal Template Name"));
                 FAGenJournalLine."Document Type" := FAGenJournalLine."Document Type"::Invoice;
                 FAGenJournalLine.Validate("Account Type", FAGenJournalLine."Account Type"::"Fixed Asset");
                 FAGenJournalLine.Validate("Account No.", FAImport."FA No.");
-                FAGenJournalLine."FA Posting Type" := FAGenJournalLine."FA Posting Type"::"Acquisition Cost";
-                FAGenJournalLine."Posting Date" := FAImport."In Service Date";
-                FAGenJournalLine.Validate(Amount, FAImport."Accumulated Depreciation");
+                FAGenJournalLine.Validate("FA Posting Type", FAGenJournalLine."FA Posting Type"::"Acquisition Cost");
+                FAGenJournalLine."Posting Date" := FAImport."Starting Date";
+                FAGenJournalLine.Validate(Amount, FAImport."Book Value");
+                FAPostingGr.GetPostingGroup(FAGenJournalLine."Posting Group", FAGenJournalLine."Depreciation Book Code");
+                FAGenJournalLine.Validate("Bal. Account Type", FAGenJournalLine."Bal. Account Type"::"G/L Account");
+                FAGenJournalLine.Validate("Bal. Account No.", FAPostingGr."Acquisition Cost Account");
 
-                FAGenJournalLine.Insert(true);
-
-                // Creating Balancing Line
-                BalancingGenJnlLine.Copy(FAGenJournalLine);
-                BalancingGenJnlLine.Validate("Account Type", BalancingGenJnlLine."Bal. Account Type"::"G/L Account");
-                BalancingGenJnlLine.Validate("Account No.", '');
-                BalancingGenJnlLine.Validate(Amount, -FAImport."Accumulated Depreciation");
-                FAGenJournalLine.Validate("Line No.", FAGenJournalLine.GetNewLineNo(FAGenJournalLine."Journal Template Name", FAGenJournalLine."Journal Batch Name"));
-                BalancingGenJnlLine.Insert(true);
-
-                FAGenJournalLine.TestField("Posting Group");
-
-                // Inserting additional fields in Fixed Asset line required for acquisition
-                if FAPostingGr.GetPostingGroup(FAGenJournalLine."Posting Group", FAGenJournalLine."Depreciation Book Code") then begin
-                    LocalGLAcc.Get(FAPostingGr."Acquisition Cost Account");
-                    LocalGLAcc.CheckGLAcc();
-                    FAGenJournalLine.Validate("Gen. Posting Type", LocalGLAcc."Gen. Posting Type");
-                    FAGenJournalLine.Validate("Gen. Bus. Posting Group", LocalGLAcc."Gen. Bus. Posting Group");
-                    FAGenJournalLine.Validate("Gen. Prod. Posting Group", LocalGLAcc."Gen. Prod. Posting Group");
-                    FAGenJournalLine.Validate("VAT Bus. Posting Group", LocalGLAcc."VAT Bus. Posting Group");
-                    FAGenJournalLine.Validate("VAT Prod. Posting Group", LocalGLAcc."VAT Prod. Posting Group");
-                    FAGenJournalLine.Validate("Tax Group Code", LocalGLAcc."Tax Group Code");
-                    FAGenJournalLine.Validate("VAT Prod. Posting Group");
-                    FAGenJournalLine.Modify(true)
-                end;
-
-                // Inserting Source Code
-                if FAGenJournalLine."Source Code" = '' then begin
-                    GenJnlTemplate.Get(FAGenJournalLine."Journal Template Name");
-                    FAGenJournalLine.Validate("Source Code", GenJnlTemplate."Source Code");
-                    FAGenJournalLine.Modify(true);
-                    BalancingGenJnlLine.Validate("Source Code", GenJnlTemplate."Source Code");
-                    BalancingGenJnlLine.Modify(true);
-                end;
-
-                IF CODEUNIT.Run(CODEUNIT::"Gen. Jnl.-Post Batch", FAGenJournalLine) then Begin
-                    FAImport.Status := FAImport.Status::Posted;
-                    FAImport.Modify();
-                End else begin
-                    FAGenJournalLine.Reset();
-                    FAGenJournalLine.Setrange("Journal Template Name", FixedAssetAcquisitionWizard.SelectFATemplate());
-                    FAGenJournalLine.Setrange("Journal Batch Name", FixedAssetAcquisitionWizard.GetGenJournalBatchName(
-                        CopyStr(FAImport.GetFilter("FA No."), 1, 20)));
-                    FAGenJournalLine.DeleteAll();
-                end;
+                IF GenJnlPostLine.RunWithCheck(FAGenJournalLine) <> 0 then
+                    IF PostDepriciationValue(FAImport) then begin
+                        FAImport.Status := FAImport.Status::Posted;
+                        FAImport.Modify();
+                    End;
             Until FAImport.Next() = 0;
+        Window.Close();
+    end;
+
+
+    procedure PostbookValue(FAImport: Record "MFCC01 FA Import")
+    var
+        FAGenJournalLine: Record "Gen. Journal Line";
+        LocalGLAcc: Record "G/L Account";
+        FAPostingGr: Record "FA Posting Group";
+        GenJnlTemplate: Record "Gen. Journal Template";
+        FixedAssetAcquisitionWizard: Codeunit "Fixed Asset Acquisition Wizard";
+        GenJnlPostLine: Codeunit "Gen. Jnl.-Post line";
+    begin
+
+        FAGenJournalLine.Init();
+        FAGenJournalLine."Journal Template Name" := FixedAssetAcquisitionWizard.SelectFATemplate();
+        FAGenJournalLine."Journal Batch Name" := FixedAssetAcquisitionWizard.GetGenJournalBatchName(
+            CopyStr(FAImport.GetFilter("FA No."), 1, 20));
+
+        FAGenJournalLine.Validate("Line No.", FAGenJournalLine.GetNewLineNo(FAGenJournalLine."Journal Template Name", FAGenJournalLine."Journal Batch Name"));
+        FAGenJournalLine.Validate("Document No.", GenerateLineDocNo(FAGenJournalLine."Journal Batch Name", FAGenJournalLine."Posting Date", FAGenJournalLine."Journal Template Name"));
+        FAGenJournalLine."Document Type" := FAGenJournalLine."Document Type"::Invoice;
+        FAGenJournalLine.Validate("Account Type", FAGenJournalLine."Account Type"::"Fixed Asset");
+        FAGenJournalLine.Validate("Account No.", FAImport."FA No.");
+        FAGenJournalLine.Validate("FA Posting Type", FAGenJournalLine."FA Posting Type"::"Acquisition Cost");
+        FAGenJournalLine."Posting Date" := FAImport."Starting Date";
+        FAGenJournalLine.Validate(Amount, FAImport."Book Value");
+        FAPostingGr.GetPostingGroup(FAGenJournalLine."Posting Group", FAGenJournalLine."Depreciation Book Code");
+        FAGenJournalLine.Validate("Bal. Account Type", FAGenJournalLine."Bal. Account Type"::"G/L Account");
+        FAGenJournalLine.Validate("Bal. Account No.", FAPostingGr."Acquisition Cost Account");
+
+        IF GenJnlPostLine.RunWithCheck(FAGenJournalLine) <> 0 then
+            IF PostDepriciationValue(FAImport) then begin
+                FAImport.Status := FAImport.Status::Posted;
+                FAImport.Modify();
+            End;
+
+    end;
+
+
+    procedure PostDepriciationValue(FAImport: Record "MFCC01 FA Import"): Boolean
+    var
+        FAGenJournalLine: Record "Gen. Journal Line";
+        LocalGLAcc: Record "G/L Account";
+        FAPostingGr: Record "FA Posting Group";
+        GenJnlTemplate: Record "Gen. Journal Template";
+        FixedAssetAcquisitionWizard: Codeunit "Fixed Asset Acquisition Wizard";
+        GenJnlPostLine: Codeunit "Gen. Jnl.-Post line";
+    begin
+
+        FAGenJournalLine.Init();
+        FAGenJournalLine."Journal Template Name" := FixedAssetAcquisitionWizard.SelectFATemplate();
+        FAGenJournalLine."Journal Batch Name" := FixedAssetAcquisitionWizard.GetGenJournalBatchName(
+            CopyStr(FAImport.GetFilter("FA No."), 1, 20));
+
+        FAGenJournalLine.Validate("Line No.", FAGenJournalLine.GetNewLineNo(FAGenJournalLine."Journal Template Name", FAGenJournalLine."Journal Batch Name"));
+        FAGenJournalLine.Validate("Document No.", GenerateLineDocNo(FAGenJournalLine."Journal Batch Name", FAGenJournalLine."Posting Date", FAGenJournalLine."Journal Template Name"));
+        FAGenJournalLine."Document Type" := FAGenJournalLine."Document Type"::Invoice;
+        FAGenJournalLine.Validate("Account Type", FAGenJournalLine."Account Type"::"Fixed Asset");
+        FAGenJournalLine.Validate("Account No.", FAImport."FA No.");
+        FAGenJournalLine.Validate("FA Posting Type", FAGenJournalLine."FA Posting Type"::Depreciation);
+        FAGenJournalLine."Posting Date" := FAImport."Starting Date";
+        FAGenJournalLine.Validate(Amount, -FAImport."Accumulated Depreciation");
+        FAPostingGr.GetPostingGroup(FAGenJournalLine."Posting Group", FAGenJournalLine."Depreciation Book Code");
+        FAGenJournalLine.Validate("Bal. Account Type", FAGenJournalLine."Bal. Account Type"::"G/L Account");
+        FAGenJournalLine.Validate("Bal. Account No.", FAPostingGr."Acquisition Cost Account");
+
+        Exit(GenJnlPostLine.RunWithCheck(FAGenJournalLine) <> 0);
+
     end;
 
     local procedure GenerateLineDocNo(BatchName: Code[10]; PostingDate: Date; TemplateName: Code[20]) DocumentNo: Code[20]
@@ -130,7 +170,7 @@ codeunit 60013 "MFCC01 FA Import"
     begin
         GenJournalBatch.Get(TemplateName, BatchName);
         if GenJournalBatch."No. Series" <> '' then
-            DocumentNo := NoSeriesManagement.TryGetNextNo(GenJournalBatch."No. Series", PostingDate);
+            DocumentNo := NoSeriesManagement.GetNextNo(GenJournalBatch."No. Series", PostingDate, true);
     end;
 
 

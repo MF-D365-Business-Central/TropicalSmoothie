@@ -9,8 +9,9 @@ table 60000 "MFCC01 Customization Setup"
         {
             DataClassification = CustomerContent;
         }
-        field(10; "Bal. Account No."; Code[20])
+        field(10; "Revenue Recognised GAAP"; Code[20])
         {
+            Caption = 'Revenue Recognised';
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
@@ -59,28 +60,27 @@ table 60000 "MFCC01 Customization Setup"
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(56; "Commission Def. Account"; Code[20])
+        field(56; "Commission Payble Account"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(57; "Commission Payable Account"; Code[20])
+        field(57; "Prepaid Commision"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(58; "Agreement Def. Account"; Code[20])
+        field(58; "Def Revenue Cafes in Operation"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(59; DeferredRevenueStatisticalAcc; Code[20])
+        field(59; "Deferred Revenue Operational"; Code[20])
         {
-            Caption = 'Deferred Revenue Statistical Account';
             DataClassification = CustomerContent;
             TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
-        field(60; "Revenue Statistical Account"; Code[20])
+        field(60; "Revenue Recognised"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "Statistical Account"."No." where(Blocked = const(false));
@@ -100,6 +100,27 @@ table 60000 "MFCC01 Customization Setup"
         {
             Caption = 'Non Gap Initial Revenue Recognised';
             DataClassification = CustomerContent;
+        }
+        field(64; "Deferred Revenue Development"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(65; "Revenue Recognised Development"; Code[20])
+        {
+            Caption = 'Revenue Recognised Development';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(66; "Non GAAP Consolidation Company"; Boolean)
+        {
+            DataClassification = CustomerContent;
+        }
+        field(67; "Commission Recognised GAAP"; Code[20])
+        {
+            Caption = 'Commission Recognised';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
     }
 

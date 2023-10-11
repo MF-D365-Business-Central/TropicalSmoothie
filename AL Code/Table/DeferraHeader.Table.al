@@ -212,7 +212,7 @@ table 60001 "MFCC01 Deferral Header"
             CustSetup.Get();
             CustSetup.TestField("Deferral Nos.");
             NoSeriesMgt.InitSeries(CustSetup."Deferral Nos.", xRec."No. Series", 0D, "Document No.", "No. Series");
-            Rec."Bal. Account No." := CustSetup."Bal. Account No.";
+            Rec."Bal. Account No." := CustSetup."Revenue Recognised GAAP";
             Rec.Validate("Deferral Code", CustSetup."Deferral Template");
         end;
 
@@ -246,7 +246,7 @@ table 60001 "MFCC01 Deferral Header"
                 CustSetup.Get();
                 NoSeriesMgt.TestManual(CustSetup."Deferral Nos.");
                 "No. Series" := '';
-                Rec."Bal. Account No." := CustSetup."Bal. Account No.";
+                Rec."Bal. Account No." := CustSetup."Revenue Recognised GAAP";
                 Rec.Validate("Deferral Code", CustSetup."Deferral Template");
             end;
     end;
@@ -261,7 +261,7 @@ table 60001 "MFCC01 Deferral Header"
         CustSetup.TestField("Deferral Nos.");
         if NoSeriesMgt.SelectSeries(CustSetup."Deferral Nos.", OldDeferral."No. Series", "No. Series") then begin
             NoSeriesMgt.SetSeries(Deferral."Document No.");
-            Deferral."Bal. Account No." := CustSetup."Bal. Account No.";
+            Deferral."Bal. Account No." := CustSetup."Revenue Recognised GAAP";
             Deferral.Validate("Deferral Code", CustSetup."Deferral Template");
             Rec := Deferral;
             OnAssistEditOnBeforeExit(Deferral);

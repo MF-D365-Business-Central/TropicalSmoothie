@@ -843,17 +843,21 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader: Record "MFCC01 Deferral Header";
         CZSetup: Record "MFCC01 Customization Setup";
     begin
-        Agreementheader.TestField(Status, Agreementheader.Status::Active);
+        Agreementheader.TestField(Status, Agreementheader.Status::Opened);
         CZSetup.GetRecordonce();
         IF Agreementheader."RoyaltyscheduleNo." = '' then Begin
             CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, false);
             DeferralHeader.CalculateSchedule();
+            DeferralHeader.Status := DeferralHeader.Status::Certified;
+            DeferralHeader.Modify();
             Agreementheader."RoyaltyscheduleNo." := DeferralHeader."Document No.";
         End;
 
         IF Agreementheader."ComissionScheduleNo." = '' then Begin
             CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, true);
             DeferralHeader.CalculateSchedule();
+            DeferralHeader.Status := DeferralHeader.Status::Certified;
+            DeferralHeader.Modify();
             Agreementheader."ComissionScheduleNo." := DeferralHeader."Document No.";
         End;
         Agreementheader.Modify();
@@ -866,7 +870,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader."Document No." := '';
         DeferralHeader.Insert(true);
         DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
-        DeferralHeader."Start Date" := Agreementheader."Royalty Reporting Start Date";
+        DeferralHeader."Start Date" := Agreementheader."Franchise Revenue Start Date";
         IF not Commision then
             DeferralHeader.validate("Amount to Defer", Agreementheader."Agreement Amount")
         else

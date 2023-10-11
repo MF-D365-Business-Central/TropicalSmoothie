@@ -27,38 +27,36 @@ page 60013 "MFCC01 Fixed Asset Import"
                 {
                     ToolTip = 'Specifies the value of the Description field.';
                 }
+                field("FA Class Code"; Rec."FA Class Code")
+                {
+                    ToolTip = 'Specifies the value of the FA Class Code field.';
+                }
+                field("FA SubClass Code"; Rec."FA SubClass Code")
+                {
+                    ToolTip = 'Specifies the value of the FA SubClass Code field.';
+                }
+                field("FA Posting Group"; Rec."FA Posting Group")
+                {
+                    ToolTip = 'Specifies the value of the FA Posting Group field.';
+                }
                 field("Useful Life In Months"; Rec."Useful Life In Months")
                 {
                     ToolTip = 'Specifies the value of the Useful Life In Months field.';
                 }
-                field("Method/Conv"; Rec."Method/Conv")
+                field("Book Value"; Rec."Book Value")
                 {
-                    ToolTip = 'Specifies the value of the Method/Conv field.';
-                }
-                field("In Service Date"; Rec."In Service Date")
-                {
-                    ToolTip = 'Specifies the value of the In Service Date field.';
-                }
-                field("Disposal Date"; Rec."Disposal Date")
-                {
-                    ToolTip = 'Specifies the value of the Disposal Date field.';
-                }
-                field("Historical Cost/Other Basis"; Rec."Historical Cost/Other Basis")
-                {
-                    ToolTip = 'Specifies the value of the Historical Cost/Other Basis field.';
-                }
-                field("FMV Cost/Other Basis"; Rec."FMV Cost/Other Basis")
-                {
-                    ToolTip = 'Specifies the value of the FMV Cost/Other Basis field.';
+                    ToolTip = 'Specifies the value of the Book Value field.';
                 }
                 field("Accumulated Depreciation"; Rec."Accumulated Depreciation")
                 {
                     ToolTip = 'Specifies the value of the Accumulated Depreciation field.';
                 }
-                field(NBV; Rec.NBV)
+                field("FA No."; Rec."FA No.")
                 {
-                    ToolTip = 'Specifies the value of the NBV field.';
+                    ToolTip = 'Specifies the value of the FA No. field.';
                 }
+
+
             }
         }
     }
@@ -102,7 +100,18 @@ page 60013 "MFCC01 Fixed Asset Import"
                     FAImport.PostbookValue();
                 End;
             }
-
+            action(Postone)
+            {
+                ApplicationArea = All;
+                Image = Post;
+                Caption = 'Post Current';
+                trigger OnAction()
+                var
+                    FAImport: Codeunit "MFCC01 FA Import";
+                Begin
+                    FAImport.PostbookValue(Rec);
+                End;
+            }
         }
     }
 

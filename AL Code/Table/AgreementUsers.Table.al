@@ -71,7 +71,7 @@ table 60005 "MFCC01 Agreement Users"
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
         AgreementHeader.Get(Rec."Agreement No.");
-        AgreementHeader.TestField(Status, AgreementHeader.Status::Open);
+        AgreementHeader.TestField(Status, AgreementHeader.Status::" ");
     end;
 
     trigger OnInsert()

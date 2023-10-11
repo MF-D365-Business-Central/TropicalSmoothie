@@ -14,7 +14,7 @@ table 60011 "MFCC01 FA Import"
         {
             DataClassification = CustomerContent;
         }
-        field(3; Description; Text[100])
+        field(3; Description; Text[150])
         {
             DataClassification = CustomerContent;
         }
@@ -26,7 +26,7 @@ table 60011 "MFCC01 FA Import"
         {
             DataClassification = CustomerContent;
         }
-        field(6; "In Service Date"; Date)
+        field(6; "Starting Date"; Date)
         {
             DataClassification = CustomerContent;
         }
@@ -34,12 +34,7 @@ table 60011 "MFCC01 FA Import"
         {
             DataClassification = CustomerContent;
         }
-
-        field(8; "Historical Cost/Other Basis"; Decimal)
-        {
-            DataClassification = CustomerContent;
-        }
-        field(9; "FMV Cost/Other Basis"; Decimal)
+        field(8; "Book Value"; Decimal)
         {
             DataClassification = CustomerContent;
         }
@@ -48,17 +43,31 @@ table 60011 "MFCC01 FA Import"
         {
             DataClassification = CustomerContent;
         }
-        field(11; NBV; Decimal)
+
+        field(12; "FA Class Code"; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
+        field(13; "FA SubClass Code"; Code[20])
         {
             DataClassification = CustomerContent;
         }
 
-
+        field(14; "FA Posting Group"; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
         field(89; "FA No."; Code[20])
         {
             DataClassification = CustomerContent;
+            TableRelation = "Fixed Asset"."No.";
+            Editable = false;
         }
         field(90; Status; Enum "MFCC01 Staging Status")
+        {
+            DataClassification = CustomerContent;
+        }
+        field(91; ErrorText; Text[500])
         {
             DataClassification = CustomerContent;
         }

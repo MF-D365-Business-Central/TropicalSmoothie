@@ -23,6 +23,10 @@ table 60008 "MFCC01 Franchise Journal"
         field(5; "Document Date"; Date)
         {
             DataClassification = CustomerContent;
+            trigger OnValidate()
+            begin
+                CalcAmounts();
+            end;
 
         }
         field(6; "Document Type"; Enum "MFCC01 Franchise Document Type")
@@ -214,17 +218,6 @@ table 60008 "MFCC01 Franchise Journal"
         OnAfterValidateShortcutDimCode(Rec, xRec, FieldNumber, ShortcutDimCode, CurrFieldNo);
     end;
 
-    local procedure CopyAgreement()
-    var
-        AgreementHeader: Record "MFCC01 Agreement Header";
-    begin
-        AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
-        AgreementHeader.SetRange(Status, AgreementHeader.Status::Active);
-        IF Not AgreementHeader.FindFirst() then
-            Clear(AgreementHeader);
-        Rec."Agreement ID" := AgreementHeader."No.";
-    end;
-
     local procedure CreateDim()
     var
         DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
@@ -323,22 +316,30 @@ table 60008 "MFCC01 Franchise Journal"
           ("Agreement ID" = ''));
     end;
 
+    local procedure CopyAgreement()
+    var
+        AgreementHeader: Record "MFCC01 Agreement Header";
+    begin
+        AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
+        AgreementHeader.SetRange(Status, AgreementHeader.Status::Opened);
+        AgreementHeader.FindFirst();
+        Rec."Agreement ID" := AgreementHeader."No.";
+    end;
+
     local procedure CalcAmounts()
     var
         AgreementLine: Record "MFCC01 Agreement Line";
     begin
-
-
+        IF Rec."Agreement ID" = '' then
+            Exit;
         AgreementLine.SetRange("Agreement No.", Rec."Agreement ID");
-        AgreementLine.SetFilter("Starting Date", '<=%1', Rec."Document Date");
-        AgreementLine.SetFilter("Ending Date", '>=%1', Rec."Document Date");
-        IF not AgreementLine.FindFirst() then
-            Clear(AgreementLine);
+        AgreementLine.SetFilter("Starting Date", '<=%1|%2', Rec."Document Date", 0D);
+        AgreementLine.SetFilter("Ending Date", '>=%1|%2', Rec."Document Date", 0D);
+        AgreementLine.Findlast();
 
         Rec."Royalty Fee" := (AgreementLine."Royalty Fees %" * Rec."Net Sales") / 100;
         Rec."Ad Fee" := (AgreementLine."Local Fees %" * Rec."Net Sales") / 100;
         Rec."Other Fee" := (AgreementLine."National Fees %" * Rec."Net Sales") / 100;
-
 
     end;
 

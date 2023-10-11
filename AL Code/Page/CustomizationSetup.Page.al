@@ -17,11 +17,11 @@ page 60000 "MFCC01 Customization Setup"
                 {
                     ToolTip = 'Specifies the value of the Deferral Template field.';
                 }
-
-                field("Bal. Account No."; Rec."Bal. Account No.")
+                field("Non GAAP Consolidation Company"; Rec."Non GAAP Consolidation Company")
                 {
-                    ToolTip = 'Specifies the value of the Bal. Account No. field.';
+                    ToolTip = 'Specifies the value of the Non GAAP Consolidation Company field.';
                 }
+
             }
             group(Numbering)
             {
@@ -54,40 +54,65 @@ page 60000 "MFCC01 Customization Setup"
             }
             group(Agreement)
             {
+                group(GAAP)
+                {
+                    field("Commission Payble Account"; Rec."Commission Payble Account")
+                    {
+                        ToolTip = 'Specifies the value of the Commission Payble Account field.';
+                    }
+                    field("Commission Recognised GAAP"; Rec."Commission Recognised GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the Commission Recognised field.';
+                    }
+                    field("Prepaid Commision"; Rec."Prepaid Commision")
+                    {
+                        ToolTip = 'Specifies the value of the Commission Payable Account field.';
+                    }
+                    field("Revenue Recognised GAAP"; Rec."Revenue Recognised GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the "Revenue Recognised field.';
+                    }
+                    field("Def Revenue Cafes in Operation"; Rec."Def Revenue Cafes in Operation")
+                    {
+                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Operation field.';
+                    }
+                    field("Deferred Revenue Development"; Rec."Deferred Revenue Development")
+                    {
+                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Operation Under Developent field.';
+                    }
 
-                field("Commission Def. Account"; Rec."Commission Def. Account")
-                {
-                    ToolTip = 'Specifies the value of the Commission Def. Account field.';
+
                 }
-                field("Commission Payable Account"; Rec."Commission Payable Account")
+                Group(Statistical)
                 {
-                    ToolTip = 'Specifies the value of the Commission Payable Account field.';
+                    field(NonGapInitialRevenueRecognised; Rec.NonGapInitialRevenueRecognised)
+                    {
+                        ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognised field.';
+                    }
+                    field("Commission Expense Account"; Rec."Commission Expense Account")
+                    {
+                        ToolTip = 'Specifies the value of the Commission Expense Account field.';
+                    }
+                    field(CommissionDeferredExpenseAcc; Rec.CommissionDeferredExpenseAcc)
+                    {
+                        ToolTip = 'Specifies the value of the Commission Deferred Expense Account field.';
+                    }
+                    field("Revenue Recognised"; Rec."Revenue Recognised")
+                    {
+                        ToolTip = 'Specifies the value of the Revenue Recognised field.';
+                    }
+                    field("Deferred Revenue Operational"; Rec."Deferred Revenue Operational")
+                    {
+                        ToolTip = 'Specifies the value of the Deferred Revenue Recognised field.';
+                    }
+                    field("Revenue Recognised Development";
+                    Rec."Revenue Recognised Development")
+                    {
+                        ToolTip = 'Specifies the value of the Revenue Recognised Under Development field.';
+                    }
+
                 }
 
-                field("Agreement Def. Account"; Rec."Agreement Def. Account")
-                {
-                    ToolTip = 'Specifies the value of the Agreement Def. Account field.';
-                }
-                field(DeferredRevenueStatisticalAcc; Rec.DeferredRevenueStatisticalAcc)
-                {
-                    ToolTip = 'Specifies the value of the Deferred Revenue Statistical Account field.';
-                }
-                field("Revenue Statistical Account"; Rec."Revenue Statistical Account")
-                {
-                    ToolTip = 'Specifies the value of the Revenue Statistical Account field.';
-                }
-                field(CommissionDeferredExpenseAcc; Rec.CommissionDeferredExpenseAcc)
-                {
-                    ToolTip = 'Specifies the value of the Commission Deferred Expense Account field.';
-                }
-                field("Commission Expense Account"; Rec."Commission Expense Account")
-                {
-                    ToolTip = 'Specifies the value of the Commission Expense Account field.';
-                }
-                field(NonGapInitialRevenueRecognised; Rec.NonGapInitialRevenueRecognised)
-                {
-                    ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognised field.';
-                }
             }
             group(Dimensions)
             {

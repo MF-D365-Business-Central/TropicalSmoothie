@@ -65,7 +65,6 @@ report 60005 "MFCC01FAExcelImport"
         ExcelFileExtensionTok: label '.xlsx', Locked = true;
         EntryNo: Integer;
         TotalRows: Integer;
-        TotalColumns: Integer;
         Window: Dialog;
         Text006: label 'Processing Data...\\';
         Text004: label 'The Excel worksheet %1 does not exist.', Comment = '{Locked="Excel"}';
@@ -82,28 +81,27 @@ report 60005 "MFCC01FAExcelImport"
         TotalRows := ExcelBuf.Count;
         ExcelBuf.SetRange("Column No.");
         ExcelBuf.SetRange("Row No.", 1);
-        TotalColumns := ExcelBuf.Count;
 
 
-        for R := 9 to TotalRows DO Begin
+        for R := 2 to TotalRows DO Begin
             FAImport.Init();
             FAImport."Entry No." := EntryNo;
 
             //Header Fields >>
             FAImport.Category := GetCellvalueatPoistion(R, 1);
-            FAImport.Description := GetCellvalueatPoistion(R, 2);
-
-            Evaluate(FAImport."Useful Life In Months", GetCellvalueatPoistion(R, 3));
-            FAImport."Method/Conv" := GetCellvalueatPoistion(R, 4);
-            Evaluate(FAImport."In Service Date", GetCellvalueatPoistion(R, 5));
-            Evaluate(FAImport."Disposal Date", GetCellvalueatPoistion(R, 6));
-            Evaluate(FAImport."Historical Cost/Other Basis", GetCellvalueatPoistion(R, 7));
-            Evaluate(FAImport."FMV Cost/Other Basis", GetCellvalueatPoistion(R, 8));
-            Evaluate(FAImport."Accumulated Depreciation", GetCellvalueatPoistion(R, 9));
-            Evaluate(FAImport.NBV, GetCellvalueatPoistion(R, 10));
-
-            EntryNo += 1;
-            FAImport.Insert();
+            IF FAImport.Category <> '' THEN begin
+                FAImport.Description := GetCellvalueatPoistion(R, 2);
+                FAImport."FA Class Code" := GetCellvalueatPoistion(R, 3);
+                FAImport."FA SubClass Code" := GetCellvalueatPoistion(R, 4);
+                FAImport."FA Posting Group" := GetCellvalueatPoistion(R, 5);
+                Evaluate(FAImport."Useful Life In Months", RemoveSpecialchar(GetCellvalueatPoistion(R, 6)));
+                Evaluate(FAImport."Starting Date", GetCellvalueatPoistion(R, 7));
+                Evaluate(FAImport."Book Value", RemoveSpecialchar(GetCellvalueatPoistion(R, 8)));
+                Evaluate(FAImport."Accumulated Depreciation", RemoveSpecialchar(GetCellvalueatPoistion(R, 9)));
+                EntryNo += 1;
+                FAImport.Insert();
+            end;
+            ;
         End;
 
     end;
@@ -134,10 +132,10 @@ report 60005 "MFCC01FAExcelImport"
 
     local procedure GetNextEntry()
     var
-        PurchaseImport2: Record "MFCC01 Purchase Import";
+        FAImport2: Record "MFCC01 FA Import";
     begin
-        IF PurchaseImport2.FindLast() then
-            EntryNo := PurchaseImport2."Entry No." + 1;
+        IF FAImport2.FindLast() then
+            EntryNo := FAImport2."Entry No." + 1;
     end;
 
     local procedure GetCellvalueatPoistion(RowNo: Integer; Columnno: Integer): Text
@@ -152,4 +150,17 @@ report 60005 "MFCC01FAExcelImport"
 
     end;
 
+    local procedure RemoveSpecialchar(NumberText: Text): Text
+    var
+        NumCharsToKeep: Text;
+    begin
+        // NumCharsToKeep := '0123456789.';
+        // NumCharsToKeep := DELCHR(NumberText, '=', DELCHR(NumberText, '=', NumCharsToKeep));
+        // IF StrPos(NumberText, '(') <> 0 then
+        //     NumCharsToKeep := '-' + NumCharsToKeep;
+        IF NumberText = '' then
+            NumberText := '0';
+
+        exit(NumberText);
+    end;
 }

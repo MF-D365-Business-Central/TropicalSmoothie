@@ -1,13 +1,16 @@
 enum 60003 "MFCC01 Agreement Status"
 {
     Extensible = true;
-    value(0; Open)
+    value(0; " ")
     {
     }
-    value(1; Active)
+    value(1; Signed)
     {
     }
-    value(2; Terminated)
+    value(2; Opened)
+    {
+    }
+    value(3; Terminated)
     {
     }
 }

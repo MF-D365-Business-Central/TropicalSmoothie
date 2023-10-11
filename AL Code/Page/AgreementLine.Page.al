@@ -12,7 +12,16 @@ page 60006 "MFCC01 Agreement Lines"
         {
             repeater(Control1)
             {
-
+                field("Starting Date"; Rec."Starting Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Starting Date field.';
+                }
+                field("Ending Date"; Rec."Ending Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Ending Date field.';
+                }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
@@ -31,16 +40,7 @@ page 60006 "MFCC01 Agreement Lines"
                     ToolTip = 'Specifies the value of the National Fees % field.';
                 }
 
-                field("Starting Date"; Rec."Starting Date")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Starting Date field.';
-                }
-                field("Ending Date"; Rec."Ending Date")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Ending Date field.';
-                }
+
             }
         }
     }

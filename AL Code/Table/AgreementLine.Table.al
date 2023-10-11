@@ -91,13 +91,14 @@ table 60004 "MFCC01 Agreement Line"
         EffDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Effective Date %2';
         OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Opening Date %2';
         EffDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Effective Date %2';
+        DuplicateDateLbl: Label 'There is dates conflict with Line %1';
 
     procedure TestStatusOpen()
     Var
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
         AgreementHeader.Get(Rec."Agreement No.");
-        AgreementHeader.TestField(Status, AgreementHeader.Status::Open);
+        AgreementHeader.TestField(Status, AgreementHeader.Status::" ");
     end;
 
     local procedure CheckDates()
@@ -111,12 +112,23 @@ table 60004 "MFCC01 Agreement Line"
         AgreementHeader.Get(Rec."Agreement No.");
         Rec."Customer No." := AgreementHeader."Customer No.";
         IF (Rec."Starting Date" <> 0D) And
-             (Rec."Starting Date" < AgreementHeader."Royalty Reporting Start Date") then
-            Error(OpenDateSTDateErrorLbl, Rec."Starting Date", AgreementHeader."Royalty Reporting Start Date");
+             (Rec."Starting Date" < AgreementHeader."Franchise Revenue Start Date") then
+            Error(OpenDateSTDateErrorLbl, Rec."Starting Date", AgreementHeader."Franchise Revenue Start Date");
 
         IF (Rec."Ending Date" <> 0D) And
-            (Rec."Ending Date" < AgreementHeader."Royalty Reporting Start Date") then
+            (Rec."Ending Date" < AgreementHeader."Franchise Revenue Start Date") then
             Error(OpenDateEDDateErrorLbl, Rec."Ending Date", Rec."Starting Date");
+    end;
+
+    local procedure CheckDupicateLines()
+    var
+        AgreementLines: Record "MFCC01 Agreement Line";
+    begin
+        AgreementLines.SetRange("Agreement No.", Rec."Agreement No.");
+        AgreementLines.Setfilter("Starting Date", '<=%1|0D', Rec."Starting Date");
+        AgreementLines.Setfilter("Ending Date", '>=%1|0D', Rec."Ending Date");
+        IF AgreementLines.FindFirst() then
+            Error(DuplicateDateLbl, AgreementLines."Line No.");
     end;
 
     trigger OnInsert()

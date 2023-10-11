@@ -71,25 +71,24 @@ report 60000 "MFCC01 Process Deferral"
     Begin
         IF PostingDate = 0D then
             PostingDate := Today();
-
+        CZSetup.GetRecordonce();
+        CZSetup.TestField("Revenue Recognised GAAP");
+        CZSetup.TestField("Def Revenue Cafes in Operation");
         GLEntry.LockTable();
     End;
 
     local procedure PostDeferralLine()
     var
         GenJnlLine: Record "Gen. Journal Line";
-        DeferralTemplate: Record "Deferral Template";
-
         GenJnlPostLine: Codeunit "Gen. Jnl.-Post Line";
         DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
     begin
-        DeferralTemplate.Get("MFCC01 Deferral Header"."Deferral Code");
 
         GenJnlLine.Init();
         GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
-        GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No." + '/' + Format("MFCC01 Deferral Line"."Posting Date");
+        GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
-        GenJnlLine.Validate("Account No.", DeferralTemplate."Deferral Account");
+        GenJnlLine.Validate("Account No.", CZSetup."Def Revenue Cafes in Operation");
         GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
         GenJnlLine.Validate(Amount, "MFCC01 Deferral Line".Amount);
         InitDefaultDimSource(DefaultDimSource);
@@ -99,9 +98,9 @@ report 60000 "MFCC01 Process Deferral"
 
         GenJnlLine.Init();
         GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
-        GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No." + '/' + Format("MFCC01 Deferral Line"."Posting Date");
+        GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
-        GenJnlLine.Validate("Account No.", "MFCC01 Deferral Header"."Bal. Account No.");
+        GenJnlLine.Validate("Account No.", CZSetup."Revenue Recognised GAAP");
         GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
         GenJnlLine.Validate(Amount, -"MFCC01 Deferral Line".Amount);
         InitDefaultDimSource(DefaultDimSource);
@@ -121,7 +120,9 @@ report 60000 "MFCC01 Process Deferral"
 
 
     var
-        PostingDate: Date;
-        DimMgt: Codeunit DimensionManagement;
+        CZSetup: Record "MFCC01 Customization Setup";
         GLEntry: Record "G/L Entry";
+        DimMgt: Codeunit DimensionManagement;
+        PostingDate: Date;
+
 }
