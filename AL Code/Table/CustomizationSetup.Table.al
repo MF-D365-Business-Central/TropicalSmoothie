@@ -9,12 +9,6 @@ table 60000 "MFCC01 Customization Setup"
         {
             DataClassification = CustomerContent;
         }
-        field(10; "Revenue Recognised GAAP"; Code[20])
-        {
-            Caption = 'Revenue Recognised';
-            DataClassification = CustomerContent;
-            TableRelation = "G/L Account"."No." where(Blocked = const(false));
-        }
 
         field(12; "Deferral Template"; Code[20])
         {
@@ -60,68 +54,102 @@ table 60000 "MFCC01 Customization Setup"
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(56; "Commission Payble Account"; Code[20])
+        field(60; "Accrued Fran Bonus GAAP"; Code[20])
         {
+            Caption = 'Accrued Fran Bonus';
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(57; "Prepaid Commision"; Code[20])
+
+        field(65; CommissionRecognizedGAAP; Code[20])
         {
+            Caption = 'Commission Recognized';
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(58; "Def Revenue Cafes in Operation"; Code[20])
+        field(70; PrepaidCommisionLTGAAP; Code[20])
         {
+            Caption = 'Prepaid Commision LT';
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(59; "Deferred Revenue Operational"; Code[20])
+        field(75; DefCommisionsinOperationsGAAP; Code[20])
         {
-            DataClassification = CustomerContent;
-            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
-        }
-        field(60; "Revenue Recognised"; Code[20])
-        {
-            DataClassification = CustomerContent;
-            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
-        }
-        field(61; CommissionDeferredExpenseAcc; Code[20])
-        {
-            Caption = 'Commission Deferred Expense Account';
-            DataClassification = CustomerContent;
-            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
-        }
-        field(62; "Commission Expense Account"; Code[20])
-        {
-            DataClassification = CustomerContent;
-            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
-        }
-        field(63; NonGapInitialRevenueRecognised; Decimal)
-        {
-            Caption = 'Non Gap Initial Revenue Recognised';
-            DataClassification = CustomerContent;
-        }
-        field(64; "Deferred Revenue Development"; Code[20])
-        {
+            Caption = 'Def Commisions in Operations';
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-        field(65; "Revenue Recognised Development"; Code[20])
+        field(80; RevenueRecognizedGAAP; Code[20])
         {
-            Caption = 'Revenue Recognised Development';
-            DataClassification = CustomerContent;
-            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
-        }
-        field(66; "Non GAAP Consolidation Company"; Boolean)
-        {
-            DataClassification = CustomerContent;
-        }
-        field(67; "Commission Recognised GAAP"; Code[20])
-        {
-            Caption = 'Commission Recognised';
+            Caption = 'Revenue Recognized';
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
+        field(85; DefRevenueCafesinOperationGAAP; Code[20])
+        {
+            Caption = 'Def Revenue Cafes in Operations';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+
+        field(90; DeferredRevenueDevelopmentGAPP; Code[20])
+        {
+            Caption = 'Def Revenue Cafes in Development';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+
+        field(110; NonGapInitialRevenueRecognized; Decimal)
+        {
+            Caption = 'Non Gap Initial Revenue Recognized';
+            DataClassification = CustomerContent;
+        }
+        field(115; CommissionRecognized; Code[20])
+        {
+            Caption = 'Commission Recognized';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(120; PrepaidCommisionLT; Code[20])
+        {
+            Caption = 'Prepaid Commision LT';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(125; DefCommisionsinOperations; Code[20])
+        {
+            Caption = 'Def Commisions in Operations';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(130; RevenueRecognized; Code[20])
+        {
+            Caption = 'Revenue Recognized';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(135; DefRevenueCafesinOperation; Code[20])
+        {
+            Caption = 'Def Revenue Cafes in Operations';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+
+        field(140; DeferredRevenueDevelopment; Code[20])
+        {
+            Caption = 'Def Revenue Cafes in Development';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+
+
+
+        field(200; "Non GAAP Consolidation Company"; Boolean)
+        {
+            DataClassification = CustomerContent;
+            //TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+
     }
 
     keys

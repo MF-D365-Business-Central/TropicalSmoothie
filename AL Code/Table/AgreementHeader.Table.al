@@ -10,6 +10,10 @@ table 60003 "MFCC01 Agreement Header"
         {
             DataClassification = CustomerContent;
             TableRelation = Customer."No.";
+            trigger OnValidate()
+            Begin
+                TransfereedAgreement();
+            End;
         }
         field(2; "No."; Code[20])
         {
@@ -142,9 +146,9 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusNew(Rec);
             End;
         }
-        field(57; NonGapInitialRevenueRecognised; Decimal)
+        field(57; NonGapInitialRevenueRecognized; Decimal)
         {
-            Caption = 'Non Gap Initial Revenue Recognised';
+            Caption = 'Non Gap Initial Revenue Recognized GAAP';
             DataClassification = CustomerContent;
         }
         field(58; "Posted to Under Development"; Boolean)
@@ -178,8 +182,9 @@ table 60003 "MFCC01 Agreement Header"
             CustSetup.Get();
             CustSetup.TestField("Agreement Nos.");
             NoSeriesMgt.InitSeries(CustSetup."Agreement Nos.", xRec."No. Series", 0D, "No.", "No. Series");
-            Rec.NonGapInitialRevenueRecognised := CustSetup.NonGapInitialRevenueRecognised;
+            Rec.NonGapInitialRevenueRecognized := CustSetup.NonGapInitialRevenueRecognized;
         end;
+        TransfereedAgreement();
     End;
 
 
@@ -246,6 +251,16 @@ table 60003 "MFCC01 Agreement Header"
         Error(DuplicateAgreementErr, AgreementHeader."No.");
     end;
 
+    local procedure TransfereedAgreement()
+    var
+        AgreementHeader: Record "MFCC01 Agreement Header";
+    begin
+        AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
+        AgreementHeader.SetFilter(Status, '%1|%2|%3', AgreementHeader.Status::Signed, AgreementHeader.Status::Opened, AgreementHeader.Status::Terminated);
+        IF Not AgreementHeader.FindFirst() then
+            Exit;
+        Rec."License Type" := Rec."License Type"::Transferred;
+    end;
 
     var
 
@@ -285,7 +300,7 @@ table 60003 "MFCC01 Agreement Header"
         CustSetup.TestField("Agreement Nos.");
         if NoSeriesMgt.SelectSeries(CustSetup."Agreement Nos.", OldAgreementHeader."No. Series", "No. Series") then begin
             NoSeriesMgt.SetSeries(AgreementHeader."No.");
-            AgreementHeader.NonGapInitialRevenueRecognised := CustSetup.NonGapInitialRevenueRecognised;
+            AgreementHeader.NonGapInitialRevenueRecognized := CustSetup.NonGapInitialRevenueRecognized;
             Rec := AgreementHeader;
             OnAssistEditOnBeforeExit(AgreementHeader);
             exit(true);
@@ -312,11 +327,11 @@ table 60003 "MFCC01 Agreement Header"
     begin
         CheckActiveAgreement();
         CZSetup.GetRecordonce();
-        CZSetup.TestField("Commission Payble Account");
-        CZSetup.TestField("Prepaid Commision");
-        CZSetup.TestField("Def Revenue Cafes in Operation");
-        CZSetup.TestField("Deferred Revenue Development");
-        CZSetup.TestField("Revenue Recognised Development");
+        CZSetup.TestField(PrepaidCommisionLT);
+        CZSetup.TestField("Accrued Fran Bonus GAAP");
+        CZSetup.TestField(DefRevenueCafesinOperationGAAP);
+        CZSetup.TestField(DeferredRevenueDevelopmentGAPP);
+        CZSetup.TestField(RevenueRecognizedGAAP);
         CheckLinesExist(AgreementHeader, true);
         AgreementHeader.TestField(Status, AgreementHeader.Status::" ");
         AgreementHeader.Status := AgreementHeader.Status::Signed;

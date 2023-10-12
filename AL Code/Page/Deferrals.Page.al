@@ -14,19 +14,23 @@ page 60003 "MFCC01 Deferrals"
         {
             repeater(Cotnrol1)
             {
-                field("Agreement No."; Rec."Agreement No.")
-                {
-                    ToolTip = 'Specifies the value of the Agreement No. field.';
-                }
-
-                field("Customer No."; Rec."Customer No.")
-                {
-                    ToolTip = 'Specifies the value of the Customer No. field.';
-                }
                 field("Document No."; Rec."Document No.")
                 {
                     ToolTip = 'Specifies the value of the Document No. field.';
                 }
+                field(Commision; Rec.Commision)
+                {
+                    ToolTip = 'Specifies the value of the Commision field.';
+                }
+                field("Agreement No."; Rec."Agreement No.")
+                {
+                    ToolTip = 'Specifies the value of the Agreement No. field.';
+                }
+                field("Customer No."; Rec."Customer No.")
+                {
+                    ToolTip = 'Specifies the value of the Customer No. field.';
+                }
+
                 field("Deferral Code"; Rec."Deferral Code")
                 {
                     ToolTip = 'Specifies the value of the Deferral Code field.';
@@ -54,6 +58,18 @@ page 60003 "MFCC01 Deferrals"
 
     actions
     {
+        area(Navigation)
+        {
+            action(GLntries)
+            {
+                Caption = 'G/L Entries';
+                ApplicationArea = All;
+                Image = Entries;
+                RunPageMode = View;
+                RunObject = Page "General Ledger Entries";
+                RunPageLink = "Document No." = field("Document No.");
+            }
+        }
         area(processing)
         {
             group("Actions")

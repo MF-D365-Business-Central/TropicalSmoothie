@@ -1,4 +1,4 @@
-pageextension 60003 MyExtension extends "Business Unit List"
+pageextension 60003 "MFCC01Business Unit List" extends "Business Unit List"
 {
     layout
     {

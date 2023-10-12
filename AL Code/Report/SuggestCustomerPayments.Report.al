@@ -43,6 +43,7 @@ report 60002 "Suggest Customer Payments"
                                 "Cust. Ledger Entry".Modify();
                                 GenJnlLine."Applies-to ID" := GenJnlLine."Document No.";
                                 GenJnlLine.Validate(Amount, GenJnlLine.Amount - "Cust. Ledger Entry"."Amount to Apply");
+                                GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
                                 GenJnlLine.Modify();
                             end;
                         false:

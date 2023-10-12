@@ -13,17 +13,16 @@ page 60004 "MFCC01 Agreements"
         {
             repeater(Control1)
             {
-
-                field("Customer No."; Rec."Customer No.")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Customer No. field.';
-                }
                 field("No."; Rec."No.")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the No. field.';
 
+                }
+                field("Customer No."; Rec."Customer No.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Customer No. field.';
                 }
                 field("Agreement Date"; Rec."Agreement Date")
                 {
@@ -85,7 +84,7 @@ page 60004 "MFCC01 Agreements"
                 Image = Installments;
                 RunPageMode = View;
                 RunObject = Page "MFCC01 Deferrals";
-                RunPageLink = "Agreement No." = field("No."), "Customer No." = field("No.");
+                RunPageLink = "Agreement No." = field("No."), "Customer No." = field("Customer No.");
             }
             group(Entries)
             {

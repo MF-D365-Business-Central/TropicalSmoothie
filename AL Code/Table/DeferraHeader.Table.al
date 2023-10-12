@@ -154,15 +154,7 @@ table 60001 "MFCC01 Deferral Header"
             Caption = 'Schedule Line Total';
             FieldClass = FlowField;
         }
-        field(21; "Bal. Account No."; Code[20])
-        {
-            Caption = 'Bal. Account No.';
-            TableRelation = "G/L Account"."No." where(Blocked = const(false));
-            trigger OnValidate()
-            Begin
-                Rec.TestStausOpen(Rec);
-            End;
-        }
+
         field(22; Status; enum "MFCC01 Deferral Status")
         {
             Caption = 'Status';
@@ -171,6 +163,12 @@ table 60001 "MFCC01 Deferral Header"
         field(23; "No. Series"; Code[20])
         {
             Caption = 'No. Series';
+            Editable = false;
+        }
+
+        field(24; Commision; Boolean)
+        {
+            Caption = 'Commision';
             Editable = false;
         }
     }
@@ -212,7 +210,7 @@ table 60001 "MFCC01 Deferral Header"
             CustSetup.Get();
             CustSetup.TestField("Deferral Nos.");
             NoSeriesMgt.InitSeries(CustSetup."Deferral Nos.", xRec."No. Series", 0D, "Document No.", "No. Series");
-            Rec."Bal. Account No." := CustSetup."Revenue Recognised GAAP";
+           
             Rec.Validate("Deferral Code", CustSetup."Deferral Template");
         end;
 
@@ -246,7 +244,7 @@ table 60001 "MFCC01 Deferral Header"
                 CustSetup.Get();
                 NoSeriesMgt.TestManual(CustSetup."Deferral Nos.");
                 "No. Series" := '';
-                Rec."Bal. Account No." := CustSetup."Revenue Recognised GAAP";
+                
                 Rec.Validate("Deferral Code", CustSetup."Deferral Template");
             end;
     end;
@@ -261,7 +259,7 @@ table 60001 "MFCC01 Deferral Header"
         CustSetup.TestField("Deferral Nos.");
         if NoSeriesMgt.SelectSeries(CustSetup."Deferral Nos.", OldDeferral."No. Series", "No. Series") then begin
             NoSeriesMgt.SetSeries(Deferral."Document No.");
-            Deferral."Bal. Account No." := CustSetup."Revenue Recognised GAAP";
+            
             Deferral.Validate("Deferral Code", CustSetup."Deferral Template");
             Rec := Deferral;
             OnAssistEditOnBeforeExit(Deferral);
@@ -280,7 +278,7 @@ table 60001 "MFCC01 Deferral Header"
             exit(false);
         end;
         Rec.TestField("Deferral Code");
-        Rec.TestField("Bal. Account No.");
+        
         Rec.TestField("Amount to Defer");
         DeferralDescription := "Schedule Description";
         DeferralUtilities.CreateDeferralSchedule(Rec."Deferral Code",

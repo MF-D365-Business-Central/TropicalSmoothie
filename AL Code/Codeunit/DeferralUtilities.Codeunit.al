@@ -877,6 +877,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             DeferralHeader.validate("Amount to Defer", Agreementheader."SalesPerson Commission");
         DeferralHeader."Agreement No." := Agreementheader."No.";
         DeferralHeader."Customer No." := Agreementheader."Customer No.";
+        DeferralHeader.Commision := Commision;
         DeferralHeader.Modify(true)
 
     end;

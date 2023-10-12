@@ -52,9 +52,9 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the SalesPerson Commission field.';
                 }
-                field(NonGapInitialRevenueRecognised; Rec.NonGapInitialRevenueRecognised)
+                field(NonGapInitialRevenueRecognized; Rec.NonGapInitialRevenueRecognized)
                 {
-                    ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognised field.';
+                    ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognized GAAP field.';
                 }
 
                 field("Royalty Bank Account"; Rec."Royalty Bank Account")
@@ -112,7 +112,7 @@ page 60005 "MFCC01 Agreement"
                 Image = Installments;
                 RunPageMode = View;
                 RunObject = Page "MFCC01 Deferrals";
-                RunPageLink = "Agreement No." = field("No."), "Customer No." = field("No.");
+                RunPageLink = "Agreement No." = field("No."), "Customer No." = field("Customer No.");
             }
             group(Entries)
             {

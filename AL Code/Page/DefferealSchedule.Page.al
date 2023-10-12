@@ -66,11 +66,6 @@ page 60001 "MFCC01 DeferralSchedule"
                     ApplicationArea = Suite;
                     ToolTip = 'Specifies when to start calculating deferral amounts.';
                 }
-                field("Bal. Account No."; Rec."Bal. Account No.")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Bal. Account No. field.';
-                }
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
@@ -88,6 +83,18 @@ page 60001 "MFCC01 DeferralSchedule"
 
     actions
     {
+        area(Navigation)
+        {
+            action(GLntries)
+            {
+                Caption = 'G/L Entries';
+                ApplicationArea = All;
+                Image = Entries;
+                RunPageMode = View;
+                RunObject = Page "General Ledger Entries";
+                RunPageLink = "Document No." = field("Document No.");
+            }
+        }
         area(processing)
         {
             group("Actions")

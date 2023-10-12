@@ -56,61 +56,69 @@ page 60000 "MFCC01 Customization Setup"
             {
                 group(GAAP)
                 {
-                    field("Commission Payble Account"; Rec."Commission Payble Account")
-                    {
-                        ToolTip = 'Specifies the value of the Commission Payble Account field.';
-                    }
-                    field("Commission Recognised GAAP"; Rec."Commission Recognised GAAP")
-                    {
-                        ToolTip = 'Specifies the value of the Commission Recognised field.';
-                    }
-                    field("Prepaid Commision"; Rec."Prepaid Commision")
-                    {
-                        ToolTip = 'Specifies the value of the Commission Payable Account field.';
-                    }
-                    field("Revenue Recognised GAAP"; Rec."Revenue Recognised GAAP")
-                    {
-                        ToolTip = 'Specifies the value of the "Revenue Recognised field.';
-                    }
-                    field("Def Revenue Cafes in Operation"; Rec."Def Revenue Cafes in Operation")
-                    {
-                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Operation field.';
-                    }
-                    field("Deferred Revenue Development"; Rec."Deferred Revenue Development")
-                    {
-                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Operation Under Developent field.';
-                    }
 
 
+                    field("Accrued Fran Bonus GAAP"; Rec."Accrued Fran Bonus GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the Accrued Fran Bonus field.';
+                    }
+                    field(CommissionRecognizedGAAP; Rec.CommissionRecognizedGAAP)
+                    {
+                        ToolTip = 'Specifies the value of the Commission Recognized field.';
+                    }
+                    field(PrepaidCommisionLTGAAP; Rec.PrepaidCommisionLTGAAP)
+                    {
+                        ToolTip = 'Specifies the value of the Prepaid Commision LT field.';
+                    }
+                    field(DefCommisionsinOperationsGAAP; Rec.DefCommisionsinOperationsGAAP)
+                    {
+                        ToolTip = 'Specifies the value of the Def Commisions in Operations field.';
+                    }
+                    field(RevenueRecognizedGAAP; Rec.RevenueRecognizedGAAP)
+                    {
+                        ToolTip = 'Specifies the value of the Revenue Recognized field.';
+                    }
+                    field(DefRevenueCafesinOperationGAAP; Rec.DefRevenueCafesinOperationGAAP)
+                    {
+                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Operations field.';
+                    }
+                    field(DeferredRevenueDevelopmentGAPP; Rec.DeferredRevenueDevelopmentGAPP)
+                    {
+                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Development field.';
+                    }
                 }
                 Group(Statistical)
                 {
-                    field(NonGapInitialRevenueRecognised; Rec.NonGapInitialRevenueRecognised)
-                    {
-                        ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognised field.';
-                    }
-                    field("Commission Expense Account"; Rec."Commission Expense Account")
-                    {
-                        ToolTip = 'Specifies the value of the Commission Expense Account field.';
-                    }
-                    field(CommissionDeferredExpenseAcc; Rec.CommissionDeferredExpenseAcc)
-                    {
-                        ToolTip = 'Specifies the value of the Commission Deferred Expense Account field.';
-                    }
-                    field("Revenue Recognised"; Rec."Revenue Recognised")
-                    {
-                        ToolTip = 'Specifies the value of the Revenue Recognised field.';
-                    }
-                    field("Deferred Revenue Operational"; Rec."Deferred Revenue Operational")
-                    {
-                        ToolTip = 'Specifies the value of the Deferred Revenue Recognised field.';
-                    }
-                    field("Revenue Recognised Development";
-                    Rec."Revenue Recognised Development")
-                    {
-                        ToolTip = 'Specifies the value of the Revenue Recognised Under Development field.';
-                    }
 
+
+                    field(NonGapInitialRevenueRecognized; Rec.NonGapInitialRevenueRecognized)
+                    {
+                        ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognized field.';
+                    }
+                    field(CommissionRecognized; Rec.CommissionRecognized)
+                    {
+                        ToolTip = 'Specifies the value of the Commission Recognized field.';
+                    }
+                    field(PrepaidCommisionLT; Rec.PrepaidCommisionLT)
+                    {
+                        ToolTip = 'Specifies the value of the Prepaid Commision LT field.';
+                    }
+                    field(DefCommisionsinOperations; Rec.DefCommisionsinOperations)
+                    {
+                        ToolTip = 'Specifies the value of the Def Commisions in Operations field.';
+                    }
+                    field(RevenueRecognized; Rec.RevenueRecognized)
+                    {
+                        ToolTip = 'Specifies the value of the Revenue Recognized field.';
+                    }
+                    field(DefRevenueCafesinOperation; Rec.DefRevenueCafesinOperation)
+                    {
+                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Operations field.';
+                    }
+                    field(DeferredRevenueDevelopment; Rec.DeferredRevenueDevelopment)
+                    {
+                        ToolTip = 'Specifies the value of the Def Revenue Cafes in Development field.';
+                    }
                 }
 
             }

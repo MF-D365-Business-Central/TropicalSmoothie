@@ -75,7 +75,14 @@ report 60007 "Import Consolidation Non GAAP"
                 begin
                     Window.Update(2, "No.");
                     Window.Update(3, '');
-                    iF "G/L Account"."No." IN [CZSetup."Commission Payble Account", CZSetup."Prepaid Commision", CZSetup."Def Revenue Cafes in Operation", CZSetup."Deferred Revenue Development"] then
+                    iF "G/L Account"."No." IN [
+                        CZSetup.CommissionRecognized,
+                        CZSetup.PrepaidCommisionLT,
+                        CZSetup.DefCommisionsinOperations,
+                        CZSetup.RevenueRecognized,
+                        CZSetup.DefRevenueCafesinOperation,
+                        CZSetup.DeferredRevenueDevelopment
+                        ] then
                         CurrReport.Skip();
                     BusUnitConsolidate.InsertGLAccount("G/L Account");
                 end;
@@ -638,19 +645,21 @@ report 60007 "Import Consolidation Non GAAP"
     local procedure GetAccountNo(): Code[20]
     begin
 
+
         CASE true of
 
-            CZSetup.CommissionDeferredExpenseAcc = "Statistical Account"."No.":
-                Exit(CZSetup."Commission Payble Account");
-            CZSetup."Commission Expense Account" = "Statistical Account"."No.":
-                Exit(CZSetup."Prepaid Commision");
-            CZSetup."Revenue Recognised" = "Statistical Account"."No.":
-                Exit(CZSetup."Revenue Recognised GAAP");
-            CZSetup."Deferred Revenue Operational" = "Statistical Account"."No.":
-                Exit(CZSetup."Def Revenue Cafes in Operation");
-            CZSetup."Revenue Recognised Development" = "Statistical Account"."No.":
-                Exit(CZSetup."Deferred Revenue Development");
-
+            CZSetup.CommissionRecognized = "Statistical Account"."No.":
+                Exit(CZSetup.CommissionRecognizedGAAP);
+            CZSetup.PrepaidCommisionLT = "Statistical Account"."No.":
+                Exit(CZSetup.PrepaidCommisionLTGAAP);
+            CZSetup.DefCommisionsinOperations = "Statistical Account"."No.":
+                Exit(CZSetup.DefCommisionsinOperationsGAAP);
+            CZSetup.RevenueRecognized = "Statistical Account"."No.":
+                Exit(CZSetup.RevenueRecognizedGAAP);
+            CZSetup.DefRevenueCafesinOperation = "Statistical Account"."No.":
+                Exit(CZSetup.DefRevenueCafesinOperationGAAP);
+            CZSetup.DeferredRevenueDevelopment = "Statistical Account"."No.":
+                Exit(CZSetup.DeferredRevenueDevelopmentGAPP);
         END;
     end;
 }
