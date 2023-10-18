@@ -105,9 +105,9 @@ table 60003 "MFCC01 Agreement Header"
             Caption = 'Posted Agreement Amount';
             Editable = false;
         }
-        field(51; "Posted Comission Amount"; Decimal)
+        field(51; "Posted Commission Amount"; Decimal)
         {
-            Caption = 'Posted Comission Amount';
+            Caption = 'Posted Commission Amount';
             Editable = false;
         }
         field(52; "RoyaltyscheduleNo."; Code[20])
@@ -119,9 +119,9 @@ table 60003 "MFCC01 Agreement Header"
                 TestStatusNew(Rec);
             End;
         }
-        field(53; "ComissionscheduleNo."; Code[20])
+        field(53; "CommissionscheduleNo."; Code[20])
         {
-            Caption = 'Comission Schedule No.';
+            Caption = 'Commission Schedule No.';
             TableRelation = "MFCC01 Deferral Header"."Document No.";
             trigger OnValidate()
             Begin

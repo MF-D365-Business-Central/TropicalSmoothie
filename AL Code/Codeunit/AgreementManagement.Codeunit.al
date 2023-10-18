@@ -34,9 +34,9 @@ codeunit 60002 "MFCC01 Agreement Management"
             IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AgreementHeader."Agreement Amount", true, AgreementHeader."Royalty Bank Account") then Begin
                 AgreementHeader."Posted Agreement Amount" := AgreementHeader."Agreement Amount";
             End;
-        IF AgreementHeader."Posted Comission Amount" = 0 then
+        IF AgreementHeader."Posted Commission Amount" = 0 then
             IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, BalAccountType::"G/L Account", CZSetup."Accrued Fran Bonus GAAP", AgreementHeader."SalesPerson Commission", true, '') then Begin
-                AgreementHeader."Posted Comission Amount" := AgreementHeader."SalesPerson Commission";
+                AgreementHeader."Posted Commission Amount" := AgreementHeader."SalesPerson Commission";
             End;
 
         IF AgreementHeader.PostedRevenueStatisticalAmount = 0 then

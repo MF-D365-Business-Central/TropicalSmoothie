@@ -76,19 +76,19 @@ report 60007 "Import Consolidation Non GAAP"
                     Window.Update(2, "No.");
                     Window.Update(3, '');
                     iF "G/L Account"."No." IN [
-                        CZSetup.CommissionRecognized,
-                        CZSetup.PrepaidCommisionLT,
-                        CZSetup.DefCommisionsinOperations,
-                        CZSetup.RevenueRecognized,
-                        CZSetup.DefRevenueCafesinOperation,
-                        CZSetup.DeferredRevenueDevelopment
+                        CZSetup.CommissionRecognizedgaap,
+                        CZSetup.PrepaidCommisionLTgaap,
+                        CZSetup.DefCommisionsinOperationsgaap,
+                        CZSetup.RevenueRecognizedgaap,
+                        CZSetup.DefRevenueCafesinOperationgaap,
+                        CZSetup.DeferredRevenueDevelopmentGAPP
                         ] then
                         CurrReport.Skip();
                     BusUnitConsolidate.InsertGLAccount("G/L Account");
                 end;
             }
 
-            //Statistical
+            // //Statistical
 
             dataitem("Statistical Account"; "Statistical Account")
             {
@@ -234,6 +234,7 @@ report 60007 "Import Consolidation Non GAAP"
                 "G/L Entry".ChangeCompany("Company Name");
                 "Statistical Ledger Entry".ChangeCompany("Company Name");
                 "Dimension Set Entry".ChangeCompany("Company Name");
+                StatsDimensionSetEntry.ChangeCompany("Company Name");
                 "G/L Account".ChangeCompany("Company Name");
                 "Statistical Account".ChangeCompany("Company Name");
                 "Currency Exchange Rate".ChangeCompany("Company Name");
@@ -242,7 +243,7 @@ report 60007 "Import Consolidation Non GAAP"
 
                 SelectedDim.SetRange("User ID", UserId);
                 SelectedDim.SetRange("Object Type", 3);
-                SelectedDim.SetRange("Object ID", REPORT::"Import Consolidation from DB");
+                SelectedDim.SetRange("Object ID", REPORT::"Import Consolidation Non GAAP");
                 BusUnitConsolidate.SetSelectedDim(SelectedDim);
 
                 TempDim.Reset();
@@ -325,7 +326,7 @@ report 60007 "Import Consolidation Non GAAP"
 
                             trigger OnAssistEdit()
                             begin
-                                DimSelectionBuf.SetDimSelectionMultiple(3, REPORT::"Import Consolidation from DB", ColumnDim);
+                                DimSelectionBuf.SetDimSelectionMultiple(3, REPORT::"Import Consolidation Non GAAP", ColumnDim);
                             end;
                         }
                     }
@@ -639,12 +640,11 @@ report 60007 "Import Consolidation Non GAAP"
         IF "Statistical Ledger Entry"."Amount" >= 0 then
             NewGLEntry."Debit Amount" := "Statistical Ledger Entry"."Amount"
         else
-            NewGLEntry."Credit Amount" := "Statistical Ledger Entry"."Amount";
+            NewGLEntry."Credit Amount" := -"Statistical Ledger Entry"."Amount";
     end;
 
     local procedure GetAccountNo(): Code[20]
     begin
-
 
         CASE true of
 

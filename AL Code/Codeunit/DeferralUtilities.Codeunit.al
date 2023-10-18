@@ -853,12 +853,12 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             Agreementheader."RoyaltyscheduleNo." := DeferralHeader."Document No.";
         End;
 
-        IF Agreementheader."ComissionScheduleNo." = '' then Begin
+        IF Agreementheader."CommissionScheduleNo." = '' then Begin
             CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, true);
             DeferralHeader.CalculateSchedule();
             DeferralHeader.Status := DeferralHeader.Status::Certified;
             DeferralHeader.Modify();
-            Agreementheader."ComissionScheduleNo." := DeferralHeader."Document No.";
+            Agreementheader."CommissionScheduleNo." := DeferralHeader."Document No.";
         End;
         Agreementheader.Modify();
     end;

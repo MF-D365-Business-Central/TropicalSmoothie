@@ -7,6 +7,10 @@ pageextension 60003 "MFCC01Business Unit List" extends "Business Unit List"
 
     actions
     {
+        modify("Run Consolidation")
+        {
+            Enabled = Not NonGaapEnable;
+        }
         // Add changes to page actions here
         addafter("Run Consolidation")
         {
@@ -30,10 +34,8 @@ pageextension 60003 "MFCC01Business Unit List" extends "Business Unit List"
     End;
 
     local procedure SetControlProperties()
-    var
-        myInt: Integer;
     begin
-        CZSetup.Get();
+        IF CZSetup.Get() then;
         NonGaapEnable := CZSetup."Non GAAP Consolidation Company";
     end;
 

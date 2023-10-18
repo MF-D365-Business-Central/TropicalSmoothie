@@ -46,6 +46,10 @@ page 60010 "MFCC01 Franchise Journal"
                 field("Customer No."; Rec."Customer No.")
                 {
                     ToolTip = 'Specifies the value of the Customer No. field.';
+                    trigger OnValidate()
+                    Begin
+                        Rec.ShowShortcutDimCode(ShortcutDimCode);
+                    End;
                 }
                 field(Description; Rec.Description)
                 {

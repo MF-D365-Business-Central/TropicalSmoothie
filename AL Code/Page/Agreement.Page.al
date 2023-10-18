@@ -72,9 +72,9 @@ page 60005 "MFCC01 Agreement"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the License Type field.';
                 }
-                field("ComissionscheduleNo."; Rec."ComissionscheduleNo.")
+                field("CommissionscheduleNo."; Rec."CommissionscheduleNo.")
                 {
-                    ToolTip = 'Specifies the value of the Comission schedule No. field.';
+                    ToolTip = 'Specifies the value of the Commission schedule No. field.';
                 }
                 field("RoyaltyscheduleNo."; Rec."RoyaltyscheduleNo.")
                 {

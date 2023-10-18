@@ -43,7 +43,6 @@ report 60002 "Suggest Customer Payments"
                                 "Cust. Ledger Entry".Modify();
                                 GenJnlLine."Applies-to ID" := GenJnlLine."Document No.";
                                 GenJnlLine.Validate(Amount, GenJnlLine.Amount - "Cust. Ledger Entry"."Amount to Apply");
-                                GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
                                 GenJnlLine.Modify();
                             end;
                         false:
@@ -186,7 +185,7 @@ report 60002 "Suggest Customer Payments"
                         Caption = 'Bank Payment Type';
                         Importance = Additional;
                         ToolTip = 'Specifies the check type to be used, if you use Bank Account as the balancing account type.';
-
+                        //Enabled = false;
                         trigger OnValidate()
                         begin
                             if (GenJnlLine2."Bal. Account Type" <> GenJnlLine2."Bal. Account Type"::"Bank Account") and
@@ -310,6 +309,7 @@ report 60002 "Suggest Customer Payments"
             NextDocNo := IncStr(NextDocNo);
 
         NextLine += 10000;
+        GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
         GenJnlLine.Insert(true);
 
     end;

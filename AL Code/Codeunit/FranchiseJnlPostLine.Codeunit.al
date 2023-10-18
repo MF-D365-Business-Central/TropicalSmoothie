@@ -133,7 +133,9 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."Royalty Account", Sign() * GlobalFranchiseLedgerEntry."Royalty Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
-
+            InitDefaultDimSource(DefaultDimSource, CZSetup."Royalty Account");
+            GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
+            GenJnlLine."Dimension Set ID", 0);
             PostJournal();
             BalanceAmount := Sign() * GlobalFranchiseLedgerEntry."Royalty Fee";
         End;
@@ -189,6 +191,13 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         GenJnlLine.Validate("Account Type", AccountType);
         GenJnlLine.Validate("Account No.", AccountNo);
         GenJnlLine.Validate(Amount, Amount);
+    end;
+
+
+    local procedure InitDefaultDimSource(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]]; Accountno: Code[20])
+    begin
+        Clear(DefaultDimSource);
+        DimMgt.AddDimSource(DefaultDimSource, Database::"G/L Account", Accountno);
     end;
 
     procedure PostJournal()

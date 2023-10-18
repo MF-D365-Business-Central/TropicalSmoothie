@@ -11,11 +11,11 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
                 ApplicationArea = All;
                 ToolTip = 'Specifies the bank account that the amount will be transferred to after it has been exported from the payment journal.';
             }
-            field("Agreement No."; Rec."Agreement No.")
-            {
-                ApplicationArea = All;
-                ToolTip = 'Specifies the value of the Agreement No. field.';
-            }
+            // field("Agreement No."; Rec."Agreement No.")
+            // {
+            //     ApplicationArea = All;
+            //     ToolTip = 'Specifies the value of the Agreement No. field.';
+            // }
         }
     }
 

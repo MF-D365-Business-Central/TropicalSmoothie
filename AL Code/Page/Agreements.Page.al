@@ -57,9 +57,9 @@ page 60004 "MFCC01 Agreements"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Status field.';
                 }
-                field("ComissionscheduleNo."; Rec."ComissionscheduleNo.")
+                field("CommissionscheduleNo."; Rec."CommissionscheduleNo.")
                 {
-                    ToolTip = 'Specifies the value of the Comission schedule No. field.';
+                    ToolTip = 'Specifies the value of the Commission schedule No. field.';
                 }
                 field("RoyaltyscheduleNo."; Rec."RoyaltyscheduleNo.")
                 {
