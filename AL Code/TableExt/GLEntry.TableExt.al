@@ -9,6 +9,13 @@ tableextension 60002 "MFCC01 G/L Entry" extends "G/L Entry"
             DataClassification = CustomerContent;
             TableRelation = "MFCC01 Agreement Header"."No.";
         }
+
+        field(60002; "Source Name"; Text[100])
+        {
+            DataClassification = CustomerContent;
+        }
+
+
     }
 
 

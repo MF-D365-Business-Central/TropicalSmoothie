@@ -40,6 +40,8 @@ table 60003 "MFCC01 Agreement Header"
             Begin
                 CheckDates();
                 TestStatusNew(Rec);
+                CZ.GetRecordonce();
+                CalcExpirationDate();
             End;
         }
         field(16; "License Type"; Enum "MFCC01 License Type")
@@ -92,7 +94,7 @@ table 60003 "MFCC01 Agreement Header"
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
-                TestStatusNew(Rec);
+                Rec.TestField("Posted Commission Amount", 0);
             End;
         }
         field(23; "No. Series"; Code[20])
@@ -157,6 +159,15 @@ table 60003 "MFCC01 Agreement Header"
             DataClassification = CustomerContent;
             Editable = false;
         }
+
+        field(59; "Termination Date"; Date)
+        {
+            DataClassification = CustomerContent;
+            trigger OnValidate()
+            Begin
+                Rec.TestField(Status, Rec.Status::Opened);
+            End;
+        }
     }
 
     keys
@@ -167,7 +178,14 @@ table 60003 "MFCC01 Agreement Header"
         }
     }
 
+    var
 
+        CZ: Record "MFCC01 Customization Setup";
+        NoSeriesMgt: Codeunit NoSeriesManagement;
+        OpenDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Franchise Revenue Start Date %2';
+        OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Franchise Revenue Start Date %2';
+        RoyaltyDateStDateErrorLbl: Label 'Term Expiration Date %1 must not be less then Franchise Revenue Start Date %2';
+        DuplicateAgreementErr: Label 'There is Agreement %1 is signed/open. you can not Setup Multiple signed/open Agreements.';
 
     trigger OnInsert()
     var
@@ -179,10 +197,10 @@ table 60003 "MFCC01 Agreement Header"
             exit;
 
         if "No." = '' then begin
-            CustSetup.Get();
-            CustSetup.TestField("Agreement Nos.");
-            NoSeriesMgt.InitSeries(CustSetup."Agreement Nos.", xRec."No. Series", 0D, "No.", "No. Series");
-            Rec.NonGapInitialRevenueRecognized := CustSetup.NonGapInitialRevenueRecognized;
+            CZ.Get();
+            CZ.TestField("Agreement Nos.");
+            NoSeriesMgt.InitSeries(CZ."Agreement Nos.", xRec."No. Series", 0D, "No.", "No. Series");
+            Rec.NonGapInitialRevenueRecognized := CZ.NonGapInitialRevenueRecognized;
         end;
         TransfereedAgreement();
     End;
@@ -262,14 +280,14 @@ table 60003 "MFCC01 Agreement Header"
         Rec."License Type" := Rec."License Type"::Transferred;
     end;
 
+    local procedure CalcExpirationDate()
     var
-
-        CustSetup: Record "MFCC01 Customization Setup";
-        NoSeriesMgt: Codeunit NoSeriesManagement;
-        OpenDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Franchise Revenue Start Date %2';
-        OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Franchise Revenue Start Date %2';
-        RoyaltyDateStDateErrorLbl: Label 'Term Expiration Date %1 must not be less then Franchise Revenue Start Date %2';
-        DuplicateAgreementErr: Label 'There is Agreement %1 is signed/open. you can not Setup Multiple signed/open Agreements.';
+        DeferalTemplate: Record "Deferral Template";
+    begin
+        CZ.GetRecordonce();
+        DeferalTemplate.Get(CZ."Deferral Template");
+        Rec."Term Expiration Date" := CalcDate(Strsubstno('<+%1M>', DeferalTemplate."No. of Periods"), rec."Agreement Date")
+    end;
 
     local procedure TestNoSeries()
     var
@@ -283,8 +301,8 @@ table 60003 "MFCC01 Agreement Header"
 
         if "No." <> xRec."No." then
             if not AgreementHeader.Get(Rec."No.") then begin
-                CustSetup.Get();
-                NoSeriesMgt.TestManual(CustSetup."Agreement Nos.");
+                CZ.Get();
+                NoSeriesMgt.TestManual(CZ."Agreement Nos.");
                 "No. Series" := '';
 
             end;
@@ -296,11 +314,11 @@ table 60003 "MFCC01 Agreement Header"
     begin
 
         AgreementHeader := Rec;
-        CustSetup.Get();
-        CustSetup.TestField("Agreement Nos.");
-        if NoSeriesMgt.SelectSeries(CustSetup."Agreement Nos.", OldAgreementHeader."No. Series", "No. Series") then begin
+        CZ.Get();
+        CZ.TestField("Agreement Nos.");
+        if NoSeriesMgt.SelectSeries(CZ."Agreement Nos.", OldAgreementHeader."No. Series", "No. Series") then begin
             NoSeriesMgt.SetSeries(AgreementHeader."No.");
-            AgreementHeader.NonGapInitialRevenueRecognized := CustSetup.NonGapInitialRevenueRecognized;
+            AgreementHeader.NonGapInitialRevenueRecognized := CZ.NonGapInitialRevenueRecognized;
             Rec := AgreementHeader;
             OnAssistEditOnBeforeExit(AgreementHeader);
             exit(true);
@@ -342,6 +360,7 @@ table 60003 "MFCC01 Agreement Header"
     procedure SetStatusTerminate(Var AgreementHeader: Record "MFCC01 Agreement Header")
     begin
         CheckLinesExist(AgreementHeader, true);
+        AgreementHeader.TestField("Termination Date");
         IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
             AgreementHeader.Status := AgreementHeader.Status::Terminated;
             AgreementHeader.Modify();
@@ -353,7 +372,6 @@ table 60003 "MFCC01 Agreement Header"
         AgreementLine: Record "MFCC01 Agreement Line";
         NoLinesError: Label 'Agreement Lines does not exist.';
     begin
-
         AgreementLine.SetRange("Agreement No.", Rec."No.");
         Found := Not AgreementLine.IsEmpty();
         IF ShowError and (Not Found) then

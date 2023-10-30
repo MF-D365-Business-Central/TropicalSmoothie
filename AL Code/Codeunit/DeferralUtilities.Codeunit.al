@@ -842,28 +842,51 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     var
         DeferralHeader: Record "MFCC01 Deferral Header";
         CZSetup: Record "MFCC01 Customization Setup";
+        Type: Enum "MFCC01 Deferral Type";
     begin
         Agreementheader.TestField(Status, Agreementheader.Status::Opened);
         CZSetup.GetRecordonce();
-        IF Agreementheader."RoyaltyscheduleNo." = '' then Begin
-            CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, false);
+        IF (Agreementheader."RoyaltyscheduleNo." = '') And (Agreementheader."Agreement Amount" <> 0) then Begin
+            Type := Type::Royalty;
+            CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, Type);
             DeferralHeader.CalculateSchedule();
             DeferralHeader.Status := DeferralHeader.Status::Certified;
             DeferralHeader.Modify();
             Agreementheader."RoyaltyscheduleNo." := DeferralHeader."Document No.";
         End;
 
-        IF Agreementheader."CommissionScheduleNo." = '' then Begin
-            CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, true);
+        IF (Agreementheader."CommissionScheduleNo." = '') and (Agreementheader."SalesPerson Commission" <> 0) then Begin
+            Type := Type::Commission;
+            CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, Type);
             DeferralHeader.CalculateSchedule();
             DeferralHeader.Status := DeferralHeader.Status::Certified;
             DeferralHeader.Modify();
             Agreementheader."CommissionScheduleNo." := DeferralHeader."Document No.";
         End;
+
         Agreementheader.Modify();
     end;
 
-    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Agreementheader: Record "MFCC01 Agreement Header"; CZSetup: Record "MFCC01 Customization Setup"; Commision: Boolean)
+    procedure CreatedeferralScheduleFromRenewal(Var Renewal: Record "MFCC01 Agreement Renewal")
+    var
+        DeferralHeader: Record "MFCC01 Deferral Header";
+
+        CZSetup: Record "MFCC01 Customization Setup";
+    begin
+
+        CZSetup.GetRecordonce();
+        IF (Renewal."RenewalscheduleNo." = '') And (Renewal."Renewal Fees" <> 0) then Begin
+            CreateDeferralHeader(DeferralHeader, Renewal, CZSetup);
+            DeferralHeader.CalculateSchedule();
+            DeferralHeader.Status := DeferralHeader.Status::Certified;
+            DeferralHeader.Modify();
+            Renewal."RenewalscheduleNo." := DeferralHeader."Document No.";
+            Renewal.Modify();
+        End;
+
+    end;
+
+    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Agreementheader: Record "MFCC01 Agreement Header"; CZSetup: Record "MFCC01 Customization Setup"; Type: Enum "MFCC01 Deferral Type")
 
     begin
         DeferralHeader.Init();
@@ -871,13 +894,32 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader.Insert(true);
         DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
         DeferralHeader."Start Date" := Agreementheader."Franchise Revenue Start Date";
-        IF not Commision then
-            DeferralHeader.validate("Amount to Defer", Agreementheader."Agreement Amount")
-        else
+        DeferralHeader.Type := Type;
+        IF Type = Type::Royalty then
+            DeferralHeader.validate("Amount to Defer", Agreementheader."Agreement Amount");
+        IF Type = Type::Commission then
             DeferralHeader.validate("Amount to Defer", Agreementheader."SalesPerson Commission");
         DeferralHeader."Agreement No." := Agreementheader."No.";
         DeferralHeader."Customer No." := Agreementheader."Customer No.";
-        DeferralHeader.Commision := Commision;
+        //DeferralHeader.Commision := Commision;
+        DeferralHeader.Modify(true)
+
+    end;
+
+
+    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Renewal: Record "MFCC01 Agreement Renewal"; CZSetup: Record "MFCC01 Customization Setup")
+    var
+        Agreementheader: Record "MFCC01 Agreement Header";
+    begin
+        DeferralHeader.Init();
+        DeferralHeader."Document No." := '';
+        DeferralHeader.Insert(true);
+        DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
+        DeferralHeader."Start Date" := Renewal."Effective Date";
+        DeferralHeader.validate("Amount to Defer", Renewal."Renewal Fees");
+        DeferralHeader."Agreement No." := Agreementheader."No.";
+        DeferralHeader."Customer No." := Agreementheader."Customer No.";
+        DeferralHeader.Type := DeferralHeader.Type::Renewal;
         DeferralHeader.Modify(true)
 
     end;

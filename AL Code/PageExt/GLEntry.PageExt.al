@@ -11,6 +11,15 @@ pageextension 60004 "MFCC01General Ledger Entries" extends "General Ledger Entri
                 ToolTip = 'Specifies the value of the Agreement No. field.';
             }
         }
+        addafter("Source No.")
+        {
+            
+            field("Source Name"; Rec."Source Name")
+            {
+                ApplicationArea = All;
+                ToolTip = 'Specifies the value of the Source Name field.';
+            }
+        }
     }
 
     actions

@@ -18,10 +18,11 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the Document No. field.';
                 }
-                field(Commision; Rec.Commision)
+                field("Type"; Rec."Type")
                 {
-                    ToolTip = 'Specifies the value of the Commision field.';
+                    ToolTip = 'Specifies the value of the Type field.';
                 }
+
                 field("Agreement No."; Rec."Agreement No.")
                 {
                     ToolTip = 'Specifies the value of the Agreement No. field.';

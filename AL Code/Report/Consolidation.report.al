@@ -81,7 +81,9 @@ report 60007 "Import Consolidation Non GAAP"
                         CZSetup.DefCommisionsinOperationsgaap,
                         CZSetup.RevenueRecognizedgaap,
                         CZSetup.DefRevenueCafesinOperationgaap,
-                        CZSetup.DeferredRevenueDevelopmentGAPP
+                        CZSetup.DeferredRevenueDevelopmentGAPP,
+                        CZSetup."Franchise Renewal Fee GAAP",
+                        CZSetup."Deferred Renewal Fee GAAP"
                         ] then
                         CurrReport.Skip();
                     BusUnitConsolidate.InsertGLAccount("G/L Account");
@@ -660,6 +662,10 @@ report 60007 "Import Consolidation Non GAAP"
                 Exit(CZSetup.DefRevenueCafesinOperationGAAP);
             CZSetup.DeferredRevenueDevelopment = "Statistical Account"."No.":
                 Exit(CZSetup.DeferredRevenueDevelopmentGAPP);
+            CZSetup."Franchise Renewal Fee" = "Statistical Account"."No.":
+                Exit(CZSetup."Franchise Renewal Fee GAAP");
+            CZSetup."Deferred Renewal Fee" = "Statistical Account"."No.":
+                Exit(CZSetup."Deferred Renewal Fee GAAP");
         END;
     end;
 }

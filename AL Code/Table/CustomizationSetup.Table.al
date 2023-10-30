@@ -15,7 +15,11 @@ table 60000 "MFCC01 Customization Setup"
             DataClassification = CustomerContent;
             TableRelation = "Deferral Template"."Deferral Code";
         }
-
+        field(13; "Renewal Deferral Template"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Deferral Template"."Deferral Code";
+        }
         field(50; "Deferral Nos."; Code[20])
         {
             DataClassification = CustomerContent;
@@ -101,7 +105,7 @@ table 60000 "MFCC01 Customization Setup"
 
         field(110; NonGapInitialRevenueRecognized; Decimal)
         {
-            Caption = 'Non Gap Initial Revenue Recognized';
+            Caption = 'Non GAAP Initial Revenue Recognized';
             DataClassification = CustomerContent;
         }
         field(115; CommissionRecognized; Code[20])
@@ -141,15 +145,37 @@ table 60000 "MFCC01 Customization Setup"
             DataClassification = CustomerContent;
             TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
-
-
-
         field(200; "Non GAAP Consolidation Company"; Boolean)
         {
             DataClassification = CustomerContent;
             //TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
 
+
+        //renewal
+        field(210; "Franchise Renewal Fee GAAP"; Code[20])
+        {
+            Caption = 'Franchise Renewal Fee';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(211; "Deferred Renewal Fee GAAP"; Code[20])
+        {
+            Caption = 'Deferred Renewal Fee';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+
+        field(212; "Franchise Renewal Fee"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(213; "Deferred Renewal Fee"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
     }
 
     keys

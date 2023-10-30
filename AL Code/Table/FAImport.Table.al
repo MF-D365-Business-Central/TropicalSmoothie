@@ -18,7 +18,7 @@ table 60011 "MFCC01 FA Import"
         {
             DataClassification = CustomerContent;
         }
-        field(4; "Useful Life In Months"; Integer)
+        field(4; "Useful Life In Months"; Decimal)
         {
             DataClassification = CustomerContent;
         }

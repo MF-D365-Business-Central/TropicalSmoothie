@@ -86,6 +86,13 @@ page 60004 "MFCC01 Agreements"
                 RunObject = Page "MFCC01 Deferrals";
                 RunPageLink = "Agreement No." = field("No."), "Customer No." = field("Customer No.");
             }
+            action(Renewals)
+            {
+                ApplicationArea = All;
+                Image = ResourcePlanning;
+                RunObject = page "MFCC01 Agreement Renewal";
+                RunPageLink = "Agreement No." = field("No.");
+            }
             group(Entries)
             {
 
@@ -96,7 +103,7 @@ page 60004 "MFCC01 Agreements"
                     Image = Entries;
                     RunPageMode = View;
                     RunObject = Page "General Ledger Entries";
-                    RunPageLink = "Document No." = field("No.");
+                    RunPageLink = "Agreement No." = field("No.");
                 }
                 action(Statntries)
                 {
@@ -104,8 +111,18 @@ page 60004 "MFCC01 Agreements"
                     ApplicationArea = All;
                     Image = Entries;
                     RunPageMode = View;
-                    RunObject = Page "Statistical Ledger Entry List";
-                    RunPageLink = "Document No." = field("No.");
+
+                    //RunObject = Page "Statistical Ledger Entry List";
+                    //RunPageLink = "Document No." = field("No.");
+                    trigger OnAction()
+                    var
+                        StatLedger: Record "Statistical Ledger Entry";
+                        StatLedgerList: Page "Statistical Ledger Entry List";
+                    begin
+                        StatLedger.SetFILTER("Document No.", StrSubstNo('%1*', Rec."No."));
+                        StatLedgerList.SetTableView(StatLedger);
+                        StatLedgerList.Run();
+                    end;
                 }
                 action(Franchisentries)
                 {
@@ -167,6 +184,18 @@ page 60004 "MFCC01 Agreements"
                 begin
                     DeferralUtility.CreatedeferralScheduleFromAgreement(Rec);
                 end;
+            }
+            action(ProcessCommission)
+            {
+                Caption = 'Process Commission';
+                ApplicationArea = All;
+                Image = Post;
+                trigger OnAction()
+                var
+                    AgreementMgmt: Codeunit "MFCC01 Agreement Management";
+                Begin
+                    AgreementMgmt.ProcessCommission(Rec);
+                End;
             }
         }
     }

@@ -17,6 +17,10 @@ page 60000 "MFCC01 Customization Setup"
                 {
                     ToolTip = 'Specifies the value of the Deferral Template field.';
                 }
+                field("Renewal Deferral Template"; Rec."Renewal Deferral Template")
+                {
+                    ToolTip = 'Specifies the value of the Renewal Deferral Template field.';
+                }
                 field("Non GAAP Consolidation Company"; Rec."Non GAAP Consolidation Company")
                 {
                     ToolTip = 'Specifies the value of the Non GAAP Consolidation Company field.';
@@ -121,6 +125,33 @@ page 60000 "MFCC01 Customization Setup"
                     }
                 }
 
+            }
+            group(Renewal)
+            {
+                group(RenewalGAAP)
+                {
+                    Caption = 'GAAP';
+                    field("Franchise Renewal Fee GAAP"; Rec."Franchise Renewal Fee GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the Franchise Renewal Fee field.';
+                    }
+                    field("Deferred Renewal Fee GAAP"; Rec."Deferred Renewal Fee GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the Deferred Renewal Fee field.';
+                    }
+                }
+                Group(RenewalStatistical)
+                {
+                    Caption = 'Statistical';
+                    field("Franchise Renewal Fee"; Rec."Franchise Renewal Fee")
+                    {
+                        ToolTip = 'Specifies the value of the Franchise Renewal Fee field.';
+                    }
+                    field("Deferred Renewal Fee"; Rec."Deferred Renewal Fee")
+                    {
+                        ToolTip = 'Specifies the value of the Deferred Renewal Fee field.';
+                    }
+                }
             }
             group(Dimensions)
             {

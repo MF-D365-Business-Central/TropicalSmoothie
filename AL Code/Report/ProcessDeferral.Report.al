@@ -93,10 +93,19 @@ report 60000 "MFCC01 Process Deferral"
         GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
         GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
-        IF "MFCC01 Deferral Header".Commision then
-            GenJnlLine.Validate("Account No.", CZSetup.DefCommisionsinOperationsGAAP)
-        Else
-            GenJnlLine.Validate("Account No.", CZSetup.RevenueRecognizedgaap);
+        // IF "MFCC01 Deferral Header".Type = "MFCC01 Deferral Header".Type::Commission then
+        //     GenJnlLine.Validate("Account No.", CZSetup.DefCommisionsinOperationsGAAP)
+        // Else
+        //     GenJnlLine.Validate("Account No.", CZSetup.RevenueRecognizedgaap);
+
+        Case "MFCC01 Deferral Header".Type of
+            "MFCC01 Deferral Header".Type::Commission:
+                GenJnlLine.Validate("Account No.", CZSetup.DefCommisionsinOperationsGAAP);
+            "MFCC01 Deferral Header".Type::Royalty:
+                GenJnlLine.Validate("Account No.", CZSetup.RevenueRecognizedgaap);
+            "MFCC01 Deferral Header".Type::Renewal:
+                GenJnlLine.Validate("Account No.", CZSetup."Deferred Renewal Fee GAAP");
+        End;
         GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
         GenJnlLine.Validate(Amount, -"MFCC01 Deferral Line".Amount);
         InitDefaultDimSource(DefaultDimSource);
@@ -109,10 +118,19 @@ report 60000 "MFCC01 Process Deferral"
         GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
         GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
-        IF "MFCC01 Deferral Header".Commision then
+        IF "MFCC01 Deferral Header".Type = "MFCC01 Deferral Header".Type::Commission then
             GenJnlLine.Validate("Account No.", CZSetup.CommissionRecognizedGAAP)
         Else
             GenJnlLine.Validate("Account No.", CZSetup.DefRevenueCafesinOperationGAAP);
+
+        Case "MFCC01 Deferral Header".Type of
+            "MFCC01 Deferral Header".Type::Commission:
+                GenJnlLine.Validate("Account No.", CZSetup.CommissionRecognizedGAAP);
+            "MFCC01 Deferral Header".Type::Royalty:
+                GenJnlLine.Validate("Account No.", CZSetup.DefRevenueCafesinOperationGAAP);
+            "MFCC01 Deferral Header".Type::Renewal:
+                GenJnlLine.Validate("Account No.", CZSetup."Franchise Renewal Fee GAAP");
+        End;
         GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
         GenJnlLine.Validate(Amount, "MFCC01 Deferral Line".Amount);
         InitDefaultDimSource(DefaultDimSource);

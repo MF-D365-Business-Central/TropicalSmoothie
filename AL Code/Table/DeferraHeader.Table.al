@@ -171,6 +171,11 @@ table 60001 "MFCC01 Deferral Header"
             Caption = 'Commision';
             Editable = false;
         }
+
+        field(25; Type; Enum "MFCC01 Deferral Type")
+        {
+            Editable = false;
+        }
     }
 
     keys
@@ -210,7 +215,7 @@ table 60001 "MFCC01 Deferral Header"
             CustSetup.Get();
             CustSetup.TestField("Deferral Nos.");
             NoSeriesMgt.InitSeries(CustSetup."Deferral Nos.", xRec."No. Series", 0D, "Document No.", "No. Series");
-           
+
             Rec.Validate("Deferral Code", CustSetup."Deferral Template");
         end;
 
@@ -244,7 +249,7 @@ table 60001 "MFCC01 Deferral Header"
                 CustSetup.Get();
                 NoSeriesMgt.TestManual(CustSetup."Deferral Nos.");
                 "No. Series" := '';
-                
+
                 Rec.Validate("Deferral Code", CustSetup."Deferral Template");
             end;
     end;
@@ -259,7 +264,7 @@ table 60001 "MFCC01 Deferral Header"
         CustSetup.TestField("Deferral Nos.");
         if NoSeriesMgt.SelectSeries(CustSetup."Deferral Nos.", OldDeferral."No. Series", "No. Series") then begin
             NoSeriesMgt.SetSeries(Deferral."Document No.");
-            
+
             Deferral.Validate("Deferral Code", CustSetup."Deferral Template");
             Rec := Deferral;
             OnAssistEditOnBeforeExit(Deferral);
@@ -278,7 +283,7 @@ table 60001 "MFCC01 Deferral Header"
             exit(false);
         end;
         Rec.TestField("Deferral Code");
-        
+
         Rec.TestField("Amount to Defer");
         DeferralDescription := "Schedule Description";
         DeferralUtilities.CreateDeferralSchedule(Rec."Deferral Code",
