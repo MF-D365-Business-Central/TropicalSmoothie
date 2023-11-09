@@ -14,4 +14,7 @@ enum 60007 "MFCC01 Deferral Type"
     value(3; Renewal)
     {
     }
+    value(4; Transferred)
+    {
+    }
 }

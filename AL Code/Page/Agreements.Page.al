@@ -40,6 +40,14 @@ page 60004 "MFCC01 Agreements"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Franchise Revenue Start Date field.';
                 }
+                field("Term Expiration Date"; Rec."Term Expiration Date")
+                {
+                    ToolTip = 'Specifies the value of the Term Expiration Date field.';
+                }
+                field("No. of Periods"; Rec."No. of Periods")
+                {
+                    ToolTip = 'Specifies the value of the No. of Periods field.';
+                }
                 field("Royalty Bank Account"; Rec."Royalty Bank Account")
                 {
                     ApplicationArea = All;
@@ -49,7 +57,7 @@ page 60004 "MFCC01 Agreements"
                 field("License Type"; Rec."License Type")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the License Type field.';
+                    ToolTip = 'Specifies the value of the Agreement Type field.';
                 }
 
                 field(Status; Rec.Status)
@@ -70,6 +78,17 @@ page 60004 "MFCC01 Agreements"
                     ToolTip = 'Specifies the value of the Franchise Bank Account field.';
                 }
 
+            }
+        }
+        area(FactBoxes)
+        {
+            systempart(Control1900383207; Links)
+            {
+                ApplicationArea = RecordLinks;
+            }
+            systempart(Control1905767507; Notes)
+            {
+                ApplicationArea = Notes;
             }
         }
     }
@@ -137,7 +156,16 @@ page 60004 "MFCC01 Agreements"
         }
         area(Processing)
         {
-
+            action("Co&mments")
+            {
+                ApplicationArea = Comments;
+                Caption = 'Co&mments';
+                Image = ViewComments;
+                RunObject = Page "Comment Sheet";
+                RunPageLink = "Table Name" = CONST("MFCC01 Agreement Header"),
+                                  "No." = FIELD("No.");
+                ToolTip = 'View or add comments for the record.';
+            }
             action(Sign)
             {
                 ApplicationArea = All;
@@ -196,6 +224,12 @@ page 60004 "MFCC01 Agreements"
                 Begin
                     AgreementMgmt.ProcessCommission(Rec);
                 End;
+            }
+            action(Import)
+            {
+                ApplicationArea = All;
+                Image = Import;
+                RunObject = report MFCC01AgreementExcelImport;
             }
         }
     }

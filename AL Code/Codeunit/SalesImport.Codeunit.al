@@ -26,8 +26,11 @@ codeunit 60003 "MFCC01 Sales Import"
                     PrevDocumentNo := SalesImport."Document No.";
                 End;
 
+
+
                 SalesImport.CreateSalesLine(LineNo);
                 SalesImport.Status := SalesImport.Status::Created;
+                SalesImport."Invoice No." := SalesHeader."No.";
                 SalesImport.Modify();
             Until SalesImport.Next() = 0;
     end;
@@ -45,12 +48,16 @@ codeunit 60003 "MFCC01 Sales Import"
         IF SalesImport.FindSet(true) then
             repeat
                 IF PrevDocumentNo <> SalesImport."Document No." then Begin
+                    PrevDocumentNo := SalesImport."Document No.";
                     Posted := false;
-                    Commit();
+                    ClearLastError();
                     SalesHeader.SetRange("Document Type", SalesImport."Document Type");
                     SalesHeader.SetRange("No.", SalesImport."Document No.");
                     IF SalesHeader.FindFirst() then;
+                    UpdateComments(SalesHeader);
+                    Commit();
                     PostOneDocument(SalesHeader, Posted);
+                    UpdateComments(SalesHeader, GetLastErrorText());
                 End;
 
                 IF Posted then Begin
@@ -64,7 +71,33 @@ codeunit 60003 "MFCC01 Sales Import"
     local procedure PostOneDocument(SalesHeader: Record "Sales Header"; Var Posted: Boolean)
 
     begin
+        Posted := false;
         IF Codeunit.Run(Codeunit::"Sales-Post", SalesHeader) then
             Posted := True;
+
+    end;
+
+    local procedure UpdateComments(SalesHeader: Record "Sales Header"; ErrorText: Text)
+    var
+        SalesImport2: Record "MFCC01 Sales Import";
+    begin
+        SalesImport2.Reset();
+        SalesImport2.SetCurrentKey("Document No.");
+        SalesImport2.SetRange(Status, SalesImport.Status::Created);
+        SalesImport2.SetRange("Invoice No.", SalesHeader."No.");
+        IF SalesImport2.FindSet() then
+            SalesImport2.ModifyAll(Remarks, CopyStr(ErrorText, 1, 500));
+    end;
+
+    local procedure UpdateComments(SalesHeader: Record "Sales Header")
+    var
+        SalesImport2: Record "MFCC01 Sales Import";
+    begin
+        SalesImport2.Reset();
+        SalesImport2.SetCurrentKey("Document No.");
+        SalesImport2.SetRange(Status, SalesImport.Status::Created);
+        SalesImport2.SetRange("Invoice No.", SalesHeader."No.");
+        IF SalesImport2.FindSet() then
+            SalesImport2.ModifyAll(Remarks, '');
     end;
 }

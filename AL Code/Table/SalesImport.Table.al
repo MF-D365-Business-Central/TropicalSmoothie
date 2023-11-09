@@ -64,18 +64,18 @@ table 60006 "MFCC01 Sales Import"
         {
             DataClassification = CustomerContent;
         }
-        field(53; "Unit of Measure Code"; Code[10])
-        {
-            DataClassification = CustomerContent;
-        }
-        field(54; "Variant Code"; Code[10])
-        {
-            DataClassification = CustomerContent;
-        }
-        field(55; "Location Code"; Code[10])
-        {
-            DataClassification = CustomerContent;
-        }
+        // field(53; "Unit of Measure Code"; Code[10])
+        // {
+        //     DataClassification = CustomerContent;
+        // }
+        // field(54; "Variant Code"; Code[10])
+        // {
+        //     DataClassification = CustomerContent;
+        // }
+        // field(55; "Location Code"; Code[10])
+        // {
+        //     DataClassification = CustomerContent;
+        // }
         field(56; Quantity; Decimal)
         {
             DataClassification = CustomerContent;
@@ -99,6 +99,15 @@ table 60006 "MFCC01 Sales Import"
         {
             DataClassification = CustomerContent;
         }
+        field(92; "Department Code"; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
+
+        field(93; Remarks; Text[500])
+        {
+            DataClassification = CustomerContent;
+        }
     }
 
     keys
@@ -109,8 +118,6 @@ table 60006 "MFCC01 Sales Import"
         }
     }
 
-    var
-        myInt: Integer;
 
     trigger OnInsert()
     begin
@@ -142,7 +149,8 @@ table 60006 "MFCC01 Sales Import"
         //Keys <<
         SalesHeader.Insert(true);
         SalesHeader.Validate("Sell-to Customer No.", Rec."Customer No.");
-        SalesHeader."Posting Date" := Rec."Posting Date";
+        SalesHeader.Validate("Document Date" , Rec."Posting Date");
+        SalesHeader.Validate("Posting Date" , Rec."Posting Date");
         SalesHeader."External Document No." := Rec."External Document No.";
         SalesHeader.Modify();
 
@@ -163,11 +171,10 @@ table 60006 "MFCC01 Sales Import"
         SalesLine.Validate("Type", Rec.Type);
         SalesLine.Validate("No.", Rec."No.");
         SalesLine.Description := Rec.Description;
-        SalesLine.Validate("Unit of Measure Code", Rec."Unit of Measure Code");
-        SalesLine.Validate("Variant Code", Rec."Variant Code");
-        SalesLine.Validate("Location Code", Rec."Location Code");
         SalesLine.Validate(Quantity, Rec.Quantity);
-        SalesLine.Validate(Quantity, Rec."Unit Price");
+        SalesLine.Validate("Unit Price", Rec."Unit Price");
+        IF Rec."Department Code" <> '' then
+            SalesLine.Validate("Shortcut Dimension 1 Code", Rec."Department Code");
         SalesLine.Modify();
 
     end;

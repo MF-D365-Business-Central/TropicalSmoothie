@@ -103,12 +103,12 @@ Report 60004 "MFCC01PurchaseExcelImport"
             PurchaseImport.Type := LineTypeEnumConvert(GetCellvalueatPoistion(R, 7));
             PurchaseImport."No." := GetCellvalueatPoistion(R, 8);
             PurchaseImport.Description := GetCellvalueatPoistion(R, 9);
-            PurchaseImport."Unit of Measure Code" := GetCellvalueatPoistion(R, 10);
-            PurchaseImport."Variant Code" := GetCellvalueatPoistion(R, 11);
-            PurchaseImport."Location Code" := GetCellvalueatPoistion(R, 12);
-            Evaluate(PurchaseImport.Quantity, GetCellvalueatPoistion(R, 13));
-            Evaluate(PurchaseImport."Unit Price", GetCellvalueatPoistion(R, 14));
-            //Evaluate(PurchaseImport."Line Amount", GetCellvalueatPoistion(R, 15));
+            Evaluate(PurchaseImport.Quantity, GetCellvalueatPoistion(R, 10));
+            IF GetCellvalueatPoistion(R, 11) <> '' then
+                Evaluate(PurchaseImport."Direct Unit Cost", GetCellvalueatPoistion(R, 11));
+            IF GetCellvalueatPoistion(R, 12) <> '' then
+                Evaluate(PurchaseImport."Line Amount", GetCellvalueatPoistion(R, 12));
+            PurchaseImport."Department Code" := GetCellvalueatPoistion(R, 13);
             //Lines <<
 
             EntryNo += 1;

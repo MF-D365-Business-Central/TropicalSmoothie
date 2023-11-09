@@ -1,7 +1,8 @@
 table 60002 "MFCC01 Deferral Line"
 {
     Caption = 'Deferral Line';
-
+    LookupPageId = "MFCC01 DeferralScheduleSubform";
+    DrillDownPageId = "MFCC01 DeferralScheduleSubform";
     fields
     {
         field(2; "Customer No."; Code[20])
@@ -124,7 +125,7 @@ table 60002 "MFCC01 Deferral Line"
 
     local procedure GetDeferralHeader()
     begin
-        DeferralHeader.Get( Rec."Document No.");
+        DeferralHeader.Get(Rec."Document No.");
     end;
 
     local procedure CopyHeaderFields()

@@ -42,6 +42,10 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Term Expiration Date field.';
                 }
+                field("No. of Periods"; Rec."No. of Periods")
+                {
+                    ToolTip = 'Specifies the value of the No. of Periods field.';
+                }
                 field("Agreement Amount"; Rec."Agreement Amount")
                 {
                     ToolTip = 'Specifies the value of the Agreement Amount field.';
@@ -70,7 +74,7 @@ page 60005 "MFCC01 Agreement"
                 field("License Type"; Rec."License Type")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the License Type field.';
+                    ToolTip = 'Specifies the value of the Agreement Type field.';
                 }
                 field("CommissionscheduleNo."; Rec."CommissionscheduleNo.")
                 {
@@ -102,6 +106,17 @@ page 60005 "MFCC01 Agreement"
                 UpdatePropagation = Both;
                 ApplicationArea = Suite;
                 SubPageLink = "Agreement No." = field("No.");
+            }
+        }
+        area(FactBoxes)
+        {
+            systempart(Control1900383207; Links)
+            {
+                ApplicationArea = RecordLinks;
+            }
+            systempart(Control1905767507; Notes)
+            {
+                ApplicationArea = Notes;
             }
         }
     }
@@ -168,7 +183,16 @@ page 60005 "MFCC01 Agreement"
         }
         area(Processing)
         {
-
+            action("Co&mments")
+            {
+                ApplicationArea = Comments;
+                Caption = 'Co&mments';
+                Image = ViewComments;
+                RunObject = Page "Comment Sheet";
+                RunPageLink = "Table Name" = CONST("MFCC01 Agreement Header"),
+                                  "No." = FIELD("No.");
+                ToolTip = 'View or add comments for the record.';
+            }
             action(Sign)
             {
                 ApplicationArea = All;

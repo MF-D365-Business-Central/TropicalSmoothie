@@ -7,5 +7,8 @@ enum 60004 "MFCC01 License Type"
     value(1; Transferred)
     {
     }
+    value(2; Renewed)
+    {
+    }
 
 }

@@ -103,12 +103,12 @@ Report 60003 "MFCC01SalesExcelImport"
             SalesImport.Type := LineTypeEnumConvert(GetCellvalueatPoistion(R, 7));
             SalesImport."No." := GetCellvalueatPoistion(R, 8);
             SalesImport.Description := GetCellvalueatPoistion(R, 9);
-            SalesImport."Unit of Measure Code" := GetCellvalueatPoistion(R, 10);
-            SalesImport."Variant Code" := GetCellvalueatPoistion(R, 11);
-            SalesImport."Location Code" := GetCellvalueatPoistion(R, 12);
-            Evaluate(SalesImport.Quantity, GetCellvalueatPoistion(R, 13));
-            Evaluate(SalesImport."Unit Price", GetCellvalueatPoistion(R, 14));
-            //Evaluate(SalesImport."Line Amount", GetCellvalueatPoistion(R, 15));
+            Evaluate(SalesImport.Quantity, GetCellvalueatPoistion(R, 10));
+            IF GetCellvalueatPoistion(R, 11) <> '' then
+                Evaluate(SalesImport."Unit Price", GetCellvalueatPoistion(R, 11));
+            IF GetCellvalueatPoistion(R, 12) <> '' then
+                Evaluate(SalesImport."Line Amount", GetCellvalueatPoistion(R, 12));
+            SalesImport."Department Code" := GetCellvalueatPoistion(R, 13);
             //Lines <<
 
             EntryNo += 1;

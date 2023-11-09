@@ -13,14 +13,7 @@ page 60000 "MFCC01 Customization Setup"
         {
             group(Deferral)
             {
-                field("Deferral Template"; Rec."Deferral Template")
-                {
-                    ToolTip = 'Specifies the value of the Deferral Template field.';
-                }
-                field("Renewal Deferral Template"; Rec."Renewal Deferral Template")
-                {
-                    ToolTip = 'Specifies the value of the Renewal Deferral Template field.';
-                }
+
                 field("Non GAAP Consolidation Company"; Rec."Non GAAP Consolidation Company")
                 {
                     ToolTip = 'Specifies the value of the Non GAAP Consolidation Company field.';

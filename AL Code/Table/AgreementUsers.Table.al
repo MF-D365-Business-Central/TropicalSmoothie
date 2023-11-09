@@ -2,7 +2,8 @@ table 60005 "MFCC01 Agreement Users"
 {
     Caption = 'Agreement Users';
     DataClassification = CustomerContent;
-
+    LookupPageId = "MFCC01 Agreement Users";
+    DrillDownPageId = "MFCC01 Agreement Users";
     fields
     {
         field(1; "Customer No."; Code[20])
@@ -54,11 +55,16 @@ table 60005 "MFCC01 Agreement Users"
                 TestStatusOpen();
             End;
         }
+        field(14; Active; Boolean)
+        {
+            DataClassification = CustomerContent;
+        }
+
     }
 
     keys
     {
-        key(Key1;  "Agreement No.", "Line No.")
+        key(Key1; "Agreement No.", "Line No.")
         {
             Clustered = true;
         }
@@ -71,7 +77,7 @@ table 60005 "MFCC01 Agreement Users"
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
         AgreementHeader.Get(Rec."Agreement No.");
-        AgreementHeader.TestField(Status, AgreementHeader.Status::" ");
+        AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
     end;
 
     trigger OnInsert()

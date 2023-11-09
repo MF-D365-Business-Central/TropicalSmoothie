@@ -64,24 +64,24 @@ table 60010 "MFCC01 Purchase Import"
         {
             DataClassification = CustomerContent;
         }
-        field(53; "Unit of Measure Code"; Code[10])
-        {
-            DataClassification = CustomerContent;
-        }
-        field(54; "Variant Code"; Code[10])
-        {
-            DataClassification = CustomerContent;
-        }
-        field(55; "Location Code"; Code[10])
-        {
-            DataClassification = CustomerContent;
-        }
+        // field(53; "Unit of Measure Code"; Code[10])
+        // {
+        //     DataClassification = CustomerContent;
+        // }
+        // field(54; "Variant Code"; Code[10])
+        // {
+        //     DataClassification = CustomerContent;
+        // }
+        // field(55; "Location Code"; Code[10])
+        // {
+        //     DataClassification = CustomerContent;
+        // }
         field(56; Quantity; Decimal)
         {
             DataClassification = CustomerContent;
         }
 
-        field(57; "Unit Price"; Decimal)
+        field(57; "Direct Unit Cost"; Decimal)
         {
             DataClassification = CustomerContent;
         }
@@ -96,6 +96,15 @@ table 60010 "MFCC01 Purchase Import"
             DataClassification = CustomerContent;
         }
         field(91; "Invoice No."; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
+
+        field(92; "Department Code"; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
+        field(93; Remarks; Text[500])
         {
             DataClassification = CustomerContent;
         }
@@ -141,7 +150,8 @@ table 60010 "MFCC01 Purchase Import"
         //Keys <<
         PurchHeader.Insert(true);
         PurchHeader.Validate("Buy-from Vendor No.", Rec."Vendor No.");
-        PurchHeader."Posting Date" := Rec."Posting Date";
+        PurchHeader.Validate("Document Date", Rec."Posting Date");
+        PurchHeader.Validate("Posting Date", Rec."Posting Date");
         IF Rec."Document Type" = Rec."Document Type"::"Credit Memo" then
             PurchHeader."Vendor Cr. Memo No." := Rec."External Document No."
         else
@@ -165,12 +175,12 @@ table 60010 "MFCC01 Purchase Import"
         PurchLine.Validate("Type", Rec.Type);
         PurchLine.Validate("No.", Rec."No.");
         PurchLine.Description := Rec.Description;
-        PurchLine.Validate("Unit of Measure Code", Rec."Unit of Measure Code");
-        PurchLine.Validate("Variant Code", Rec."Variant Code");
-        PurchLine.Validate("Location Code", Rec."Location Code");
         PurchLine.Validate(Quantity, Rec.Quantity);
-        PurchLine.Validate(Quantity, Rec."Unit Price");
+        PurchLine.Validate("Direct Unit Cost", Rec."Direct Unit Cost");
+        IF Rec."Department Code" <> '' then
+            PurchLine.Validate("Shortcut Dimension 1 Code", Rec."Department Code");
         PurchLine.Modify();
 
     end;
+
 }

@@ -42,7 +42,7 @@ table 60001 "MFCC01 Deferral Header"
                 Rec.TestStausOpen(Rec);
                 IF DeferralTemplate.Get(Rec."Deferral Code") then;
                 "Calc. Method" := DeferralTemplate."Calc. Method";
-                "No. of Periods" := DeferralTemplate."No. of Periods";
+                //"No. of Periods" := DeferralTemplate."No. of Periods";
                 "Start Date" := WorkDate();
             End;
 
@@ -85,6 +85,7 @@ table 60001 "MFCC01 Deferral Header"
             trigger OnValidate()
             Begin
                 Rec.TestStausOpen(Rec);
+                CalcPeriods();
             End;
         }
         field(11; "Start Date"; Date)
@@ -110,6 +111,7 @@ table 60001 "MFCC01 Deferral Header"
                 OnValidateStartDateOnAfterCalcThrowScheduleOutOfBoundError(Rec, ThrowScheduleOutOfBoundError);
                 if ThrowScheduleOutOfBoundError then
                     Error(DeferSchedOutOfBoundsErr);
+                CalcPeriods();
             end;
         }
         field(12; "No. of Periods"; Integer)
@@ -146,6 +148,33 @@ table 60001 "MFCC01 Deferral Header"
                 Rec.TestStausOpen(Rec);
             End;
         }
+        field(14; "End Date"; Date)
+        {
+            Caption = 'End Date';
+
+            trigger OnValidate()
+            var
+                AccountingPeriod: Record "Accounting Period";
+                GenJnlBatch: Record "Gen. Journal Batch";
+                ThrowScheduleOutOfBoundError: Boolean;
+
+            begin
+                Rec.TestStausOpen(Rec);
+                if GenJnlCheckLine.DeferralPostingDateNotAllowed("End Date") then
+                    Error(InvalidPostingDateErr, "End Date");
+
+                if AccountingPeriod.IsEmpty() then
+                    exit;
+
+                AccountingPeriod.SetFilter("Starting Date", '>=%1', "End Date");
+                ThrowScheduleOutOfBoundError := AccountingPeriod.IsEmpty();
+                OnValidateStartDateOnAfterCalcThrowScheduleOutOfBoundError(Rec, ThrowScheduleOutOfBoundError);
+                if ThrowScheduleOutOfBoundError then
+                    Error(DeferSchedOutOfBoundsErr);
+
+                CalcPeriods();
+            end;
+        }
         field(20; "Schedule Line Total"; Decimal)
         {
             CalcFormula = Sum("MFCC01 Deferral Line".Amount WHERE(
@@ -175,6 +204,51 @@ table 60001 "MFCC01 Deferral Header"
         field(25; Type; Enum "MFCC01 Deferral Type")
         {
             Editable = false;
+        }
+        field(26; "Net Balance"; Decimal)
+        {
+
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(false), "Posting Date" = field("Date Filter")));
+        }
+        field(27; "Net Amortized"; Decimal)
+        {
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(true), "Posting Date" = field("Date Filter")));
+        }
+        field(28; "Date Filter"; Date)
+        {
+            FieldClass = FlowFilter;
+        }
+
+        field(29; Balance; Decimal)
+        {
+
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(false)));
+        }
+        field(30; Amortized; Decimal)
+        {
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(true)));
+        }
+
+
+        field(33; "Remaining Periods"; Integer)
+        {
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = Count("MFCC01 Deferral Line" where("Document No." = field("Document No."), Posted = const(false)));
+        }
+        field(34; "Amortized Periods"; Integer)
+        {
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = Count("MFCC01 Deferral Line" where("Document No." = field("Document No."), Posted = const(true)));
         }
     }
 
@@ -352,6 +426,14 @@ table 60001 "MFCC01 Deferral Header"
 
         SetDocumentCompleted(Rec);
 
+    end;
+
+    local procedure CalcPeriods()
+    var
+        DeferalUtilities: Codeunit "MFCC01 Deferral Utilities";
+    begin
+        IF (Rec."Start Date" <> 0D) And (Rec."End Date" <> 0D) then
+            Rec."No. of Periods" := DeferalUtilities.CalcNoOfPeriods(Rec."Start Date", Rec."End Date");
     end;
 
     [IntegrationEvent(false, false)]

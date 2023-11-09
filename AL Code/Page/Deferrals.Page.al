@@ -36,14 +36,45 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the Deferral Code field.';
                 }
+                field("Start Date"; Rec."Start Date")
+                {
+                    ToolTip = 'Specifies when to start calculating deferral amounts.';
+                }
                 field("No. of Periods"; Rec."No. of Periods")
                 {
                     ToolTip = 'Specifies how many accounting periods the total amounts will be deferred to.';
                 }
+                field("Remaining Periods"; Rec."Remaining Periods")
+                {
+                    ToolTip = 'Specifies the value of the Remaining Periods field.';
+                }
+
+                field("Amortized Periods"; Rec."Amortized Periods")
+                {
+                    ToolTip = 'Specifies the value of the Amortized Periods field.';
+                }
                 field("Amount to Defer"; Rec."Amount to Defer")
                 {
+                    ApplicationArea = All;
                     ToolTip = 'Specifies the amount to defer per period.';
                 }
+                field("Net Amortized"; Rec."Net Amortized")
+                {
+                    ToolTip = 'Specifies the value of the Net Amortized field.';
+                }
+                field("Net Balance"; Rec."Net Balance")
+                {
+                    ToolTip = 'Specifies the value of the Net Balance field.';
+                }
+                field(Amortized; Rec.Amortized)
+                {
+                    ToolTip = 'Specifies the value of the Amortized field.';
+                }
+                field(Balance; Rec.Balance)
+                {
+                    ToolTip = 'Specifies the value of the Balance field.';
+                }
+
                 field("Calc. Method"; Rec."Calc. Method")
                 {
                     ToolTip = 'Specifies how the Amount field for each period is calculated. Straight-Line: Calculated per the number of periods, distributed by period length. Equal Per Period: Calculated per the number of periods, distributed evenly on periods. Days Per Period: Calculated per the number of days in the period. User-Defined: Not calculated. You must manually fill the Amount field for each period.';

@@ -2,7 +2,8 @@ table 60012 "MFCC01 Agreement Renewal"
 {
     Caption = 'Agreement Renewal';
     DataClassification = CustomerContent;
-
+    LookupPageId = "MFCC01 Agreement Renewal";
+    DrillDownPageId = "MFCC01 Agreement Renewal";
     fields
     {
 
@@ -22,6 +23,7 @@ table 60012 "MFCC01 Agreement Renewal"
         }
         field(14; "Effective Date"; Date)
         {
+            Caption = 'Start Date';
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
@@ -32,11 +34,13 @@ table 60012 "MFCC01 Agreement Renewal"
         }
         field(15; "Term Expiration Date"; Date)
         {
+            Caption = 'End Date';
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
                 Chageallowed();
                 TestStatusOpen();
+                CheckDateAllowed();
             End;
         }
         field(10; "Renewal Fees"; Decimal)
@@ -63,6 +67,11 @@ table 60012 "MFCC01 Agreement Renewal"
         {
             DataClassification = CustomerContent;
             Editable = false;
+        }
+        field(60; "No. of Periods"; Decimal)
+        {
+            Editable = false;
+            DataClassification = CustomerContent;
         }
     }
 
@@ -100,10 +109,10 @@ table 60012 "MFCC01 Agreement Renewal"
         AgreementHeader: Record "MFCC01 Agreement Header";
         Renewal: Record "MFCC01 Agreement Renewal";
     begin
-        IF Rec."Effective Date" = 0D then
+        IF (Rec."Effective Date" = 0D) or (Rec."Term Expiration Date" = 0D) then
             exit;
 
-        CalcExpirationDate();
+        //CalcExpirationDate();
 
         AgreementHeader.Get(Rec."Agreement No.");
         IF AgreementHeader."Term Expiration Date" > Rec."Effective Date" then
@@ -115,23 +124,24 @@ table 60012 "MFCC01 Agreement Renewal"
         Renewal.SetFilter("Term Expiration Date", '%1..%2', Rec."Term Expiration Date");
         IF Renewal.FindFirst() then
             Error(DuplicateErr);
-
+        CalcPeriods();
     end;
 
-    local procedure CalcExpirationDate()
+    local procedure CalcPeriods()
     var
-        DeferalTemplate: Record "Deferral Template";
+        DeferalUtilities: Codeunit "MFCC01 Deferral Utilities";
     begin
-        CZ.GetRecordonce();
-        DeferalTemplate.Get(CZ."Renewal Deferral Template");
-        Rec."Term Expiration Date" := CalcDate(Strsubstno('<+%1M>', DeferalTemplate."No. of Periods"), rec."Effective Date")
+        IF (Rec."Effective Date" <> 0D) And (Rec."Term Expiration Date" <> 0D) then
+            Rec."No. of Periods" := DeferalUtilities.CalcNoOfPeriods(Rec."Effective Date", Rec."Term Expiration Date");
     end;
+
 
     procedure SetStatusSigned()
     var
         CZSetup: Record "MFCC01 Customization Setup";
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
+        Rec.TestField("No. of Periods");
         CZSetup.GetRecordonce();
         CZSetup.TestField("Franchise Renewal Fee GAAP");
         CZSetup.TestField("Renewal Deferral Template");
@@ -158,7 +168,7 @@ table 60012 "MFCC01 Agreement Renewal"
 
     trigger OnDelete()
     begin
-
+        Rec.TestField(Status, Rec.Status::InDevelopment);
     end;
 
     trigger OnRename()

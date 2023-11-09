@@ -33,6 +33,12 @@ page 60007 "MFCC01 Agreement Users"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Phone field.';
                 }
+
+                field(Active; Rec.Phone)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Phone field.';
+                }
             }
         }
     }

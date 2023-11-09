@@ -54,25 +54,34 @@ page 60008 "MFCC01 Sales Import"
                 {
                     ToolTip = 'Specifies the value of the Description field.';
                 }
-                field("Unit of Measure Code"; Rec."Unit of Measure Code")
-                {
-                    ToolTip = 'Specifies the value of the Unit of Measure Code field.';
-                }
-                field("Variant Code"; Rec."Variant Code")
-                {
-                    ToolTip = 'Specifies the value of the Variant Code field.';
-                }
-                field("Location Code"; Rec."Location Code")
-                {
-                    ToolTip = 'Specifies the value of the Location Code field.';
-                }
+
                 field(Quantity; Rec.Quantity)
                 {
                     ToolTip = 'Specifies the value of the Quantity field.';
                 }
+                field("Unit Price"; Rec."Unit Price")
+                {
+                    ToolTip = 'Specifies the value of the Unit Price field.';
+                }
+                field("Line Amount"; Rec."Line Amount")
+                {
+                    ToolTip = 'Specifies the value of the Line Amount field.';
+                }
+                field("Department Code"; Rec."Department Code")
+                {
+                    ToolTip = 'Specifies the value of the Department Code field.';
+                }
                 field(Status; Rec.Status)
                 {
                     ToolTip = 'Specifies the value of the Status field.';
+                }
+                field("Invoice No."; Rec."Invoice No.")
+                {
+                    ToolTip = 'Specifies the value of the Invoice No. field.';
+                }
+                field(Remarks; Rec.Remarks)
+                {
+                    ToolTip = 'Specifies the value of the Remarks field.';
                 }
             }
         }
@@ -80,6 +89,51 @@ page 60008 "MFCC01 Sales Import"
 
     actions
     {
+        area(Navigation)
+        {
+            action(Document)
+            {
+                ApplicationArea = All;
+
+                trigger OnAction()
+                var
+                    PageHeler: Codeunit "Page Management";
+                    SalesHeder: Record "Sales Header";
+                    SalesInvoice: Record "Sales Invoice Header";
+                    SalesCredMemo: Record "Sales Cr.Memo Header";
+                begin
+
+                    Case Rec.Status of
+                        Rec.Status::Created:
+                            Begin
+                                SalesHeder.SetRange("Document Type", Rec."Document Type");
+                                SalesHeder.SetRange("No.", Rec."Document No.");
+                                IF SalesHeder.FindFirst() then
+                                    PageHeler.PageRun(SalesHeder);
+                            End;
+                        Rec.Status::Posted:
+                            Begin
+                                Case Rec."Document Type" of
+                                    Rec."Document Type"::Invoice, Rec."Document Type"::Order:
+                                        Begin
+                                            SalesInvoice.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            IF SalesInvoice.FindFirst() then
+                                                PageHeler.PageRun(SalesInvoice);
+                                        End;
+                                    Rec."Document Type"::"Credit Memo", Rec."Document Type"::"Return Order":
+                                        Begin
+                                            SalesCredMemo.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            IF SalesCredMemo.FindFirst() then
+                                                PageHeler.PageRun(SalesInvoice);
+                                        End;
+                                End;
+
+                            End;
+                    End;
+
+                end;
+            }
+        }
         area(Processing)
         {
             action(ImportFromExcel)

@@ -26,22 +26,26 @@ table 60003 "MFCC01 Agreement Header"
         }
         field(12; "Term Expiration Date"; Date)
         {
+            Caption = 'End Date';
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
                 CheckDates();
-                TestStatusNew(Rec);
+                TestStatusForDates(Rec);
+                CalcPeriods();
             End;
         }
         field(13; "Franchise Revenue Start Date"; Date)
         {
+            Caption = 'Start Date';
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
                 CheckDates();
-                TestStatusNew(Rec);
+                TestStatusForDates(Rec);
                 CZ.GetRecordonce();
-                CalcExpirationDate();
+                //CalcExpirationDate();
+                CalcPeriods();
             End;
         }
         field(16; "License Type"; Enum "MFCC01 License Type")
@@ -168,6 +172,11 @@ table 60003 "MFCC01 Agreement Header"
                 Rec.TestField(Status, Rec.Status::Opened);
             End;
         }
+        field(60; "No. of Periods"; Decimal)
+        {
+            Editable = false;
+            DataClassification = CustomerContent;
+        }
     }
 
     keys
@@ -289,6 +298,14 @@ table 60003 "MFCC01 Agreement Header"
         Rec."Term Expiration Date" := CalcDate(Strsubstno('<+%1M>', DeferalTemplate."No. of Periods"), rec."Agreement Date")
     end;
 
+    local procedure CalcPeriods()
+    var
+        DeferalUtilities: Codeunit "MFCC01 Deferral Utilities";
+    begin
+        IF (Rec."Franchise Revenue Start Date" <> 0D) And (Rec."Term Expiration Date" <> 0D) then
+            Rec."No. of Periods" := DeferalUtilities.CalcNoOfPeriods(Rec."Franchise Revenue Start Date", Rec."Term Expiration Date");
+    end;
+
     local procedure TestNoSeries()
     var
         AgreementHeader: Record "MFCC01 Agreement Header";
@@ -326,14 +343,25 @@ table 60003 "MFCC01 Agreement Header"
 
     end;
 
+    procedure TestStatusForDates(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    begin
+        IF (AgreementHeader.Status = AgreementHeader.Status::Opened) or
+        (AgreementHeader.Status = AgreementHeader.Status::Terminated) then
+            Error('Status must not be %1', AgreementHeader.Status);
+    end;
+
     procedure TestStatusNew(Var AgreementHeader: Record "MFCC01 Agreement Header")
     begin
-        AgreementHeader.TestField(Status, AgreementHeader.Status::" ");
+        AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
     end;
 
     procedure SetStatusOpen(Var AgreementHeader: Record "MFCC01 Agreement Header")
     begin
         AgreementHeader.TestField(Status, Status::Signed);
+        AgreementHeader.Status := AgreementHeader.Status::Opened;
+        AgreementHeader.TestField("Franchise Revenue Start Date");
+        AgreementHeader.TestField("Term Expiration Date");
+        CheckLinesExist(AgreementHeader, true);
         AgreementHeader.Status := AgreementHeader.Status::Opened;
         AgreementHeader.Modify();
         OnaferOpenEvent(AgreementHeader);
@@ -350,8 +378,8 @@ table 60003 "MFCC01 Agreement Header"
         CZSetup.TestField(DefRevenueCafesinOperationGAAP);
         CZSetup.TestField(DeferredRevenueDevelopmentGAPP);
         CZSetup.TestField(RevenueRecognizedGAAP);
-        CheckLinesExist(AgreementHeader, true);
-        AgreementHeader.TestField(Status, AgreementHeader.Status::" ");
+
+        AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
         AgreementHeader.Status := AgreementHeader.Status::Signed;
         AgreementHeader.Modify();
         OnaferSignEvent(AgreementHeader);

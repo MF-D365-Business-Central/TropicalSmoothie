@@ -33,7 +33,7 @@ codeunit 60002 "MFCC01 Agreement Management"
     begin
         CZSetup.GetRecordonce();
         Customer.Get(AgreementHeader."Customer No.");
-
+        SetPostingDate(AgreementHeader."Agreement Date");
         GLEntry.LockTable();
         IF AgreementHeader."Posted Agreement Amount" = 0 then
             IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AgreementHeader."Agreement Amount", true, AgreementHeader."Royalty Bank Account", 0) then Begin
@@ -45,9 +45,9 @@ codeunit 60002 "MFCC01 Agreement Management"
             End;
 
         IF AgreementHeader.PostedRevenueStatisticalAmount = 0 then
-            IF PostStatsAmounts(AgreementHeader, CZSetup.RevenueRecognized, '', -CZSetup.NonGapInitialRevenueRecognized, 0) then
-                IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, '', -AgreementHeader."Agreement Amount" + CZSetup.NonGapInitialRevenueRecognized, 0) then Begin
-                    AgreementHeader.PostedRevenueStatisticalAmount := CZSetup.NonGapInitialRevenueRecognized;
+            IF PostStatsAmounts(AgreementHeader, CZSetup.RevenueRecognized, '', -AgreementHeader.NonGapInitialRevenueRecognized, 0) then
+                IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, '', -AgreementHeader."Agreement Amount" + AgreementHeader.NonGapInitialRevenueRecognized, 0) then Begin
+                    AgreementHeader.PostedRevenueStatisticalAmount := AgreementHeader.NonGapInitialRevenueRecognized;
                 End;
         IF AgreementHeader.PostedCommissionExpenseAmount = 0 then
             IF PostStatsAmounts(AgreementHeader, CZSetup.PrepaidCommisionLT, '', AgreementHeader."SalesPerson Commission", 0) then Begin
@@ -64,7 +64,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         AccountType: Enum "Gen. Journal Account Type";
         BalAccountType: Enum "Gen. Journal Account Type";
     begin
-
+        SetPostingDate(AgreementHeader."Franchise Revenue Start Date");
         CZSetup.GetRecordonce();
         Customer.Get(AgreementHeader."Customer No.");
         IF Customer."Franchisee Status" <> Customer."Franchisee Status"::Operational then Begin
@@ -73,8 +73,8 @@ codeunit 60002 "MFCC01 Agreement Management"
 
             IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AgreementHeader."Agreement Amount", false, '', 0) then
                 IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, BalAccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, AgreementHeader."SalesPerson Commission", false, '', 0) then
-                    IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, CZSetup.DefRevenueCafesinOperation, AgreementHeader."Agreement Amount" - CZSetup.NonGapInitialRevenueRecognized, 0) then
-                        IF PostStatsAmounts(AgreementHeader, CZSetup.DefRevenueCafesinOperation, CZSetup.RevenueRecognized, AgreementHeader."Agreement Amount" - CZSetup.NonGapInitialRevenueRecognized, 0) then
+                    IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, CZSetup.DefRevenueCafesinOperation, AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0) then
+                        IF PostStatsAmounts(AgreementHeader, CZSetup.DefRevenueCafesinOperation, CZSetup.RevenueRecognized, AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0) then
                             IF PostStatsAmounts(AgreementHeader, CZSetup.DefCommisionsinOperations, CZSetup.PrepaidCommisionLT, AgreementHeader."SalesPerson Commission", 0) then
                                 IF PostStatsAmounts(AgreementHeader, CZSetup.CommissionRecognized, CZSetup.DefCommisionsinOperations, AgreementHeader."SalesPerson Commission", 0) then Begin
 
@@ -95,6 +95,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         AccountType: Enum "Gen. Journal Account Type";
         BalAccountType: Enum "Gen. Journal Account Type";
     begin
+        SetPostingDate(WorkDate());
         AgreementHeader.TestField(Status, AgreementHeader.Status::Signed);
         CZSetup.GetRecordonce();
         IF AgreementHeader."Posted Commission Amount" = 0 then
@@ -104,7 +105,7 @@ codeunit 60002 "MFCC01 Agreement Management"
             End;
 
         IF AgreementHeader.PostedCommissionExpenseAmount = 0 then
-            IF PostStatsAmounts(AgreementHeader, CZSetup.PrepaidCommisionLT, '', AgreementHeader."SalesPerson Commission",0) then Begin
+            IF PostStatsAmounts(AgreementHeader, CZSetup.PrepaidCommisionLT, '', AgreementHeader."SalesPerson Commission", 0) then Begin
                 AgreementHeader.PostedCommissionExpenseAmount := AgreementHeader."SalesPerson Commission";
             End;
 
@@ -121,13 +122,15 @@ codeunit 60002 "MFCC01 Agreement Management"
         CZSetup.GetRecordonce();
         AgreementHeader.Get(Renewal."Agreement No.");
         CounterRenewal.SetRange("Agreement No.", Renewal."Agreement No.");
-
+        SetPostingDate(Renewal."Effective Date");
         //AgreementHeader."Agreement Date" := Renewal."Renewal Date";
         IF Renewal."Posted Renewal Fees" = 0 then
             IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup."Deferred Renewal Fee GAAP", Renewal."Renewal Fees", true, AgreementHeader."Royalty Bank Account", CounterRenewal.Count) then
-                IF PostStatsAmounts(AgreementHeader, CZSetup."Deferred Renewal Fee", CZSetup."Franchise Renewal Fee", Renewal."Renewal Fees",CounterRenewal.Count) then Begin
-                    Renewal."Posted Renewal Fees" := AgreementHeader."Agreement Amount";
+                IF PostStatsAmounts(AgreementHeader, CZSetup."Deferred Renewal Fee", CZSetup."Franchise Renewal Fee", Renewal."Renewal Fees", CounterRenewal.Count) then Begin
+                    Renewal."Posted Renewal Fees" := Renewal."Renewal Fees";
                     Renewal.Modify();
+                    AgreementHeader."License Type" := AgreementHeader."License Type"::Renewed;
+                    AgreementHeader.Modify();
                     DeferralUtility.CreatedeferralScheduleFromRenewal(Renewal);
                 end;
     end;
@@ -142,7 +145,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         IF Amount = 0 then
             Exit(True);
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := WorkDate();
+        GenJnlLine."Posting Date" := PostingDate;
         IF counter <> 0 then
             GenJnlLine."Document No." := AgreementHeader."No." + '/' + Format(counter)
         else
@@ -161,7 +164,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         GenJnlPostLine.RunWithCheck(GenJnlLine);
 
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := WorkDate();
+        GenJnlLine."Posting Date" := PostingDate;
         IF counter <> 0 then
             GenJnlLine."Document No." := AgreementHeader."No." + '/' + Format(counter)
         else
@@ -191,7 +194,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         IF Amount = 0 then
             Exit(True);
         StatisticalJnlLine.Init();
-        StatisticalJnlLine."Posting Date" := WorkDate();
+        StatisticalJnlLine."Posting Date" := PostingDate;
         IF counter <> 0 then
             StatisticalJnlLine."Document No." := AgreementHeader."No." + '/' + Format(counter)
         else
@@ -213,7 +216,7 @@ codeunit 60002 "MFCC01 Agreement Management"
 
         IF BalAccountNo <> '' then Begin
             StatisticalJnlLine.Init();
-            StatisticalJnlLine."Posting Date" := WorkDate();
+            StatisticalJnlLine."Posting Date" := PostingDate;
             StatisticalJnlLine."Document No." := AgreementHeader."No.";
 
             //Posting to Customer Account
@@ -253,12 +256,16 @@ codeunit 60002 "MFCC01 Agreement Management"
     end;
 
 
-
+    local procedure SetPostingDate(PostDate: Date)
+    begin
+        PostingDate := PostDate;
+    end;
 
     var
         CZSetup: Record "MFCC01 Customization Setup";
         DimMgt: Codeunit DimensionManagement;
         GLEntry: Record "G/L Entry";
+        PostingDate: Date;
 
 
 }

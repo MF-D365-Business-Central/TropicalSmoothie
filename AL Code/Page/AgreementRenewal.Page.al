@@ -3,7 +3,7 @@ page 60015 "MFCC01 Agreement Renewal"
     Caption = 'Agreement Renewal';
     PageType = list;
     SourceTable = "MFCC01 Agreement Renewal";
-
+    DelayedInsert = true;
     layout
     {
         area(Content)
@@ -20,6 +20,16 @@ page 60015 "MFCC01 Agreement Renewal"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Effective Date field.';
+                }
+                field("Term Expiration Date"; Rec."Term Expiration Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Term Expiration Date field.';
+                }
+                field("No. of Periods"; Rec."No. of Periods")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the No. of Periods field.';
                 }
                 field("Renewal Fees"; Rec."Renewal Fees")
                 {

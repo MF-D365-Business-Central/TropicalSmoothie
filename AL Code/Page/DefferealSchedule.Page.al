@@ -43,15 +43,31 @@ page 60001 "MFCC01 DeferralSchedule"
                     ApplicationArea = Suite;
                     ToolTip = 'Specifies the amount to defer per period.';
                 }
+                field("Net Amortized"; Rec."Net Amortized")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Net Amortized field.';
+                }
+                field("Net Balance"; Rec."Net Balance")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Net Balance field.';
+                }
+                field(Amortized; Rec.Amortized)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Amortized field.';
+                }
+                field(Balance; Rec.Balance)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Balance field.';
+                }
+
                 field("Calc. Method"; Rec."Calc. Method")
                 {
                     ApplicationArea = Suite;
                     ToolTip = 'Specifies how the Amount field for each period is calculated. Straight-Line: Calculated per the number of periods, distributed by period length. Equal Per Period: Calculated per the number of periods, distributed evenly on periods. Days Per Period: Calculated per the number of days in the period. User-Defined: Not calculated. You must manually fill the Amount field for each period.';
-                }
-                field("No. of Periods"; Rec."No. of Periods")
-                {
-                    ApplicationArea = Suite;
-                    ToolTip = 'Specifies how many accounting periods the total amounts will be deferred to.';
                 }
 
                 field(StartDateCalcMethod; StartDateCalcMethod)
@@ -65,6 +81,27 @@ page 60001 "MFCC01 DeferralSchedule"
                 {
                     ApplicationArea = Suite;
                     ToolTip = 'Specifies when to start calculating deferral amounts.';
+                }
+                field("End Date"; Rec."End Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the End Date field.';
+                }
+                field("No. of Periods"; Rec."No. of Periods")
+                {
+                    ApplicationArea = Suite;
+                    ToolTip = 'Specifies how many accounting periods the total amounts will be deferred to.';
+                }
+                field("Remaining Periods"; Rec."Remaining Periods")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Remaining Periods field.';
+                }
+
+                field("Amortized Periods"; Rec."Amortized Periods")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Amortized Periods field.';
                 }
                 field(Status; Rec.Status)
                 {

@@ -97,8 +97,8 @@ table 60004 "MFCC01 Agreement Line"
     Var
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
-        AgreementHeader.Get(Rec."Agreement No.");
-        AgreementHeader.TestField(Status, AgreementHeader.Status::" ");
+       // AgreementHeader.Get(Rec."Agreement No.");
+       // AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
     end;
 
     local procedure CheckDates()

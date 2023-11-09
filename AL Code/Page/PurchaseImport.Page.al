@@ -4,7 +4,7 @@ page 60012 "MFCC01 Purchase Import"
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Administration;
-    SourceTable = "MFCC01 Sales Import";
+    SourceTable = "MFCC01 Purchase Import";
     InsertAllowed = false;
     DelayedInsert = true;
     layout
@@ -26,13 +26,13 @@ page 60012 "MFCC01 Purchase Import"
                 {
                     ToolTip = 'Specifies the value of the Document No. field.';
                 }
-                field("Customer No."; Rec."Customer No.")
+                field("Vendor No."; Rec."Vendor No.")
                 {
-                    ToolTip = 'Specifies the value of the Customer No. field.';
+                    ToolTip = 'Specifies the value of the Vendor No. field.';
                 }
-                field("Bill-to Customer No."; Rec."Bill-to Customer No.")
+                field("Pay-to Vendor No."; Rec."Pay-to Vendor No.")
                 {
-                    ToolTip = 'Specifies the value of the Bill-to Customer No. field.';
+                    ToolTip = 'Specifies the value of the Bill-to Vendor No. field.';
                 }
                 field("Posting Date"; Rec."Posting Date")
                 {
@@ -54,25 +54,33 @@ page 60012 "MFCC01 Purchase Import"
                 {
                     ToolTip = 'Specifies the value of the Description field.';
                 }
-                field("Unit of Measure Code"; Rec."Unit of Measure Code")
-                {
-                    ToolTip = 'Specifies the value of the Unit of Measure Code field.';
-                }
-                field("Variant Code"; Rec."Variant Code")
-                {
-                    ToolTip = 'Specifies the value of the Variant Code field.';
-                }
-                field("Location Code"; Rec."Location Code")
-                {
-                    ToolTip = 'Specifies the value of the Location Code field.';
-                }
                 field(Quantity; Rec.Quantity)
                 {
                     ToolTip = 'Specifies the value of the Quantity field.';
                 }
+                field("Direct Unit Cost"; Rec."Direct Unit Cost")
+                {
+                    ToolTip = 'Specifies the value of the Direct Unit Cost field.';
+                }
+                field("Line Amount"; Rec."Line Amount")
+                {
+                    ToolTip = 'Specifies the value of the Line Amount field.';
+                }
+                field("Department Code"; Rec."Department Code")
+                {
+                    ToolTip = 'Specifies the value of the Department Code field.';
+                }
                 field(Status; Rec.Status)
                 {
                     ToolTip = 'Specifies the value of the Status field.';
+                }
+                field("Invoice No."; Rec."Invoice No.")
+                {
+                    ToolTip = 'Specifies the value of the Invoice No. field.';
+                }
+                field(Remarks; Rec.Remarks)
+                {
+                    ToolTip = 'Specifies the value of the Remarks field.';
                 }
 
             }
@@ -81,6 +89,53 @@ page 60012 "MFCC01 Purchase Import"
 
     actions
     {
+        
+        area(Navigation)
+        {
+            action(Document)
+            {
+                ApplicationArea = All;
+
+                trigger OnAction()
+                var
+                    PageHeler: Codeunit "Page Management";
+                    PurchaseHeder: Record "Purchase Header";
+                    PurchaseInvoice: Record "Purch. Inv. Header";
+                    PurchaseCredMemo: Record "Purch. Cr. Memo Hdr.";
+                begin
+
+                    Case Rec.Status of
+                        Rec.Status::Created:
+                            Begin
+                                PurchaseHeder.SetRange("Document Type", Rec."Document Type");
+                                PurchaseHeder.SetRange("No.", Rec."Document No.");
+                                IF PurchaseHeder.FindFirst() then
+                                    PageHeler.PageRun(PurchaseHeder);
+                            End;
+                        Rec.Status::Posted:
+                            Begin
+                                Case Rec."Document Type" of
+                                    Rec."Document Type"::Invoice, Rec."Document Type"::Order:
+                                        Begin
+                                            PurchaseInvoice.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            IF PurchaseInvoice.FindFirst() then
+                                                PageHeler.PageRun(PurchaseInvoice);
+                                        End;
+                                    Rec."Document Type"::"Credit Memo", Rec."Document Type"::"Return Order":
+                                        Begin
+                                            PurchaseCredMemo.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            IF PurchaseCredMemo.FindFirst() then
+                                                PageHeler.PageRun(PurchaseInvoice);
+                                        End;
+                                End;
+
+                            End;
+                    End;
+
+                end;
+            }
+        }
+       
         area(Processing)
         {
             action(ImportFromExcel)

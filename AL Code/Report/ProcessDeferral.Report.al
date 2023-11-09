@@ -29,6 +29,18 @@ report 60000 "MFCC01 Process Deferral"
                     "MFCC01 Deferral Header".CloseDeferralDocument();
                 End;
             }
+            trigger OnAfterGetRecord()
+            var
+                Agreement: Record "MFCC01 Agreement Header";
+            Begin
+                Agreement.Get("MFCC01 Deferral Header"."Agreement No.");
+                IF Agreement."Term Expiration Date" <> 0D then
+                    IF Agreement."Term Expiration Date" < PostingDate then
+                        CurrReport.Skip();
+
+                IF Agreement.Status = Agreement.Status::Terminated then
+                    CurrReport.Skip();
+            End;
         }
     }
 

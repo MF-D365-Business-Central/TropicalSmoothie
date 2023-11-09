@@ -68,19 +68,46 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             DeferralHeader, CustomerNo, DocumentNo,
             CalcMethod, NoOfPeriods, AdjustedDeferralAmount, AdjustedStartDate,
             DeferralCode, DeferralDescription, AmountToDefer, AdjustStartDate, CurrencyCode);
-
-        case CalcMethod of
-            CalcMethod::"Straight-Line":
-                CalculateStraightline(DeferralHeader, DeferralLine, DeferralTemplate);
-            CalcMethod::"Equal per Period":
-                CalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-            CalcMethod::"Days per Period":
-                CalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-            CalcMethod::"User-Defined":
-                CalculateUserDefined(DeferralHeader, DeferralLine, DeferralTemplate);
-        end;
+        CalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
+        // case CalcMethod of
+        //     CalcMethod::"Straight-Line":
+        //         CalculateStraightline(DeferralHeader, DeferralLine, DeferralTemplate);
+        //     CalcMethod::"Equal per Period":
+        //         CalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
+        //     CalcMethod::"Days per Period":
+        //         CalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
+        //     CalcMethod::"User-Defined":
+        //         CalculateUserDefined(DeferralHeader, DeferralLine, DeferralTemplate);
+        // end;
 
         OnAfterCreateDeferralSchedule(DeferralHeader, DeferralLine, DeferralTemplate, CalcMethod);
+    end;
+
+    procedure CalcNoOfPeriods(StartDate: Date; EndDate: Date) NoOfPeriods: Integer
+    var
+        AccountingPeriod: Record "Accounting Period";
+        AccountingPeriod2: Record "Accounting Period";
+    begin
+        if IsAccountingPeriodExist(AccountingPeriod, StartDate) then begin
+            AccountingPeriod.SetFilter("Starting Date", '>=%1&<=%2', StartDate, EndDate);
+            AccountingPeriod.FindFirst();
+        end;
+        if AccountingPeriod."Starting Date" <> StartDate then
+            NoOfPeriods := 1;
+
+
+        StartDate := AccountingPeriod."Starting Date";
+        repeat
+
+            NoOfPeriods += 1;
+            IF NoOfPeriods = 83 then
+                NoOfPeriods := NoOfPeriods;
+
+        Until AccountingPeriod.Next() = 0;
+        AccountingPeriod2.SetFilter("Starting Date", '>%1&<=%2', AccountingPeriod."Starting Date", EndDate);
+        IF AccountingPeriod2.FindFirst() then
+            NoOfPeriods += 1;
+
     end;
 
     procedure CalcDeferralNoOfPeriods(CalcMethod: Enum "Deferral Calculation Method"; NoOfPeriods: Integer; StartDate: Date): Integer
@@ -151,13 +178,13 @@ codeunit 60000 "MFCC01 Deferral Utilities"
                 exit;
             end;
 
-            PeriodicDeferralAmount := Round(DeferralHeader."Amount to Defer" / DeferralHeader."No. of Periods", AmountRoundingPrecision);
+            PeriodicDeferralAmount := Round(DeferralHeader."Amount to Defer" / (DeferralHeader."No. of Periods" - 1), AmountRoundingPrecision);
         end;
 
-        for PeriodicCount := 1 to (DeferralHeader."No. of Periods" + 1) do begin
+        for PeriodicCount := 1 to (DeferralHeader."No. of Periods") do begin
             InitializeDeferralHeaderAndSetPostDate(DeferralLine, DeferralHeader, PeriodicCount, PostDate);
 
-            if (PeriodicCount = 1) or (PeriodicCount = (DeferralHeader."No. of Periods" + 1)) then begin
+            if (PeriodicCount = 1) or (PeriodicCount = (DeferralHeader."No. of Periods")) then begin
                 if PeriodicCount = 1 then begin
                     Clear(RunningDeferralTotal);
 
@@ -221,6 +248,8 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         OnBeforeCalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
 
         for PeriodicCount := 1 to DeferralHeader."No. of Periods" do begin
+            IF PeriodicCount = 83 then
+                PeriodicCount := PeriodicCount;
             InitializeDeferralHeaderAndSetPostDate(DeferralLine, DeferralHeader, PeriodicCount, PostDate);
 
             DeferralLine.Validate("Posting Date", PostDate);
@@ -251,13 +280,10 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         PeriodicCount: Integer;
         NumberOfDaysInPeriod: Integer;
         NumberOfDaysInSchedule: Integer;
-        NumberOfDaysIntoCurrentPeriod: Integer;
-        NumberOfPeriods: Integer;
         PostDate: Date;
         FirstPeriodDate: Date;
         SecondPeriodDate: Date;
         EndDate: Date;
-        TempDate: Date;
         NoExtraPeriod: Boolean;
         DailyDeferralAmount: Decimal;
         RunningDeferralTotal: Decimal;
@@ -269,47 +295,16 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             if not AccountingPeriod.FindFirst() then
                 Error(DeferSchedOutOfBoundsErr);
         end;
-        if AccountingPeriod."Starting Date" = DeferralHeader."Start Date" then
-            NoExtraPeriod := true
-        else
-            NoExtraPeriod := false;
+
 
         // If comparison used <=, it messes up the calculations
-        if not NoExtraPeriod then begin
-            if IsAccountingPeriodExist(AccountingPeriod, DeferralHeader."Start Date") then begin
-                AccountingPeriod.SetFilter("Starting Date", '<%1', DeferralHeader."Start Date");
-                AccountingPeriod.FindLast();
-            end;
-            NumberOfDaysIntoCurrentPeriod := (DeferralHeader."Start Date" - AccountingPeriod."Starting Date");
-        end else
-            NumberOfDaysIntoCurrentPeriod := 0;
 
-        if NoExtraPeriod then
-            NumberOfPeriods := DeferralHeader."No. of Periods"
-        else
-            NumberOfPeriods := (DeferralHeader."No. of Periods" + 1);
-
-        for PeriodicCount := 1 to NumberOfPeriods do begin
-            // Figure out the end date...
-            if PeriodicCount = 1 then
-                TempDate := DeferralHeader."Start Date";
-
-            if PeriodicCount <> NumberOfPeriods then
-                TempDate := GetNextPeriodStartingDate(TempDate)
-            else
-                // Last Period, special case here...
-                if NoExtraPeriod then begin
-                    TempDate := GetNextPeriodStartingDate(TempDate);
-                    EndDate := TempDate;
-                end else
-                    EndDate := (TempDate + NumberOfDaysIntoCurrentPeriod);
-        end;
         OnCalculateDaysPerPeriodOnAfterCalcEndDate(DeferralHeader, DeferralLine, DeferralTemplate, EndDate);
 
-        NumberOfDaysInSchedule := (EndDate - DeferralHeader."Start Date");
+        NumberOfDaysInSchedule := (DeferralHeader."End Date" - DeferralHeader."Start Date");
         DailyDeferralAmount := (DeferralHeader."Amount to Defer" / NumberOfDaysInSchedule);
 
-        for PeriodicCount := 1 to NumberOfPeriods do begin
+        for PeriodicCount := 1 to DeferralHeader."No. of Periods" do begin
             InitializeDeferralHeaderAndSetPostDate(DeferralLine, DeferralHeader, PeriodicCount, PostDate);
 
             if PeriodicCount = 1 then begin
@@ -331,7 +326,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
 
                 NumberOfDaysInPeriod := (SecondPeriodDate - FirstPeriodDate);
 
-                if PeriodicCount <> NumberOfPeriods then begin
+                if PeriodicCount <> DeferralHeader."No. of Periods" then begin
                     // Not the last period
                     AmountToDefer := Round(NumberOfDaysInPeriod * DailyDeferralAmount, AmountRoundingPrecision);
                     RunningDeferralTotal := RunningDeferralTotal + AmountToDefer;
@@ -848,6 +843,8 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         CZSetup.GetRecordonce();
         IF (Agreementheader."RoyaltyscheduleNo." = '') And (Agreementheader."Agreement Amount" <> 0) then Begin
             Type := Type::Royalty;
+            IF Agreementheader."License Type" = Agreementheader."License Type"::Transferred then
+                Type := Type::Transferred;
             CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, Type);
             DeferralHeader.CalculateSchedule();
             DeferralHeader.Status := DeferralHeader.Status::Certified;
@@ -894,6 +891,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader.Insert(true);
         DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
         DeferralHeader."Start Date" := Agreementheader."Franchise Revenue Start Date";
+        DeferralHeader.Validate("End Date", Agreementheader."Term Expiration Date");
         DeferralHeader.Type := Type;
         IF Type = Type::Royalty then
             DeferralHeader.validate("Amount to Defer", Agreementheader."Agreement Amount");
@@ -916,6 +914,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader.Insert(true);
         DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
         DeferralHeader."Start Date" := Renewal."Effective Date";
+        DeferralHeader.Validate("End Date", Renewal."Term Expiration Date");
         DeferralHeader.validate("Amount to Defer", Renewal."Renewal Fees");
         DeferralHeader."Agreement No." := Agreementheader."No.";
         DeferralHeader."Customer No." := Agreementheader."Customer No.";

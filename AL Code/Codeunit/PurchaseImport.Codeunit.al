@@ -46,11 +46,14 @@ codeunit 60004 "MFCC01 Purchase Import"
             repeat
                 IF PrevDocumentNo <> PurchaseImport."Document No." then Begin
                     Posted := false;
-                    Commit();
+                    PrevDocumentNo := PurchaseImport."Document No.";
                     PurchHeader.SetRange("Document Type", PurchaseImport."Document Type");
                     PurchHeader.SetRange("No.", PurchaseImport."Document No.");
                     IF PurchHeader.FindFirst() then;
+                    UpdateComments(PurchHeader);
+                    Commit();
                     PostOneDocument(PurchHeader, Posted);
+                    UpdateComments(PurchHeader, GetLastErrorText());
                 End;
 
                 IF Posted then Begin
@@ -66,5 +69,30 @@ codeunit 60004 "MFCC01 Purchase Import"
     begin
         IF Codeunit.Run(Codeunit::"Purch.-Post", PurchHeader) then
             Posted := True;
+    end;
+
+
+    local procedure UpdateComments(PurchHeader: Record "Purchase Header"; ErrorText: Text)
+    var
+        PurchaseImport2: Record "MFCC01 Purchase Import";
+    begin
+        PurchaseImport2.Reset();
+        PurchaseImport2.SetCurrentKey("Document No.");
+        PurchaseImport2.SetRange(Status, PurchaseImport.Status::Created);
+        PurchaseImport2.SetRange("Invoice No.", PurchHeader."No.");
+        IF PurchaseImport2.FindSet() then
+            PurchaseImport2.ModifyAll(Remarks, CopyStr(ErrorText, 1, 500));
+    end;
+
+    local procedure UpdateComments(PurchHeader: Record "Purchase Header")
+    var
+        PurchaseImport2: Record "MFCC01 Sales Import";
+    begin
+        PurchaseImport2.Reset();
+        PurchaseImport2.SetCurrentKey("Document No.");
+        PurchaseImport2.SetRange(Status, PurchaseImport.Status::Created);
+        PurchaseImport2.SetRange("Invoice No.", PurchHeader."No.");
+        IF PurchaseImport2.FindSet() then
+            PurchaseImport2.ModifyAll(Remarks, '');
     end;
 }
