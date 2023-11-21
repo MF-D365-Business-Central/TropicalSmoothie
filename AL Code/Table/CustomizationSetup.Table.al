@@ -1,6 +1,6 @@
-table 60000 "MFCC01 Customization Setup"
+table 60000 "MFCC01 Franchise Setup"
 {
-    Caption = 'Customization Setup';
+    Caption = 'Franchise Setup';
     DataClassification = CustomerContent;
 
     fields
@@ -10,16 +10,6 @@ table 60000 "MFCC01 Customization Setup"
             DataClassification = CustomerContent;
         }
 
-        field(12; "Deferral Template"; Code[20])
-        {
-            DataClassification = CustomerContent;
-            TableRelation = "Deferral Template"."Deferral Code";
-        }
-        field(13; "Renewal Deferral Template"; Code[20])
-        {
-            DataClassification = CustomerContent;
-            TableRelation = "Deferral Template"."Deferral Code";
-        }
         field(50; "Deferral Nos."; Code[20])
         {
             DataClassification = CustomerContent;

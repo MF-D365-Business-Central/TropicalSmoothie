@@ -14,15 +14,15 @@ report 60002 "Suggest Customer Payments"
             dataitem("Cust. Ledger Entry"; "Cust. Ledger Entry")
             {
                 DataItemLink = "Customer No." = field("No.");
-                DataItemTableView = where(Open = const(True));
+                DataItemTableView = where(Open = const(True), "Document Type" = const(Invoice));
                 CalcFields = "Remaining Amount";
                 trigger OnPreDataItem()
                 begin
                     LineCreated := false;
-                    IF "Cust. Ledger Entry".GetFilter("Document Type") = '' then Begin
-                        "Cust. Ledger Entry".SetFilter("Document Type", '%1|%2', "Cust. Ledger Entry"."Document Type"::Invoice,
-                        "Cust. Ledger Entry"."Document Type"::"Credit Memo");
-                    End
+                    // IF "Cust. Ledger Entry".GetFilter("Document Type") = '' then Begin
+                    //     "Cust. Ledger Entry".SetFilter("Document Type", '%1|%2', "Cust. Ledger Entry"."Document Type"::Invoice,
+                    //     "Cust. Ledger Entry"."Document Type"::"Credit Memo");
+                    // End
                 end;
 
                 trigger OnAfterGetRecord()
@@ -60,7 +60,7 @@ report 60002 "Suggest Customer Payments"
 
                 //Window.Update(1, "No.");
                 if Not IncludeCustomer(Customer, CustomerBalance) then
-                    CurrReport.Break();
+                    CurrReport.Skip();
 
             End;
         }
@@ -291,10 +291,10 @@ report 60002 "Suggest Customer Payments"
         GenJnlLine."Posting Date" := PostingDate;
         GenJnlLine."Document No." := NextDocNo;
         GenJnlLine."Line No." := NextLine;
-
+        GenJnlLine."Document Type" := GenJnlLine."Document Type"::Payment;
         GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
         GenJnlLine.Validate("Account No.", Customer."No.");
-
+        GenJnlLine.Description := "Cust. Ledger Entry".Description;
         GenJnlLine."Bal. Account Type" := GenJnlLine2."Bal. Account Type";
         GenJnlLine.Validate("Bal. Account No.", GenJnlLine2."Bal. Account No.");
 

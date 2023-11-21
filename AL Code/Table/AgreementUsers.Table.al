@@ -76,8 +76,8 @@ table 60005 "MFCC01 Agreement Users"
     Var
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
-        AgreementHeader.Get(Rec."Agreement No.");
-        AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
+        // AgreementHeader.Get(Rec."Agreement No.");
+        // AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
     end;
 
     trigger OnInsert()

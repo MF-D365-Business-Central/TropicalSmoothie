@@ -15,7 +15,7 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
     end;
 
     var
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
         GlobalFranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry";
         GenJnlLine: Record "Gen. Journal Line";
         FranchiseBatch: Record "MFCC01 Franchise Batch";
@@ -136,6 +136,8 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
             InitDefaultDimSource(DefaultDimSource, CZSetup."Royalty Account");
             GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
             GenJnlLine."Dimension Set ID", 0);
+            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
             BalanceAmount := Sign() * GlobalFranchiseLedgerEntry."Royalty Fee";
         End;
@@ -144,7 +146,8 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
             AccountType::"G/L Account", CZSetup."Local Account", Sign() * GlobalFranchiseLedgerEntry."Ad Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Local Department Code");
-
+            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
             BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Ad Fee";
         End;
@@ -153,6 +156,8 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
             AccountType::"G/L Account", CZSetup."National Account", Sign() * GlobalFranchiseLedgerEntry."Other Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."National Department Code");
+            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
             BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Other Fee";
         End;
@@ -160,6 +165,8 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         IF BalanceAmount <> 0 then Begin
             InitJpurnalLine(AccountType::Customer, GlobalFranchiseLedgerEntry."Customer No.",
               Sign() * BalanceAmount);
+            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
         End;
     end;

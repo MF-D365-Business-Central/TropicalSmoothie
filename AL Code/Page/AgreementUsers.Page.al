@@ -1,6 +1,6 @@
 page 60007 "MFCC01 Agreement Users"
 {
-    Caption = 'Users';
+    Caption = 'Owner Information';
     PageType = ListPart;
     SourceTable = "MFCC01 Agreement Users";
     DelayedInsert = true;
@@ -34,11 +34,7 @@ page 60007 "MFCC01 Agreement Users"
                     ToolTip = 'Specifies the value of the Phone field.';
                 }
 
-                field(Active; Rec.Phone)
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Phone field.';
-                }
+
             }
         }
     }

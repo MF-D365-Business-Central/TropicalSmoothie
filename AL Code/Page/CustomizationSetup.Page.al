@@ -1,10 +1,10 @@
-page 60000 "MFCC01 Customization Setup"
+page 60000 "MFCC01 Franchise Setup"
 {
-    Caption = 'Customization Setup';
+    Caption = 'Franchise Setup';
     PageType = Card;
     ApplicationArea = Basic, Suite;
     UsageCategory = Administration;
-    SourceTable = "MFCC01 Customization Setup";
+    SourceTable = "MFCC01 Franchise Setup";
     DeleteAllowed = false;
     InsertAllowed = false;
     layout

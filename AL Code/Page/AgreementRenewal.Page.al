@@ -55,19 +55,27 @@ page 60015 "MFCC01 Agreement Renewal"
         area(Processing)
         {
 
-            action(Sign)
+            action(Renew)
             {
                 ApplicationArea = All;
-                Caption = 'Sign';
+                Caption = 'Renew';
                 Image = Signature;
                 trigger OnAction()
                 begin
-                    Rec.SetStatusSigned();
+                    Rec.SetStatusRenewed();
                 end;
             }
         }
         area(Navigation)
         {
+            action(Deferrals)
+            {
+                ApplicationArea = All;
+                Image = Installments;
+                RunPageMode = View;
+                RunObject = Page "MFCC01 Deferrals";
+                RunPageLink = "Agreement No." = field("Agreement No."), "Document No." = field("RenewalscheduleNo.");
+            }
             group(Entries)
             {
 
@@ -80,7 +88,7 @@ page 60015 "MFCC01 Agreement Renewal"
                     RunObject = Page "General Ledger Entries";
                     RunPageLink = "Agreement No." = field("Agreement No.");
                 }
-                action(Statntries)
+                action(Statentries)
                 {
                     Caption = 'Statistical Ledger Entries';
                     ApplicationArea = All;

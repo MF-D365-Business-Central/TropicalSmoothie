@@ -33,11 +33,7 @@ page 60001 "MFCC01 DeferralSchedule"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Customer No. field.';
                 }
-                field("Deferral Code"; Rec."Deferral Code")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Deferral Code field.';
-                }
+
                 field("Amount to Defer"; Rec."Amount to Defer")
                 {
                     ApplicationArea = Suite;
@@ -64,19 +60,6 @@ page 60001 "MFCC01 DeferralSchedule"
                     ToolTip = 'Specifies the value of the Balance field.';
                 }
 
-                field("Calc. Method"; Rec."Calc. Method")
-                {
-                    ApplicationArea = Suite;
-                    ToolTip = 'Specifies how the Amount field for each period is calculated. Straight-Line: Calculated per the number of periods, distributed by period length. Equal Per Period: Calculated per the number of periods, distributed evenly on periods. Days Per Period: Calculated per the number of days in the period. User-Defined: Not calculated. You must manually fill the Amount field for each period.';
-                }
-
-                field(StartDateCalcMethod; StartDateCalcMethod)
-                {
-                    ApplicationArea = Suite;
-                    Caption = 'Start Date Calc. Method';
-                    Editable = false;
-                    ToolTip = 'Specifies the method used to calculate the start date that is used for calculating deferral amounts.';
-                }
                 field("Start Date"; Rec."Start Date")
                 {
                     ApplicationArea = Suite;
@@ -191,7 +174,6 @@ page 60001 "MFCC01 DeferralSchedule"
 
         PostingDateErr: Label 'You cannot specify a posting date that is not equal to the start date.';
 
-        StartDateCalcMethod: Text;
 
     trigger OnDeleteRecord(): Boolean
     Begin
@@ -205,37 +187,17 @@ page 60001 "MFCC01 DeferralSchedule"
         DisplayCustomerNo := DisplayCustomerNo;
     end;
 
-    trigger OnAfterGetRecord()
-    Begin
-        InitForm();
-    End;
+
 
     procedure GetParameter(): Boolean
     begin
         exit(Changed or CurrPage.DeferralSheduleSubform.PAGE.GetChanged())
     end;
 
-    procedure InitForm()
-    var
-        DeferralTemplate: Record "Deferral Template";
-        GenJournalLine: Record "Gen. Journal Line";
-        PurchaseHeader: Record "Purchase Header";
-        SalesHeader: Record "Sales Header";
-        IsHandled: Boolean;
-    begin
-        IsHandled := false;
-        OnBeforeInitForm(Rec, DisplayCustomerNo, DisplayDocumentNo, StartDateCalcMethod, IsHandled);
-        if IsHandled then
-            exit;
-
-        IF DeferralTemplate.Get(Rec."Deferral Code") then;
-        StartDateCalcMethod := Format(DeferralTemplate."Start Date");
-
-    end;
 
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeInitForm(var DeferralHeader: Record "MFCC01 Deferral Header"; DisplayCustomerNo: Code[20]; DisplayDocumentNo: Code[20]; var StartDateCalcMethod: Text; var IsHandled: Boolean)
+    local procedure OnBeforeInitForm(var DeferralHeader: Record "MFCC01 Deferral Header"; DisplayCustomerNo: Code[20]; DisplayDocumentNo: Code[20];  var IsHandled: Boolean)
     begin
     end;
 

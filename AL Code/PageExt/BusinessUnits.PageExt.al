@@ -40,6 +40,6 @@ pageextension 60003 "MFCC01Business Unit List" extends "Business Unit List"
     end;
 
     var
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
         NonGaapEnable: Boolean;
 }

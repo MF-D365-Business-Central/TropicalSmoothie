@@ -92,23 +92,20 @@ Report 60003 "MFCC01SalesExcelImport"
 
             //Header Fields >>
             SalesImport."Document Type" := DocTypeEnumConvert(GetCellvalueatPoistion(R, 1));
-            SalesImport."Document No." := GetCellvalueatPoistion(R, 2);
-            SalesImport."Customer No." := GetCellvalueatPoistion(R, 3);
-            SalesImport."Bill-to Customer No." := GetCellvalueatPoistion(R, 4);
-            Evaluate(SalesImport."Posting Date", GetCellvalueatPoistion(R, 5));
-            SalesImport."External Document No." := GetCellvalueatPoistion(R, 6);
+            SalesImport."Customer No." := GetCellvalueatPoistion(R, 2);
+            SalesImport."Posting Description" := GetCellvalueatPoistion(R, 3);
+            Evaluate(SalesImport."Posting Date", GetCellvalueatPoistion(R, 4));
             //Header Fields <<
 
             //Lines >>
-            SalesImport.Type := LineTypeEnumConvert(GetCellvalueatPoistion(R, 7));
-            SalesImport."No." := GetCellvalueatPoistion(R, 8);
-            SalesImport.Description := GetCellvalueatPoistion(R, 9);
-            Evaluate(SalesImport.Quantity, GetCellvalueatPoistion(R, 10));
-            IF GetCellvalueatPoistion(R, 11) <> '' then
-                Evaluate(SalesImport."Unit Price", GetCellvalueatPoistion(R, 11));
-            IF GetCellvalueatPoistion(R, 12) <> '' then
-                Evaluate(SalesImport."Line Amount", GetCellvalueatPoistion(R, 12));
-            SalesImport."Department Code" := GetCellvalueatPoistion(R, 13);
+            SalesImport."No." := GetCellvalueatPoistion(R, 5);
+            SalesImport.Description := GetCellvalueatPoistion(R, 6);
+            Evaluate(SalesImport.Quantity, GetCellvalueatPoistion(R, 7));
+            IF GetCellvalueatPoistion(R, 8) <> '' then
+                Evaluate(SalesImport."Unit Price", GetCellvalueatPoistion(R, 8));
+            IF GetCellvalueatPoistion(R, 9) <> '' then
+                Evaluate(SalesImport."Line Amount", GetCellvalueatPoistion(R, 9));
+            SalesImport."Department Code" := GetCellvalueatPoistion(R, 10);
             //Lines <<
 
             EntryNo += 1;
@@ -152,6 +149,7 @@ Report 60003 "MFCC01SalesExcelImport"
     var
         SalesImport2: Record "MFCC01 Sales Import";
     begin
+        EntryNo := 1;
         IF SalesImport2.FindLast() then
             EntryNo := SalesImport2."Entry No." + 1;
     end;

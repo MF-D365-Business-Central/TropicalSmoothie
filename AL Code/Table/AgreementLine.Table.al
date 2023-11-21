@@ -33,6 +33,8 @@ table 60004 "MFCC01 Agreement Line"
             MaxValue = 100;
             trigger OnValidate()
             Begin
+                IF xRec."Royalty Fees %" <> 0 then
+                    Error(ChangeNotAllowedErr);
                 TestStatusOpen();
             End;
         }
@@ -43,6 +45,8 @@ table 60004 "MFCC01 Agreement Line"
             MaxValue = 100;
             trigger OnValidate()
             Begin
+                IF xRec."Local Fees %" <> 0 then
+                    Error(ChangeNotAllowedErr);
                 TestStatusOpen();
             End;
         }
@@ -53,6 +57,8 @@ table 60004 "MFCC01 Agreement Line"
             MaxValue = 100;
             trigger OnValidate()
             Begin
+                IF xRec."National Fees %" <> 0 then
+                    Error(ChangeNotAllowedErr);
                 TestStatusOpen();
             End;
         }
@@ -92,13 +98,14 @@ table 60004 "MFCC01 Agreement Line"
         OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Opening Date %2';
         EffDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Effective Date %2';
         DuplicateDateLbl: Label 'There is dates conflict with Line %1';
+        ChangeNotAllowedErr: Label 'Changes not allowed';
 
     procedure TestStatusOpen()
     Var
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
-       // AgreementHeader.Get(Rec."Agreement No.");
-       // AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
+        // AgreementHeader.Get(Rec."Agreement No.");
+        // AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
     end;
 
     local procedure CheckDates()

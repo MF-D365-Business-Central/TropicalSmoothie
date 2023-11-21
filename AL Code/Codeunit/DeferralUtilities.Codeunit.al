@@ -36,51 +36,34 @@ codeunit 60000 "MFCC01 Deferral Utilities"
           CopyStr(StrSubstNo(Description, Day, Week, Month, MonthText, AccountingPeriod.Name, Year), 1, MaxStrLen(Description));
     end;
 
-    procedure CreateDeferralSchedule(DeferralCode: Code[10]; CustomerNo: Code[20]; DocumentNo: Code[20]; AmountToDefer: Decimal; CalcMethod: Enum "Deferral Calculation Method"; StartDate: Date; NoOfPeriods: Integer; ApplyDeferralPercentage: Boolean; DeferralDescription: Text[100]; AdjustStartDate: Boolean; CurrencyCode: Code[10])
+    procedure CreateDeferralSchedule(CustomerNo: Code[20]; DocumentNo: Code[20]; AmountToDefer: Decimal; StartDate: Date; NoOfPeriods: Integer; ApplyDeferralPercentage: Boolean; DeferralDescription: Text[100]; CurrencyCode: Code[10])
     var
-        DeferralTemplate: Record "Deferral Template";
         DeferralHeader: Record "MFCC01 Deferral Header";
         DeferralLine: Record "MFCC01 Deferral Line";
-        AdjustedStartDate: Date;
         AdjustedDeferralAmount: Decimal;
         IsHandled: Boolean;
     begin
         IsHandled := false;
         OnBeforeCreateDeferralSchedule(
-            DeferralCode, CustomerNo, DocumentNo, AmountToDefer, CalcMethod,
-            StartDate, NoOfPeriods, ApplyDeferralPercentage, DeferralDescription, AdjustStartDate, CurrencyCode, IsHandled);
+             CustomerNo, DocumentNo, AmountToDefer,
+            StartDate, NoOfPeriods, ApplyDeferralPercentage, DeferralDescription, CurrencyCode, IsHandled);
         if IsHandled then
             exit;
 
         InitCurrency(CurrencyCode);
-        DeferralTemplate.Get(DeferralCode);
-        // "Start Date" passed in needs to be adjusted based on the Deferral Code's Start Date setting
-        if AdjustStartDate then
-            AdjustedStartDate := SetStartDate(DeferralTemplate, StartDate)
-        else
-            AdjustedStartDate := StartDate;
+
 
         AdjustedDeferralAmount := AmountToDefer;
         if ApplyDeferralPercentage then
-            AdjustedDeferralAmount := Round(AdjustedDeferralAmount * (DeferralTemplate."Deferral %" / 100), AmountRoundingPrecision);
+            AdjustedDeferralAmount := Round(AdjustedDeferralAmount * (100 / 100), AmountRoundingPrecision);
 
         SetDeferralRecords(
             DeferralHeader, CustomerNo, DocumentNo,
-            CalcMethod, NoOfPeriods, AdjustedDeferralAmount, AdjustedStartDate,
-            DeferralCode, DeferralDescription, AmountToDefer, AdjustStartDate, CurrencyCode);
-        CalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-        // case CalcMethod of
-        //     CalcMethod::"Straight-Line":
-        //         CalculateStraightline(DeferralHeader, DeferralLine, DeferralTemplate);
-        //     CalcMethod::"Equal per Period":
-        //         CalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-        //     CalcMethod::"Days per Period":
-        //         CalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-        //     CalcMethod::"User-Defined":
-        //         CalculateUserDefined(DeferralHeader, DeferralLine, DeferralTemplate);
-        // end;
+             NoOfPeriods, AdjustedDeferralAmount, StartDate,
+             DeferralDescription, AmountToDefer, CurrencyCode);
+        CalculateDaysPerPeriod(DeferralHeader, DeferralLine);
 
-        OnAfterCreateDeferralSchedule(DeferralHeader, DeferralLine, DeferralTemplate, CalcMethod);
+        OnAfterCreateDeferralSchedule(DeferralHeader, DeferralLine);
     end;
 
     procedure CalcNoOfPeriods(StartDate: Date; EndDate: Date) NoOfPeriods: Integer
@@ -110,121 +93,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
 
     end;
 
-    procedure CalcDeferralNoOfPeriods(CalcMethod: Enum "Deferral Calculation Method"; NoOfPeriods: Integer; StartDate: Date): Integer
-    var
-        DeferralTemplate: Record "Deferral Template";
-        AccountingPeriod: Record "Accounting Period";
-        IsHandled: Boolean;
-    begin
-        IsHandled := false;
-        OnBeforeCalcDeferralNoOfPeriods(CalcMethod, NoOfPeriods, StartDate, IsHandled);
-        if IsHandled then
-            exit(NoOfPeriods);
-
-        case CalcMethod of
-            DeferralTemplate."Calc. Method"::"Equal per Period",
-          DeferralTemplate."Calc. Method"::"User-Defined":
-                exit(NoOfPeriods);
-            DeferralTemplate."Calc. Method"::"Straight-Line",
-            DeferralTemplate."Calc. Method"::"Days per Period":
-                begin
-                    if IsAccountingPeriodExist(AccountingPeriod, StartDate) then begin
-                        AccountingPeriod.SetFilter("Starting Date", '>=%1', StartDate);
-                        AccountingPeriod.FindFirst();
-                    end;
-                    if AccountingPeriod."Starting Date" = StartDate then
-                        exit(NoOfPeriods);
-
-                    exit(NoOfPeriods + 1);
-                end;
-        end;
-
-        DeferralTemplate."Calc. Method" := CalcMethod;
-        DeferralTemplate.FieldError("Calc. Method");
-    end;
-
-    local procedure CalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
-    var
-        AccountingPeriod: Record "Accounting Period";
-        AmountToDefer: Decimal;
-        AmountToDeferFirstPeriod: Decimal;
-        FractionOfPeriod: Decimal;
-        PeriodicDeferralAmount: Decimal;
-        RunningDeferralTotal: Decimal;
-        PeriodicCount: Integer;
-        HowManyDaysLeftInPeriod: Integer;
-        NumberOfDaysInPeriod: Integer;
-        PostDate: Date;
-        FirstPeriodDate: Date;
-        SecondPeriodDate: Date;
-        PerDiffSum: Decimal;
-        IsHandled: Boolean;
-    begin
-        // If the Start Date passed in matches the first date of a financial period, this is essentially the same
-        // as the "Equal Per Period" deferral method, so call that function.
-        OnBeforeCalculateStraightline(DeferralHeader, DeferralLine, DeferralTemplate);
-
-        if IsAccountingPeriodExist(AccountingPeriod, DeferralHeader."Start Date") then begin
-            AccountingPeriod.SetFilter("Starting Date", '>=%1', DeferralHeader."Start Date");
-            if not AccountingPeriod.FindFirst() then
-                Error(DeferSchedOutOfBoundsErr);
-        end;
-
-        IsHandled := false;
-        OnCalculateStraightlineOnBeforeCalcPeriodicDeferralAmount(DeferralHeader, PeriodicDeferralAmount, AmountRoundingPrecision, IsHandled);
-        if not IsHandled then begin
-            if AccountingPeriod."Starting Date" = DeferralHeader."Start Date" then begin
-                CalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-                exit;
-            end;
-
-            PeriodicDeferralAmount := Round(DeferralHeader."Amount to Defer" / (DeferralHeader."No. of Periods" - 1), AmountRoundingPrecision);
-        end;
-
-        for PeriodicCount := 1 to (DeferralHeader."No. of Periods") do begin
-            InitializeDeferralHeaderAndSetPostDate(DeferralLine, DeferralHeader, PeriodicCount, PostDate);
-
-            if (PeriodicCount = 1) or (PeriodicCount = (DeferralHeader."No. of Periods")) then begin
-                if PeriodicCount = 1 then begin
-                    Clear(RunningDeferralTotal);
-
-                    // Get the starting date of the accounting period of the posting date is in
-                    FirstPeriodDate := GetPeriodStartingDate(PostDate);
-
-                    // Get the starting date of the next accounting period
-                    SecondPeriodDate := GetNextPeriodStartingDate(PostDate);
-                    OnCalculateStraightlineOnAfterCalcSecondPeriodDate(DeferralHeader, PostDate, FirstPeriodDate, SecondPeriodDate);
-
-                    HowManyDaysLeftInPeriod := (SecondPeriodDate - DeferralHeader."Start Date");
-                    NumberOfDaysInPeriod := (SecondPeriodDate - FirstPeriodDate);
-                    FractionOfPeriod := (HowManyDaysLeftInPeriod / NumberOfDaysInPeriod);
-
-                    AmountToDeferFirstPeriod := (PeriodicDeferralAmount * FractionOfPeriod);
-                    AmountToDefer := Round(AmountToDeferFirstPeriod, AmountRoundingPrecision);
-                    RunningDeferralTotal := RunningDeferralTotal + AmountToDefer;
-                end else
-                    // Last period
-                    AmountToDefer := (DeferralHeader."Amount to Defer" - RunningDeferralTotal);
-            end else begin
-                AmountToDefer := Round(PeriodicDeferralAmount, AmountRoundingPrecision);
-                RunningDeferralTotal := RunningDeferralTotal + AmountToDefer;
-            end;
-
-            DeferralLine."Posting Date" := PostDate;
-            UpdateDeferralLineDescription(DeferralLine, DeferralHeader, DeferralTemplate, PostDate);
-
-            CheckPostingDate(DeferralHeader, DeferralLine);
-
-            PerDiffSum := PerDiffSum + Round(AmountToDefer / DeferralHeader."No. of Periods", AmountRoundingPrecision);
-
-            DeferralLine.Amount := AmountToDefer;
-            OnCalculateStraightlineOnBeforeDeferralLineInsert(DeferralLine, DeferralHeader);
-            DeferralLine.Insert();
-        end;
-
-        OnAfterCalculateStraightline(DeferralHeader, DeferralLine, DeferralTemplate);
-    end;
-
     local procedure CheckPostingDate(DeferralHeader: Record "MFCC01 Deferral Header"; DeferralLine: Record "MFCC01 Deferral Line")
     var
         IsHandled: Boolean;
@@ -238,42 +106,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             Error(InvalidPostingDateErr, DeferralLine."Posting Date");
     end;
 
-    local procedure CalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
-    var
-        PeriodicCount: Integer;
-        PostDate: Date;
-        AmountToDefer: Decimal;
-        RunningDeferralTotal: Decimal;
-    begin
-        OnBeforeCalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-
-        for PeriodicCount := 1 to DeferralHeader."No. of Periods" do begin
-            IF PeriodicCount = 83 then
-                PeriodicCount := PeriodicCount;
-            InitializeDeferralHeaderAndSetPostDate(DeferralLine, DeferralHeader, PeriodicCount, PostDate);
-
-            DeferralLine.Validate("Posting Date", PostDate);
-            UpdateDeferralLineDescription(DeferralLine, DeferralHeader, DeferralTemplate, PostDate);
-
-            AmountToDefer := DeferralHeader."Amount to Defer";
-            if PeriodicCount = 1 then
-                Clear(RunningDeferralTotal);
-
-            if PeriodicCount <> DeferralHeader."No. of Periods" then begin
-                AmountToDefer := Round(AmountToDefer / DeferralHeader."No. of Periods", AmountRoundingPrecision);
-                RunningDeferralTotal := RunningDeferralTotal + AmountToDefer;
-            end else
-                AmountToDefer := (DeferralHeader."Amount to Defer" - RunningDeferralTotal);
-
-            DeferralLine.Amount := AmountToDefer;
-            OnCalculateEqualPerPeriodOnBeforeDeferralLineInsert(DeferralHeader, DeferralLine);
-            DeferralLine.Insert();
-        end;
-
-        OnAfterCalculateEqualPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
-    end;
-
-    local procedure CalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure CalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     var
         AccountingPeriod: Record "Accounting Period";
         AmountToDefer: Decimal;
@@ -288,7 +121,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DailyDeferralAmount: Decimal;
         RunningDeferralTotal: Decimal;
     begin
-        OnBeforeCalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
+        OnBeforeCalculateDaysPerPeriod(DeferralHeader, DeferralLine);
 
         if IsAccountingPeriodExist(AccountingPeriod, DeferralHeader."Start Date") then begin
             AccountingPeriod.SetFilter("Starting Date", '>=%1', DeferralHeader."Start Date");
@@ -299,7 +132,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
 
         // If comparison used <=, it messes up the calculations
 
-        OnCalculateDaysPerPeriodOnAfterCalcEndDate(DeferralHeader, DeferralLine, DeferralTemplate, EndDate);
+        OnCalculateDaysPerPeriodOnAfterCalcEndDate(DeferralHeader, DeferralLine, EndDate);
 
         NumberOfDaysInSchedule := (DeferralHeader."End Date" - DeferralHeader."Start Date");
         DailyDeferralAmount := (DeferralHeader."Amount to Defer" / NumberOfDaysInSchedule);
@@ -335,7 +168,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             end;
 
             DeferralLine."Posting Date" := PostDate;
-            UpdateDeferralLineDescription(DeferralLine, DeferralHeader, DeferralTemplate, PostDate);
+            UpdateDeferralLineDescription(DeferralLine, DeferralHeader, PostDate);
 
             CheckPostingDate(DeferralHeader, DeferralLine);
 
@@ -345,42 +178,19 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             DeferralLine.Insert();
         end;
 
-        OnAfterCalculateDaysPerPeriod(DeferralHeader, DeferralLine, DeferralTemplate);
+        OnAfterCalculateDaysPerPeriod(DeferralHeader, DeferralLine);
     end;
 
-    local procedure CalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
-    var
-        PeriodicCount: Integer;
-        PostDate: Date;
-    begin
-        OnBeforeCalculateUserDefined(DeferralHeader, DeferralLine, DeferralTemplate);
-
-        for PeriodicCount := 1 to DeferralHeader."No. of Periods" do begin
-            InitializeDeferralHeaderAndSetPostDate(DeferralLine, DeferralHeader, PeriodicCount, PostDate);
-
-            DeferralLine."Posting Date" := PostDate;
-            UpdateDeferralLineDescription(DeferralLine, DeferralHeader, DeferralTemplate, PostDate);
-
-            CheckPostingDate(DeferralHeader, DeferralLine);
-
-            // For User-Defined, user must enter in deferral amounts
-            OnCalculateUserDefinedOnBeforeDeferralLineInsert(DeferralHeader, DeferralLine);
-            DeferralLine.Insert();
-        end;
-
-        OnAfterCalculateUserDefined(DeferralHeader, DeferralLine, DeferralTemplate);
-    end;
-
-    local procedure UpdateDeferralLineDescription(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header"; DeferralTemplate: Record "Deferral Template"; PostDate: Date)
+    local procedure UpdateDeferralLineDescription(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header"; PostDate: Date)
     var
         IsHandled: Boolean;
     begin
         IsHandled := false;
-        OnBeforeUpdateDeferralLineDescription(DeferralLine, DeferralHeader, DeferralTemplate, PostDate, IsHandled);
+        OnBeforeUpdateDeferralLineDescription(DeferralLine, DeferralHeader, PostDate, IsHandled);
         if IsHandled then
             exit;
 
-        DeferralLine.Description := CreateRecurringDescription(PostDate, DeferralTemplate."Period Description");
+        DeferralLine.Description := CreateRecurringDescription(PostDate, '%5 %6');
     end;
 
     procedure FilterDeferralLines(var DeferralLine: Record "MFCC01 Deferral Line"; CustomerNo: Code[20]; DocumentNo: Code[20])
@@ -458,7 +268,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         OnAfterSetStartDate(DeferralTemplate, StartDate, AdjustedStartDate);
     end;
 
-    procedure SetDeferralRecords(var DeferralHeader: Record "MFCC01 Deferral Header"; CustomerNo: Code[20]; DocumentNo: Code[20]; CalcMethod: Enum "Deferral Calculation Method"; NoOfPeriods: Integer; AdjustedDeferralAmount: Decimal; AdjustedStartDate: Date; DeferralCode: Code[10]; DeferralDescription: Text[100]; AmountToDefer: Decimal; AdjustStartDate: Boolean; CurrencyCode: Code[10])
+    procedure SetDeferralRecords(var DeferralHeader: Record "MFCC01 Deferral Header"; CustomerNo: Code[20]; DocumentNo: Code[20]; NoOfPeriods: Integer; AdjustedDeferralAmount: Decimal; AdjustedStartDate: Date; DeferralDescription: Text[100]; AmountToDefer: Decimal; CurrencyCode: Code[10])
     begin
         if not DeferralHeader.Get(DocumentNo) then begin
             // Need to create the header record.
@@ -470,155 +280,16 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader."Amount to Defer" := AdjustedDeferralAmount;
         // if AdjustStartDate or (DeferralHeader."Initial Amount to Defer" = 0) then
         //     DeferralHeader."Initial Amount to Defer" := AmountToDefer;
-        DeferralHeader."Calc. Method" := CalcMethod;
+
         DeferralHeader."Start Date" := AdjustedStartDate;
         DeferralHeader."No. of Periods" := NoOfPeriods;
         DeferralHeader."Schedule Description" := DeferralDescription;
-        DeferralHeader."Deferral Code" := DeferralCode;
         DeferralHeader."Currency Code" := CurrencyCode;
         OnSetDeferralRecordsOnBeforeDeferralHeaderModify(DeferralHeader);
         DeferralHeader.Modify();
         // Remove old lines as they will be recalculated/recreated
         RemoveDeferralLines(CustomerNo, DocumentNo);
     end;
-
-    procedure RemoveOrSetDeferralSchedule(Customerno: Code[20]; DocumentNo: Code[20]; DeferralCode: Code[10]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10]; AdjustStartDate: Boolean)
-    var
-        DeferralHeader: Record "MFCC01 Deferral Header";
-        DeferralTemplate: Record "Deferral Template";
-        OldDeferralPostingDate: Date;
-        UseDeferralCalculationMethod: Enum "Deferral Calculation Method";
-        UseNoOfPeriods: Integer;
-    begin
-        if DocumentNo = '' then
-            // If the user cleared the deferral code, we should remove the saved schedule...
-            if DeferralHeader.Get(DocumentNo) then begin
-                DeferralHeader.Delete();
-                RemoveDeferralLines(Customerno, DocumentNo);
-            end;
-        if DeferralCode <> '' then
-            if DeferralTemplate.Get(DeferralCode) then begin
-                ValidateDeferralTemplate(DeferralTemplate);
-
-                OldDeferralPostingDate := GetDeferralStartDate(Customerno, DocumentNo, DeferralCode, PostingDate);
-                if AdjustStartDate and (OldDeferralPostingDate <> PostingDate) then begin
-                    AdjustStartDate := false;
-                    PostingDate := OldDeferralPostingDate;
-                end;
-
-                UseDeferralCalculationMethod := DeferralTemplate."Calc. Method";
-                UseNoOfPeriods := DeferralTemplate."No. of Periods";
-                DeferralHeader.SetLoadFields("Calc. Method", "No. of Periods");
-                if DeferralHeader.Get(DocumentNo) then begin
-                    UseDeferralCalculationMethod := DeferralHeader."Calc. Method";
-                    if DeferralHeader."No. of Periods" >= 1 then
-                        UseNoOfPeriods := DeferralHeader."No. of Periods";
-                end;
-
-                CreateDeferralSchedule(DeferralCode, Customerno, DocumentNo, Amount,
-                  UseDeferralCalculationMethod, PostingDate, UseNoOfPeriods,
-                  true, GetDeferralDescription(Customerno, DocumentNo, Description),
-                  AdjustStartDate, CurrencyCode);
-            end;
-    end;
-
-
-    procedure DeferralCodeOnValidate(DeferralCode: Code[10]; customerno: Code[20]; DocumentNo: Code[20]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10])
-    var
-        DeferralHeader: Record "MFCC01 Deferral Header";
-        DeferralLine: Record "MFCC01 Deferral Line";
-        DeferralTemplate: Record "Deferral Template";
-        IsHandled: Boolean;
-    begin
-        IsHandled := false;
-        OnBeforeDeferralCodeOnValidate(DeferralCode, customerno, DocumentNo, Amount, PostingDate, Description, CurrencyCode, IsHandled);
-        if IsHandled then
-            exit;
-
-        DeferralHeader.Init();
-        DeferralLine.Init();
-        if DeferralCode = '' then
-            // If the user cleared the deferral code, we should remove the saved schedule...
-            DeferralCodeOnDelete(customerno, DocumentNo)
-        else
-
-            if DeferralTemplate.Get(DeferralCode) then begin
-                ValidateDeferralTemplate(DeferralTemplate);
-
-                CreateDeferralSchedule(DeferralCode, customerno, DocumentNo, Amount,
-                  DeferralTemplate."Calc. Method", PostingDate, DeferralTemplate."No. of Periods",
-                  true, GetDeferralDescription(customerno, DocumentNo, Description), true, CurrencyCode);
-            end;
-    end;
-
-    procedure DeferralCodeOnDelete(CustomerNo: COde[20]; DocumentNo: Code[20])
-    var
-        DeferralHeader: Record "MFCC01 Deferral Header";
-    begin
-
-        // Deferral Additions
-        if DeferralHeader.Get(DocumentNo) then begin
-            DeferralHeader.Delete();
-            RemoveDeferralLines(CustomerNo, DocumentNo);
-        end;
-    end;
-
-    procedure OpenLineScheduleEdit(DeferralCode: Code[10]; CustomerNo: Code[20]; DocumentNo: Code[20]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10]): Boolean
-    var
-        DeferralTemplate: Record "Deferral Template";
-        DeferralHeader: Record "MFCC01 Deferral Header";
-        DeferralSchedule: Page "MFCC01 DeferralSchedule";
-        Changed: Boolean;
-        IsHandled: Boolean;
-    begin
-        if DeferralCode = '' then
-            Message(SelectDeferralCodeMsg)
-        else
-            if DeferralTemplate.Get(DeferralCode) then
-                if DeferralHeader.Get(DocumentNo) then begin
-                    IsHandled := false;
-                    OnOpenLineScheduleEditOnBeforeDeferralScheduleSetParameters(DeferralSchedule, CustomerNo, DocumentNo, DeferralHeader, IsHandled);
-                    if not IsHandled then
-                        DeferralSchedule.SetParameter(CustomerNo, DocumentNo);
-                    DeferralSchedule.RunModal();
-                    Changed := DeferralSchedule.GetParameter();
-                    Clear(DeferralSchedule);
-                end else begin
-                    CreateDeferralSchedule(DeferralCode, customerno, DocumentNo, Amount,
-                      DeferralTemplate."Calc. Method", PostingDate, DeferralTemplate."No. of Periods", true,
-                      GetDeferralDescription(CustomerNo, DocumentNo, Description), true, CurrencyCode);
-                    Commit();
-                    if DeferralHeader.Get(DocumentNo) then begin
-                        DeferralSchedule.SetParameter(CustomerNo, DocumentNo);
-                        DeferralSchedule.RunModal();
-                        Changed := DeferralSchedule.GetParameter();
-                        Clear(DeferralSchedule);
-                    end;
-                end;
-        exit(Changed);
-    end;
-
-    // procedure OpenLineScheduleView(DeferralCode: Code[10]; CustomerNo :Code[20];DocumentNo : Code[20)
-    // var
-    //     DeferralTemplate: Record "Deferral Template";
-    //     PostedDeferralHeader: Record "Posted MFCC01 Deferral Header";
-    // begin
-    //     // On view nothing will happen if the record does not exist
-    //     if DeferralCode <> '' then
-    //         if DeferralTemplate.Get(DeferralCode) then
-    //             if PostedDeferralHeader.Get(DeferralDocType, GenJnlTemplateName, GenJnlBatchName, DocumentType, DocumentNo, LineNo) then
-    //                 PAGE.RunModal(PAGE::"Deferral Schedule View", PostedDeferralHeader);
-    // end;
-
-    // procedure OpenLineScheduleArchive(DeferralCode: Code[10]; DeferralDocType: Integer; DocumentType: Integer; DocumentNo: Code[20]; DocNoOccurence: Integer; VersionNo: Integer; LineNo: Integer)
-    // var
-    //     DeferralHeaderArchive: Record "MFCC01 Deferral Header Archive";
-    // begin
-    //     // On view nothing will happen if the record does not exist
-    //     if DeferralCode <> '' then
-    //         if DeferralHeaderArchive.Get(DeferralDocType, DocumentType, DocumentNo, DocNoOccurence, VersionNo, LineNo) then
-    //             PAGE.RunModal(PAGE::"Deferral Schedule Archive", DeferralHeaderArchive);
-    // end;
 
     local procedure RemoveDeferralLines(CustomerNo: Code[20]; DocumentNo: Code[20])
     var
@@ -640,46 +311,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralTemplate.TestField("Deferral Account");
         DeferralTemplate.TestField("Deferral %");
         DeferralTemplate.TestField("No. of Periods");
-    end;
-
-    procedure RoundDeferralAmount(var DeferralHeader: Record "MFCC01 Deferral Header"; CurrencyCode: Code[10]; CurrencyFactor: Decimal; PostingDate: Date; var AmtToDefer: Decimal; var AmtToDeferLCY: Decimal)
-    var
-        DeferralLine: Record "MFCC01 Deferral Line";
-        CurrencyExchangeRate: Record "Currency Exchange Rate";
-        UseDate: Date;
-        DeferralCount: Integer;
-        TotalAmountLCY: Decimal;
-        TotalDeferralCount: Integer;
-    begin
-        // Calculate the LCY amounts for posting
-        if PostingDate = 0D then
-            UseDate := WorkDate()
-        else
-            UseDate := PostingDate;
-
-        DeferralHeader."Amount to Defer (LCY)" :=
-          Round(CurrencyExchangeRate.ExchangeAmtFCYToLCY(UseDate, CurrencyCode, DeferralHeader."Amount to Defer", CurrencyFactor));
-        DeferralHeader.Modify();
-        AmtToDefer := DeferralHeader."Amount to Defer";
-        AmtToDeferLCY := DeferralHeader."Amount to Defer (LCY)";
-        TotalAmountLCY := 0;
-        FilterDeferralLines(
-          DeferralLine, DeferralHeader."Customer No.", DeferralHeader."Document No.");
-        if DeferralLine.FindSet() then begin
-            TotalDeferralCount := DeferralLine.Count();
-            repeat
-                DeferralCount := DeferralCount + 1;
-                if DeferralCount = TotalDeferralCount then begin
-                    DeferralLine."Amount (LCY)" := DeferralHeader."Amount to Defer (LCY)" - TotalAmountLCY;
-                    DeferralLine.Modify();
-                end else begin
-                    DeferralLine."Amount (LCY)" :=
-                      Round(CurrencyExchangeRate.ExchangeAmtFCYToLCY(UseDate, CurrencyCode, DeferralLine.Amount, CurrencyFactor));
-                    TotalAmountLCY := TotalAmountLCY + DeferralLine."Amount (LCY)";
-                    DeferralLine.Modify();
-                end;
-            until DeferralLine.Next() = 0;
-        end;
     end;
 
     local procedure InitCurrency(CurrencyCode: Code[10])
@@ -735,63 +366,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         exit(false);
     end;
 
-    procedure GetDeferralStartDate(CustomerNo: Code[20]; DocumentNo: Code[20]; DeferralCode: Code[10]; PostingDate: Date): Date
-    var
-        DeferralHeader: Record "MFCC01 Deferral Header";
-        DeferralTemplate: Record "Deferral Template";
-    begin
-        if DeferralHeader.Get(DocumentNo) then
-            exit(DeferralHeader."Start Date");
-
-        if DeferralTemplate.Get(DeferralCode) then
-            exit(SetStartDate(DeferralTemplate, PostingDate));
-
-        exit(PostingDate);
-    end;
-
-    procedure AdjustTotalAmountForDeferrals(DeferralCode: Code[10]; var AmtToDefer: Decimal; var AmtToDeferACY: Decimal; var TotalAmount: Decimal; var TotalAmountACY: Decimal; var TotalVATBase: Decimal; var TotalVATBaseACY: Decimal)
-    begin
-        TotalVATBase := TotalAmount;
-        TotalVATBaseACY := TotalAmountACY;
-        if DeferralCode <> '' then
-            if (AmtToDefer = TotalAmount) and (AmtToDeferACY = TotalAmountACY) then begin
-                AmtToDefer := 0;
-                AmtToDeferACY := 0;
-            end else begin
-                TotalAmount := TotalAmount - AmtToDefer;
-                TotalAmountACY := TotalAmountACY - AmtToDeferACY;
-            end;
-
-        OnAfterAdjustTotalAmountForDeferrals(DeferralCode, AmtToDefer, AmtToDeferACY, TotalAmount, TotalAmountACY);
-    end;
-
-    procedure AdjustTotalAmountForDeferralsNoBase(DeferralCode: Code[10]; var AmtToDefer: Decimal; var AmtToDeferACY: Decimal; var TotalAmount: Decimal; var TotalAmountACY: Decimal)
-    begin
-        if DeferralCode <> '' then
-            if (AmtToDefer = TotalAmount) and (AmtToDeferACY = TotalAmountACY) then begin
-                AmtToDefer := 0;
-                AmtToDeferACY := 0;
-            end else begin
-                TotalAmount := TotalAmount - AmtToDefer;
-                TotalAmountACY := TotalAmountACY - AmtToDeferACY;
-            end;
-
-        OnAfterAdjustTotalAmountForDeferrals(DeferralCode, AmtToDefer, AmtToDeferACY, TotalAmount, TotalAmountACY);
-    end;
-
-    local procedure GetPeriodStartingDate(PostingDate: Date): Date
-    var
-        AccountingPeriod: Record "Accounting Period";
-    begin
-        if AccountingPeriod.IsEmpty() then
-            exit(CalcDate('<-CM>', PostingDate));
-
-        AccountingPeriod.SetFilter("Starting Date", '<%1', PostingDate);
-        if AccountingPeriod.FindLast() then
-            exit(AccountingPeriod."Starting Date");
-
-        Error(DeferSchedOutOfBoundsErr);
-    end;
 
     local procedure GetNextPeriodStartingDate(PostingDate: Date): Date
     var
@@ -836,20 +410,20 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     procedure CreatedeferralScheduleFromAgreement(Var Agreementheader: Record "MFCC01 Agreement Header")
     var
         DeferralHeader: Record "MFCC01 Deferral Header";
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
         Type: Enum "MFCC01 Deferral Type";
     begin
         Agreementheader.TestField(Status, Agreementheader.Status::Opened);
         CZSetup.GetRecordonce();
-        IF (Agreementheader."RoyaltyscheduleNo." = '') And (Agreementheader."Agreement Amount" <> 0) then Begin
-            Type := Type::Royalty;
+        IF (Agreementheader."FranchiseFeescheduleNo." = '') And (Agreementheader."Agreement Amount" <> 0) then Begin
+            Type := Type::"Franchise Fee";
             IF Agreementheader."License Type" = Agreementheader."License Type"::Transferred then
                 Type := Type::Transferred;
             CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, Type);
             DeferralHeader.CalculateSchedule();
             DeferralHeader.Status := DeferralHeader.Status::Certified;
             DeferralHeader.Modify();
-            Agreementheader."RoyaltyscheduleNo." := DeferralHeader."Document No.";
+            Agreementheader."FranchiseFeescheduleNo." := DeferralHeader."Document No.";
         End;
 
         IF (Agreementheader."CommissionScheduleNo." = '') and (Agreementheader."SalesPerson Commission" <> 0) then Begin
@@ -867,33 +441,37 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     procedure CreatedeferralScheduleFromRenewal(Var Renewal: Record "MFCC01 Agreement Renewal")
     var
         DeferralHeader: Record "MFCC01 Deferral Header";
-
-        CZSetup: Record "MFCC01 Customization Setup";
+        AgreementHeader: Record "MFCC01 Agreement Header";
+        CZSetup: Record "MFCC01 Franchise Setup";
     begin
 
         CZSetup.GetRecordonce();
         IF (Renewal."RenewalscheduleNo." = '') And (Renewal."Renewal Fees" <> 0) then Begin
-            CreateDeferralHeader(DeferralHeader, Renewal, CZSetup);
+            AgreementHeader.Get(Renewal."Agreement No.");
+            CreateDeferralHeader(DeferralHeader, Renewal, CZSetup, AgreementHeader);
             DeferralHeader.CalculateSchedule();
             DeferralHeader.Status := DeferralHeader.Status::Certified;
             DeferralHeader.Modify();
             Renewal."RenewalscheduleNo." := DeferralHeader."Document No.";
             Renewal.Modify();
+
+            AgreementHeader."RenewalFeescheduleNo." := DeferralHeader."Document No.";
+            AgreementHeader."Renewal No. of Periods" := Renewal."No. of Periods";
+            AgreementHeader.Modify();
         End;
 
     end;
 
-    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Agreementheader: Record "MFCC01 Agreement Header"; CZSetup: Record "MFCC01 Customization Setup"; Type: Enum "MFCC01 Deferral Type")
+    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Agreementheader: Record "MFCC01 Agreement Header"; CZSetup: Record "MFCC01 Franchise Setup"; Type: Enum "MFCC01 Deferral Type")
 
     begin
         DeferralHeader.Init();
         DeferralHeader."Document No." := '';
         DeferralHeader.Insert(true);
-        DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
         DeferralHeader."Start Date" := Agreementheader."Franchise Revenue Start Date";
         DeferralHeader.Validate("End Date", Agreementheader."Term Expiration Date");
         DeferralHeader.Type := Type;
-        IF Type = Type::Royalty then
+        IF (Type = Type::"Franchise Fee")OR(Type=Type::Transferred) then
             DeferralHeader.validate("Amount to Defer", Agreementheader."Agreement Amount");
         IF Type = Type::Commission then
             DeferralHeader.validate("Amount to Defer", Agreementheader."SalesPerson Commission");
@@ -905,14 +483,12 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     end;
 
 
-    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Renewal: Record "MFCC01 Agreement Renewal"; CZSetup: Record "MFCC01 Customization Setup")
-    var
-        Agreementheader: Record "MFCC01 Agreement Header";
+    local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Renewal: Record "MFCC01 Agreement Renewal"; CZSetup: Record "MFCC01 Franchise Setup"; Agreementheader: Record "MFCC01 Agreement Header")
+
     begin
         DeferralHeader.Init();
         DeferralHeader."Document No." := '';
         DeferralHeader.Insert(true);
-        DeferralHeader.validate("Deferral Code", CZSetup."Deferral Template");
         DeferralHeader."Start Date" := Renewal."Effective Date";
         DeferralHeader.Validate("End Date", Renewal."Term Expiration Date");
         DeferralHeader.validate("Amount to Defer", Renewal."Renewal Fees");
@@ -924,27 +500,27 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnAfterCalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCreateDeferralSchedule(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template"; CalcMethod: Enum "Deferral Calculation Method")
+    local procedure OnAfterCreateDeferralSchedule(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
@@ -956,43 +532,43 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateDaysPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateEqualPerPeriod(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateStraightline(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template")
+    local procedure OnBeforeCalculateUserDefined(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCreateDeferralSchedule(DeferralCode: Code[10]; CustomerNo: Code[20]; DocumentNo: Code[20]; AmountToDefer: Decimal; CalcMethod: Enum "Deferral Calculation Method"; StartDate: Date; NoOfPeriods: Integer; ApplyDeferralPercentage: Boolean; DeferralDescription: Text[100]; AdjustStartDate: Boolean; CurrencyCode: Code[10]; var IsHandled: Boolean)
+    local procedure OnBeforeCreateDeferralSchedule(CustomerNo: Code[20]; DocumentNo: Code[20]; AmountToDefer: Decimal; StartDate: Date; NoOfPeriods: Integer; ApplyDeferralPercentage: Boolean; DeferralDescription: Text[100]; CurrencyCode: Code[10]; var IsHandled: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeDeferralCodeOnValidate(DeferralCode: Code[10]; customerno: Code[20]; DocumentNo: Code[20]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10]; var IsHandled: Boolean)
+    local procedure OnBeforeDeferralCodeOnValidate(customerno: Code[20]; DocumentNo: Code[20]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10]; var IsHandled: Boolean)
     begin
     end;
 
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterAdjustTotalAmountForDeferrals(DeferralCode: Code[10]; var AmtToDefer: Decimal; var AmtToDeferACY: Decimal; var TotalAmount: Decimal; var TotalAmountACY: Decimal);
+    local procedure OnAfterAdjustTotalAmountForDeferrals(var AmtToDefer: Decimal; var AmtToDeferACY: Decimal; var TotalAmount: Decimal; var TotalAmountACY: Decimal);
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCalcDeferralNoOfPeriods(CalcMethod: Enum "Deferral Calculation Method"; var NoOfPeriods: Integer; StartDate: Date; var IsHandled: Boolean)
+    local procedure OnBeforeCalcDeferralNoOfPeriods(var NoOfPeriods: Integer; StartDate: Date; var IsHandled: Boolean)
     begin
     end;
 
@@ -1027,7 +603,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnCalculateDaysPerPeriodOnAfterCalcEndDate(var DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; DeferralTemplate: Record "Deferral Template"; var EndDate: Date)
+    local procedure OnCalculateDaysPerPeriodOnAfterCalcEndDate(var DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line"; var EndDate: Date)
     begin
     end;
 
@@ -1052,7 +628,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeUpdateDeferralLineDescription(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header"; DeferralTemplate: Record "Deferral Template"; PostDate: Date; var IsHandled: Boolean)
+    local procedure OnBeforeUpdateDeferralLineDescription(var DeferralLine: Record "MFCC01 Deferral Line"; DeferralHeader: Record "MFCC01 Deferral Header"; PostDate: Date; var IsHandled: Boolean)
     begin
     end;
 

@@ -1,6 +1,6 @@
 report 60000 "MFCC01 Process Deferral"
 {
-    Caption = 'Process Deferral';
+    Caption = 'Process Franchise Deferral';
     UsageCategory = ReportsAndAnalysis;
     ApplicationArea = All;
     ProcessingOnly = true;
@@ -33,13 +33,10 @@ report 60000 "MFCC01 Process Deferral"
             var
                 Agreement: Record "MFCC01 Agreement Header";
             Begin
-                Agreement.Get("MFCC01 Deferral Header"."Agreement No.");
-                IF Agreement."Term Expiration Date" <> 0D then
-                    IF Agreement."Term Expiration Date" < PostingDate then
+                IF Agreement.Get("MFCC01 Deferral Header"."Agreement No.") then
+                    IF Agreement.Status <> Agreement.Status::Opened then
                         CurrReport.Skip();
 
-                IF Agreement.Status = Agreement.Status::Terminated then
-                    CurrReport.Skip();
             End;
         }
     }
@@ -113,7 +110,7 @@ report 60000 "MFCC01 Process Deferral"
         Case "MFCC01 Deferral Header".Type of
             "MFCC01 Deferral Header".Type::Commission:
                 GenJnlLine.Validate("Account No.", CZSetup.DefCommisionsinOperationsGAAP);
-            "MFCC01 Deferral Header".Type::Royalty:
+            "MFCC01 Deferral Header".Type::"Franchise Fee":
                 GenJnlLine.Validate("Account No.", CZSetup.RevenueRecognizedgaap);
             "MFCC01 Deferral Header".Type::Renewal:
                 GenJnlLine.Validate("Account No.", CZSetup."Deferred Renewal Fee GAAP");
@@ -138,7 +135,7 @@ report 60000 "MFCC01 Process Deferral"
         Case "MFCC01 Deferral Header".Type of
             "MFCC01 Deferral Header".Type::Commission:
                 GenJnlLine.Validate("Account No.", CZSetup.CommissionRecognizedGAAP);
-            "MFCC01 Deferral Header".Type::Royalty:
+            "MFCC01 Deferral Header".Type::"Franchise Fee":
                 GenJnlLine.Validate("Account No.", CZSetup.DefRevenueCafesinOperationGAAP);
             "MFCC01 Deferral Header".Type::Renewal:
                 GenJnlLine.Validate("Account No.", CZSetup."Franchise Renewal Fee GAAP");
@@ -163,7 +160,7 @@ report 60000 "MFCC01 Process Deferral"
 
 
     var
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
         DimMgt: Codeunit DimensionManagement;
         PostingDate: Date;
         GLEntry: Record "G/L Entry";

@@ -5,7 +5,7 @@ enum 60007 "MFCC01 Deferral Type"
     value(0; " ")
     {
     }
-    value(1; Royalty)
+    value(1; "Franchise Fee")
     {
     }
     value(2; Commission)

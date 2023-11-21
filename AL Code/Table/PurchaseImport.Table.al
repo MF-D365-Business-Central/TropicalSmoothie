@@ -12,70 +12,40 @@ table 60010 "MFCC01 Purchase Import"
         {
             DataClassification = CustomerContent;
         }
-        field(3; "Document No."; Code[20])
-        {
-            DataClassification = CustomerContent;
-        }
-        field(4; "Vendor No."; Code[20])
+
+        field(3; "Vendor No."; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = Vendor;
         }
 
-        field(5; "Pay-to Vendor No."; Code[20])
-        {
-            DataClassification = CustomerContent;
-            TableRelation = Vendor;
-        }
-
-        field(6; "Posting Date"; Date)
+        field(4; "Posting Date"; Date)
         {
             DataClassification = CustomerContent;
         }
-
+        field(5; "Invoice Date"; Date)
+        {
+            DataClassification = CustomerContent;
+        }
+        field(6; "Due Date"; Date)
+        {
+            DataClassification = CustomerContent;
+        }
         field(7; "External Document No."; Code[20])
         {
             DataClassification = CustomerContent;
         }
 
-
-
-        field(50; "Type"; enum "Purchase Line Type")
-        {
-            DataClassification = CustomerContent;
-        }
         field(51; "No."; Code[20])
         {
             DataClassification = CustomerContent;
-            TableRelation = IF (Type = CONST(" ")) "Standard Text"
-            ELSE
-
-            IF (Type = CONST("G/L Account")) "G/L Account"
-            ELSE
-            IF (Type = CONST(Resource)) Resource
-            ELSE
-            IF (Type = CONST("Fixed Asset")) "Fixed Asset"
-            ELSE
-            IF (Type = CONST("Charge (Item)")) "Item Charge"
-            ELSE
-            IF (Type = CONST(Item)) Item;
+            TableRelation = "G/L Account"."No.";
         }
         field(52; "Description"; Text[100])
         {
             DataClassification = CustomerContent;
         }
-        // field(53; "Unit of Measure Code"; Code[10])
-        // {
-        //     DataClassification = CustomerContent;
-        // }
-        // field(54; "Variant Code"; Code[10])
-        // {
-        //     DataClassification = CustomerContent;
-        // }
-        // field(55; "Location Code"; Code[10])
-        // {
-        //     DataClassification = CustomerContent;
-        // }
+
         field(56; Quantity; Decimal)
         {
             DataClassification = CustomerContent;
@@ -104,7 +74,15 @@ table 60010 "MFCC01 Purchase Import"
         {
             DataClassification = CustomerContent;
         }
-        field(93; Remarks; Text[500])
+        field(93; "Market Code"; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
+        field(94; "Cafe Code"; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
+        field(100; Remarks; Text[500])
         {
             DataClassification = CustomerContent;
         }
@@ -146,41 +124,54 @@ table 60010 "MFCC01 Purchase Import"
         PurchHeader.init();
         //Keys >>
         PurchHeader."Document Type" := Rec."Document Type";
-        PurchHeader."No." := Rec."Document No.";
+        PurchHeader."No." := '';
         //Keys <<
         PurchHeader.Insert(true);
+        PurchHeader.SetHideValidationDialog(True);
         PurchHeader.Validate("Buy-from Vendor No.", Rec."Vendor No.");
-        PurchHeader.Validate("Document Date", Rec."Posting Date");
+        PurchHeader.Validate("Document Date", Rec."Invoice Date");
         PurchHeader.Validate("Posting Date", Rec."Posting Date");
+        PurchHeader.Validate("Payment Terms Code", '');
+        PurchHeader.Validate("Due Date", Rec."Due Date");
         IF Rec."Document Type" = Rec."Document Type"::"Credit Memo" then
             PurchHeader."Vendor Cr. Memo No." := Rec."External Document No."
         else
             PurchHeader."Vendor Invoice No." := Rec."External Document No.";
-        PurchHeader.Modify();
+        PurchHeader.Modify(true);
 
     end;
 
-    procedure CreatePurchLine(Var LineNo: Integer)
+    procedure CreatePurchLine(Var LineNo: Integer; PurchHeader: Record "Purchase Header")
     var
         PurchLine: Record "Purchase Line";
     begin
         PurchLine.init();
         //Keys >>
-        PurchLine."Document Type" := Rec."Document Type";
-        PurchLine."Document No." := Rec."Document No.";
+        PurchLine."Document Type" := PurchHeader."Document Type";
+        PurchLine."Document No." := PurchHeader."No.";
         PurchLine."Line No." := LineNo;
         LineNo += 10000;
         //Keys <<
         PurchLine.Insert(true);
-        PurchLine.Validate("Type", Rec.Type);
+        PurchLine.Validate("Type", PurchLine.Type::"G/L Account");
         PurchLine.Validate("No.", Rec."No.");
         PurchLine.Description := Rec.Description;
         PurchLine.Validate(Quantity, Rec.Quantity);
         PurchLine.Validate("Direct Unit Cost", Rec."Direct Unit Cost");
         IF Rec."Department Code" <> '' then
             PurchLine.Validate("Shortcut Dimension 1 Code", Rec."Department Code");
-        PurchLine.Modify();
+        IF Rec."Market Code" <> '' then
+            PurchLine.Validate("Shortcut Dimension 2 Code", Rec."Market Code");
+        IF Rec."Cafe Code" <> '' then
+            PurchLine.ValidateShortcutDimCode(3, Rec."Cafe Code");
+        PurchLine.Modify(true);
 
     end;
 
+    local procedure GetSetId(Var DimSetID: Integer)
+    var
+        DimSetEntry: Record "Dimension Set Entry";
+    begin
+
+    end;
 }

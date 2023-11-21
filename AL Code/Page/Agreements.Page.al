@@ -1,6 +1,6 @@
 page 60004 "MFCC01 Agreements"
 {
-    Caption = 'Agreements';
+    Caption = 'Franchise Agreements';
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Lists;
@@ -27,12 +27,6 @@ page 60004 "MFCC01 Agreements"
                 field("Agreement Date"; Rec."Agreement Date")
                 {
                     ToolTip = 'Specifies the value of the Agreement Date field.';
-                }
-
-                field("Opening Date"; Rec."Franchise Revenue Start Date")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Opening Date field.';
                 }
 
                 field("Franchise Revenue Start Date"; Rec."Franchise Revenue Start Date")
@@ -69,9 +63,13 @@ page 60004 "MFCC01 Agreements"
                 {
                     ToolTip = 'Specifies the value of the Commission schedule No. field.';
                 }
-                field("RoyaltyscheduleNo."; Rec."RoyaltyscheduleNo.")
+                field("FranchiseFeescheduleNo."; Rec."FranchiseFeescheduleNo.")
                 {
                     ToolTip = 'Specifies the value of the Royalty schedule No. field.';
+                }
+                field("RenewalFeescheduleNo."; Rec."RenewalFeescheduleNo.")
+                {
+                    ToolTip = 'Specifies the value of the Renewal Fee Schedule No. field.';
                 }
                 field("Franchise Bank Account"; Rec."Franchise Bank Account")
                 {
@@ -206,6 +204,7 @@ page 60004 "MFCC01 Agreements"
                 Image = Installments;
                 Promoted = true;
                 PromotedCategory = Process;
+                Visible = false;
                 trigger OnAction()
                 var
                     DeferralUtility: Codeunit "MFCC01 Deferral Utilities";

@@ -1,6 +1,6 @@
 page 60006 "MFCC01 Agreement Lines"
 {
-    Caption = 'Lines';
+    Caption = 'Royalty Lines';
     PageType = ListPart;
     SourceTable = "MFCC01 Agreement Line";
     DelayedInsert = true;

@@ -22,29 +22,27 @@ page 60012 "MFCC01 Purchase Import"
                 {
                     ToolTip = 'Specifies the value of the Document Type field.';
                 }
-                field("Document No."; Rec."Document No.")
-                {
-                    ToolTip = 'Specifies the value of the Document No. field.';
-                }
+
                 field("Vendor No."; Rec."Vendor No.")
                 {
                     ToolTip = 'Specifies the value of the Vendor No. field.';
                 }
-                field("Pay-to Vendor No."; Rec."Pay-to Vendor No.")
-                {
-                    ToolTip = 'Specifies the value of the Bill-to Vendor No. field.';
-                }
+
                 field("Posting Date"; Rec."Posting Date")
                 {
                     ToolTip = 'Specifies the value of the Posting Date field.';
                 }
+                field("Invoice Date"; Rec."Invoice Date")
+                {
+                    ToolTip = 'Specifies the value of the Invoice Date field.';
+                }
+                field("Due Date"; Rec."Due Date")
+                {
+                    ToolTip = 'Specifies the value of the Due Date field.';
+                }
                 field("External Document No."; Rec."External Document No.")
                 {
                     ToolTip = 'Specifies the value of the External Document No. field.';
-                }
-                field("Type"; Rec."Type")
-                {
-                    ToolTip = 'Specifies the value of the Type field.';
                 }
                 field("No."; Rec."No.")
                 {
@@ -69,6 +67,14 @@ page 60012 "MFCC01 Purchase Import"
                 field("Department Code"; Rec."Department Code")
                 {
                     ToolTip = 'Specifies the value of the Department Code field.';
+                }
+                field("Market Code"; Rec."Market Code")
+                {
+                    ToolTip = 'Specifies the value of the Market Code field.';
+                }
+                field("Cafe Code"; Rec."Cafe Code")
+                {
+                    ToolTip = 'Specifies the value of the Cafe Code field.';
                 }
                 field(Status; Rec.Status)
                 {
@@ -108,7 +114,7 @@ page 60012 "MFCC01 Purchase Import"
                         Rec.Status::Created:
                             Begin
                                 PurchaseHeder.SetRange("Document Type", Rec."Document Type");
-                                PurchaseHeder.SetRange("No.", Rec."Document No.");
+                                PurchaseHeder.SetRange("No.", Rec."Invoice No.");
                                 IF PurchaseHeder.FindFirst() then
                                     PageHeler.PageRun(PurchaseHeder);
                             End;
@@ -117,13 +123,13 @@ page 60012 "MFCC01 Purchase Import"
                                 Case Rec."Document Type" of
                                     Rec."Document Type"::Invoice, Rec."Document Type"::Order:
                                         Begin
-                                            PurchaseInvoice.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            PurchaseInvoice.SetRange("Pre-Assigned No.", Rec."Invoice No.");
                                             IF PurchaseInvoice.FindFirst() then
                                                 PageHeler.PageRun(PurchaseInvoice);
                                         End;
                                     Rec."Document Type"::"Credit Memo", Rec."Document Type"::"Return Order":
                                         Begin
-                                            PurchaseCredMemo.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            PurchaseCredMemo.SetRange("Pre-Assigned No.", Rec."Invoice No.");
                                             IF PurchaseCredMemo.FindFirst() then
                                                 PageHeler.PageRun(PurchaseInvoice);
                                         End;

@@ -30,23 +30,6 @@ table 60001 "MFCC01 Deferral Header"
             end;
         }
 
-        field(7; "Deferral Code"; Code[10])
-        {
-            Caption = 'Deferral Code';
-            TableRelation = "Deferral Template"."Deferral Code";
-
-            trigger OnValidate()
-            var
-                DeferralTemplate: Record "Deferral Template";
-            Begin
-                Rec.TestStausOpen(Rec);
-                IF DeferralTemplate.Get(Rec."Deferral Code") then;
-                "Calc. Method" := DeferralTemplate."Calc. Method";
-                //"No. of Periods" := DeferralTemplate."No. of Periods";
-                "Start Date" := WorkDate();
-            End;
-
-        }
         field(8; "Amount to Defer"; Decimal)
         {
             AutoFormatExpression = "Currency Code";
@@ -56,38 +39,11 @@ table 60001 "MFCC01 Deferral Header"
             trigger OnValidate()
             begin
                 Rec.TestStausOpen(Rec);
-                // if "Initial Amount to Defer" < 0 then begin// Negative amount
-                //     if "Amount to Defer" < "Initial Amount to Defer" then
-                //         Error(AmountToDeferErr);
-                //     if "Amount to Defer" > 0 then
-                //         Error(AmountToDeferErr)
-                // end;
-
-                // if "Initial Amount to Defer" >= 0 then begin// Positive amount
-                //     if "Amount to Defer" > "Initial Amount to Defer" then
-                //         Error(AmountToDeferErr);
-                //     if "Amount to Defer" < 0 then
-                //         Error(AmountToDeferErr);
-                // end;
-
                 if "Amount to Defer" = 0 then
                     Error(ZeroAmountToDeferErr);
             end;
         }
-        field(9; "Amount to Defer (LCY)"; Decimal)
-        {
-            AutoFormatType = 1;
-            Caption = 'Amount to Defer (LCY)';
-        }
-        field(10; "Calc. Method"; Enum "Deferral Calculation Method")
-        {
-            Caption = 'Calc. Method';
-            trigger OnValidate()
-            Begin
-                Rec.TestStausOpen(Rec);
-                CalcPeriods();
-            End;
-        }
+
         field(11; "Start Date"; Date)
         {
             Caption = 'Start Date';
@@ -290,14 +246,13 @@ table 60001 "MFCC01 Deferral Header"
             CustSetup.TestField("Deferral Nos.");
             NoSeriesMgt.InitSeries(CustSetup."Deferral Nos.", xRec."No. Series", 0D, "Document No.", "No. Series");
 
-            Rec.Validate("Deferral Code", CustSetup."Deferral Template");
         end;
 
     End;
 
     var
 
-        CustSetup: Record "MFCC01 Customization Setup";
+        CustSetup: Record "MFCC01 Franchise Setup";
         GenJnlCheckLine: Codeunit "Gen. Jnl.-Check Line";
         DeferralUtilities: Codeunit "MFCC01 Deferral Utilities";
         NoSeriesMgt: Codeunit NoSeriesManagement;
@@ -323,8 +278,6 @@ table 60001 "MFCC01 Deferral Header"
                 CustSetup.Get();
                 NoSeriesMgt.TestManual(CustSetup."Deferral Nos.");
                 "No. Series" := '';
-
-                Rec.Validate("Deferral Code", CustSetup."Deferral Template");
             end;
     end;
 
@@ -338,8 +291,6 @@ table 60001 "MFCC01 Deferral Header"
         CustSetup.TestField("Deferral Nos.");
         if NoSeriesMgt.SelectSeries(CustSetup."Deferral Nos.", OldDeferral."No. Series", "No. Series") then begin
             NoSeriesMgt.SetSeries(Deferral."Document No.");
-
-            Deferral.Validate("Deferral Code", CustSetup."Deferral Template");
             Rec := Deferral;
             OnAssistEditOnBeforeExit(Deferral);
             exit(true);
@@ -352,17 +303,12 @@ table 60001 "MFCC01 Deferral Header"
         DeferralDescription: Text[100];
     begin
         OnBeforeCalculateSchedule(Rec);
-        if "Deferral Code" = '' then begin
-            Message(SelectionMsg);
-            exit(false);
-        end;
-        Rec.TestField("Deferral Code");
 
         Rec.TestField("Amount to Defer");
         DeferralDescription := "Schedule Description";
-        DeferralUtilities.CreateDeferralSchedule(Rec."Deferral Code",
+        DeferralUtilities.CreateDeferralSchedule(
            Rec."Customer No.", "Document No.", "Amount to Defer",
-            "Calc. Method", "Start Date", "No. of Periods", false, DeferralDescription, false, "Currency Code");
+             "Start Date", "No. of Periods", false, DeferralDescription, "Currency Code");
         Rec.SetDocumentSheduleCreated(Rec);
         exit(true);
     end;

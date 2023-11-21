@@ -92,23 +92,24 @@ Report 60004 "MFCC01PurchaseExcelImport"
 
             //Header Fields >>
             PurchaseImport."Document Type" := DocTypeEnumConvert(GetCellvalueatPoistion(R, 1));
-            PurchaseImport."Document No." := GetCellvalueatPoistion(R, 2);
-            PurchaseImport."Vendor No." := GetCellvalueatPoistion(R, 3);
-            PurchaseImport."Pay-to Vendor No." := GetCellvalueatPoistion(R, 4);
-            Evaluate(PurchaseImport."Posting Date", GetCellvalueatPoistion(R, 5));
+            PurchaseImport."Vendor No." := GetCellvalueatPoistion(R, 2);
+            Evaluate(PurchaseImport."Posting Date", GetCellvalueatPoistion(R, 3));
+            Evaluate(PurchaseImport."Invoice Date", GetCellvalueatPoistion(R, 4));
+            Evaluate(PurchaseImport."Due Date", GetCellvalueatPoistion(R, 5));
             PurchaseImport."External Document No." := GetCellvalueatPoistion(R, 6);
             //Header Fields <<
 
             //Lines >>
-            PurchaseImport.Type := LineTypeEnumConvert(GetCellvalueatPoistion(R, 7));
-            PurchaseImport."No." := GetCellvalueatPoistion(R, 8);
-            PurchaseImport.Description := GetCellvalueatPoistion(R, 9);
-            Evaluate(PurchaseImport.Quantity, GetCellvalueatPoistion(R, 10));
+            PurchaseImport."No." := GetCellvalueatPoistion(R, 7);
+            PurchaseImport.Description := GetCellvalueatPoistion(R, 8);
+            Evaluate(PurchaseImport.Quantity, GetCellvalueatPoistion(R, 9));
+            IF GetCellvalueatPoistion(R, 10) <> '' then
+                Evaluate(PurchaseImport."Direct Unit Cost", GetCellvalueatPoistion(R, 10));
             IF GetCellvalueatPoistion(R, 11) <> '' then
-                Evaluate(PurchaseImport."Direct Unit Cost", GetCellvalueatPoistion(R, 11));
-            IF GetCellvalueatPoistion(R, 12) <> '' then
-                Evaluate(PurchaseImport."Line Amount", GetCellvalueatPoistion(R, 12));
-            PurchaseImport."Department Code" := GetCellvalueatPoistion(R, 13);
+                Evaluate(PurchaseImport."Line Amount", GetCellvalueatPoistion(R, 11));
+            PurchaseImport."Department Code" := GetCellvalueatPoistion(R, 12);
+            PurchaseImport."Market Code" := GetCellvalueatPoistion(R, 13);
+            PurchaseImport."Cafe Code" := GetCellvalueatPoistion(R, 14);
             //Lines <<
 
             EntryNo += 1;
@@ -145,6 +146,7 @@ Report 60004 "MFCC01PurchaseExcelImport"
     var
         PurchaseImport2: Record "MFCC01 Purchase Import";
     begin
+        EntryNo := 1;
         IF PurchaseImport2.FindLast() then
             EntryNo := PurchaseImport2."Entry No." + 1;
     end;

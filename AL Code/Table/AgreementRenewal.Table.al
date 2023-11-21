@@ -63,7 +63,7 @@ table 60012 "MFCC01 Agreement Renewal"
             DataClassification = CustomerContent;
             Editable = false;
         }
-        field(17; Status; Enum "MFCC01 Agreement Status")
+        field(17; Status; Enum "MFCC01 Renewal Status")
         {
             DataClassification = CustomerContent;
             Editable = false;
@@ -85,7 +85,7 @@ table 60012 "MFCC01 Agreement Renewal"
 
 
     var
-        CZ: Record "MFCC01 Customization Setup";
+        CZ: Record "MFCC01 Franchise Setup";
         ChangeErr: Label 'Changes not allowed as renewal fee already processed.';
         ExpDateErr: Label 'Effective Date %2 must be later than Agreement expiration Date %2';
         DuplicateErr: Label 'Term period already within the range';
@@ -136,24 +136,27 @@ table 60012 "MFCC01 Agreement Renewal"
     end;
 
 
-    procedure SetStatusSigned()
+    procedure SetStatusRenewed()
     var
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
         AgreementHeader: Record "MFCC01 Agreement Header";
+        ConfirmTxt: Label 'Do you want to Renew the Cafe.?';
     begin
+        Rec.TestField(Status, Rec.Status::" ");
+        IF not Confirm(ConfirmTxt, false, true) then
+            exit;
         Rec.TestField("No. of Periods");
         CZSetup.GetRecordonce();
         CZSetup.TestField("Franchise Renewal Fee GAAP");
-        CZSetup.TestField("Renewal Deferral Template");
         CZSetup.TestField("Deferred Renewal Fee GAAP");
         CZSetup.TestField("Franchise Renewal Fee");
         CZSetup.TestField("Deferred Renewal Fee");
 
         AgreementHeader.Get(Rec."Agreement No.");
         AgreementHeader.TestField(Status, AgreementHeader.Status::Opened);
-        Rec.Status := AgreementHeader.Status::Signed;
+        Rec.Status := Rec.Status::Renewed;
         Rec.Modify();
-        OnaferSignEvent(Rec);
+        OnaferReneweEvent(Rec);
     end;
 
     trigger OnInsert()
@@ -168,7 +171,7 @@ table 60012 "MFCC01 Agreement Renewal"
 
     trigger OnDelete()
     begin
-        Rec.TestField(Status, Rec.Status::InDevelopment);
+        Rec.TestField(Status, Rec.Status::" ");
     end;
 
     trigger OnRename()
@@ -177,7 +180,7 @@ table 60012 "MFCC01 Agreement Renewal"
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnaferSignEvent(var Renewal: Record "MFCC01 Agreement Renewal")
+    local procedure OnaferReneweEvent(var Renewal: Record "MFCC01 Agreement Renewal")
     begin
     end;
 }

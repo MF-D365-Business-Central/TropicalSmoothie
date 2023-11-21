@@ -22,30 +22,20 @@ page 60008 "MFCC01 Sales Import"
                 {
                     ToolTip = 'Specifies the value of the Document Type field.';
                 }
-                field("Document No."; Rec."Document No.")
-                {
-                    ToolTip = 'Specifies the value of the Document No. field.';
-                }
+
                 field("Customer No."; Rec."Customer No.")
                 {
                     ToolTip = 'Specifies the value of the Customer No. field.';
                 }
-                field("Bill-to Customer No."; Rec."Bill-to Customer No.")
+                field("Posting Description"; Rec."Posting Description")
                 {
-                    ToolTip = 'Specifies the value of the Bill-to Customer No. field.';
+                    ToolTip = 'Specifies the value of the Posting Description field.';
                 }
                 field("Posting Date"; Rec."Posting Date")
                 {
                     ToolTip = 'Specifies the value of the Posting Date field.';
                 }
-                field("External Document No."; Rec."External Document No.")
-                {
-                    ToolTip = 'Specifies the value of the External Document No. field.';
-                }
-                field("Type"; Rec."Type")
-                {
-                    ToolTip = 'Specifies the value of the Type field.';
-                }
+
                 field("No."; Rec."No.")
                 {
                     ToolTip = 'Specifies the value of the No. field.';
@@ -54,7 +44,6 @@ page 60008 "MFCC01 Sales Import"
                 {
                     ToolTip = 'Specifies the value of the Description field.';
                 }
-
                 field(Quantity; Rec.Quantity)
                 {
                     ToolTip = 'Specifies the value of the Quantity field.';
@@ -107,7 +96,7 @@ page 60008 "MFCC01 Sales Import"
                         Rec.Status::Created:
                             Begin
                                 SalesHeder.SetRange("Document Type", Rec."Document Type");
-                                SalesHeder.SetRange("No.", Rec."Document No.");
+                                SalesHeder.SetRange("No.", Rec."Invoice No.");
                                 IF SalesHeder.FindFirst() then
                                     PageHeler.PageRun(SalesHeder);
                             End;
@@ -116,13 +105,13 @@ page 60008 "MFCC01 Sales Import"
                                 Case Rec."Document Type" of
                                     Rec."Document Type"::Invoice, Rec."Document Type"::Order:
                                         Begin
-                                            SalesInvoice.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            SalesInvoice.SetRange("Pre-Assigned No.", Rec."Invoice No.");
                                             IF SalesInvoice.FindFirst() then
                                                 PageHeler.PageRun(SalesInvoice);
                                         End;
                                     Rec."Document Type"::"Credit Memo", Rec."Document Type"::"Return Order":
                                         Begin
-                                            SalesCredMemo.SetRange("Pre-Assigned No.", Rec."Document No.");
+                                            SalesCredMemo.SetRange("Pre-Assigned No.", Rec."Invoice No.");
                                             IF SalesCredMemo.FindFirst() then
                                                 PageHeler.PageRun(SalesInvoice);
                                         End;

@@ -46,11 +46,14 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the No. of Periods field.';
                 }
+                field("Renewal No. of Periods"; Rec."Renewal No. of Periods")
+                {
+                    ToolTip = 'Specifies the value of the Renewal No. of Periods field.';
+                }
                 field("Agreement Amount"; Rec."Agreement Amount")
                 {
                     ToolTip = 'Specifies the value of the Agreement Amount field.';
                 }
-
 
                 field("SalesPerson Commission"; Rec."SalesPerson Commission")
                 {
@@ -78,11 +81,18 @@ page 60005 "MFCC01 Agreement"
                 }
                 field("CommissionscheduleNo."; Rec."CommissionscheduleNo.")
                 {
+                    Editable = false;
                     ToolTip = 'Specifies the value of the Commission schedule No. field.';
                 }
-                field("RoyaltyscheduleNo."; Rec."RoyaltyscheduleNo.")
+                field("FranchiseFeescheduleNo."; Rec."FranchiseFeescheduleNo.")
                 {
+                    Editable = false;
                     ToolTip = 'Specifies the value of the Royalty schedule No. field.';
+                }
+                field("RenewalFeescheduleNo."; Rec."RenewalFeescheduleNo.")
+                {
+                    Editable = false;
+                    ToolTip = 'Specifies the value of the Renewal Fee Schedule No. field.';
                 }
                 field("Termination Date"; Rec."Termination Date")
                 {
@@ -94,6 +104,7 @@ page 60005 "MFCC01 Agreement"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Status field.';
                 }
+
             }
             part(Lines; "MFCC01 Agreement Lines")
             {
@@ -233,6 +244,7 @@ page 60005 "MFCC01 Agreement"
                 Image = Installments;
                 Promoted = true;
                 PromotedCategory = Process;
+                Visible = false;
                 trigger OnAction()
                 var
                     DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
@@ -242,9 +254,9 @@ page 60005 "MFCC01 Agreement"
             }
 
 
-            action(ProcessCommission)
+            action(ProcessLateCommission)
             {
-                Caption = 'Process Commission';
+                Caption = 'Process Late Commission';
                 ApplicationArea = All;
                 Image = Post;
                 trigger OnAction()

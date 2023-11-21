@@ -13,25 +13,19 @@ codeunit 60003 "MFCC01 Sales Import"
         SalesHeader: Record "Sales Header";
         SalesLine: Record "Sales Line";
         LineNo: Integer;
-        PrevDocumentNo: Code[20];
     begin
-        LineNo := 10000;
+
         SalesImport.Reset();
-        SalesImport.SetCurrentKey("Document No.");
         SalesImport.SetRange(Status, SalesImport.Status::New);
         IF SalesImport.FindSet(true) then
             repeat
-                IF PrevDocumentNo <> SalesImport."Document No." then Begin
-                    SalesHeader := SalesImport.CreateSalesHeader();
-                    PrevDocumentNo := SalesImport."Document No.";
-                End;
-
-
-
-                SalesImport.CreateSalesLine(LineNo);
+                LineNo := 10000;
+                SalesHeader := SalesImport.CreateSalesHeader();
+                SalesImport.CreateSalesLine(LineNo, SalesHeader);
                 SalesImport.Status := SalesImport.Status::Created;
                 SalesImport."Invoice No." := SalesHeader."No.";
                 SalesImport.Modify();
+
             Until SalesImport.Next() = 0;
     end;
 
@@ -43,16 +37,16 @@ codeunit 60003 "MFCC01 Sales Import"
     begin
         Posted := false;
         SalesImport.Reset();
-        SalesImport.SetCurrentKey("Document No.");
+        SalesImport.SetCurrentKey("Invoice No.");
         SalesImport.SetRange(Status, SalesImport.Status::Created);
         IF SalesImport.FindSet(true) then
             repeat
-                IF PrevDocumentNo <> SalesImport."Document No." then Begin
-                    PrevDocumentNo := SalesImport."Document No.";
+                IF PrevDocumentNo <> SalesImport."Invoice No." then Begin
+                    PrevDocumentNo := SalesImport."Invoice No.";
                     Posted := false;
                     ClearLastError();
                     SalesHeader.SetRange("Document Type", SalesImport."Document Type");
-                    SalesHeader.SetRange("No.", SalesImport."Document No.");
+                    SalesHeader.SetRange("No.", SalesImport."Invoice No.");
                     IF SalesHeader.FindFirst() then;
                     UpdateComments(SalesHeader);
                     Commit();
@@ -82,7 +76,7 @@ codeunit 60003 "MFCC01 Sales Import"
         SalesImport2: Record "MFCC01 Sales Import";
     begin
         SalesImport2.Reset();
-        SalesImport2.SetCurrentKey("Document No.");
+        SalesImport2.SetCurrentKey("Invoice No.");
         SalesImport2.SetRange(Status, SalesImport.Status::Created);
         SalesImport2.SetRange("Invoice No.", SalesHeader."No.");
         IF SalesImport2.FindSet() then
@@ -94,7 +88,7 @@ codeunit 60003 "MFCC01 Sales Import"
         SalesImport2: Record "MFCC01 Sales Import";
     begin
         SalesImport2.Reset();
-        SalesImport2.SetCurrentKey("Document No.");
+        SalesImport2.SetCurrentKey("Invoice No.");
         SalesImport2.SetRange(Status, SalesImport.Status::Created);
         SalesImport2.SetRange("Invoice No.", SalesHeader."No.");
         IF SalesImport2.FindSet() then

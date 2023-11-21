@@ -17,16 +17,17 @@ codeunit 60004 "MFCC01 Purchase Import"
     begin
         LineNo := 10000;
         PurchaseImport.Reset();
-        PurchaseImport.SetCurrentKey("Document No.");
+        PurchaseImport.SetCurrentKey("Vendor No.", "External Document No.");
         PurchaseImport.SetRange(Status, PurchaseImport.Status::New);
         IF PurchaseImport.FindSet(true) then
             repeat
-                IF PrevDocumentNo <> PurchaseImport."Document No." then Begin
+                IF PrevDocumentNo <> (PurchaseImport."External Document No." + PurchaseImport."Vendor No.") then Begin
                     PurchHeader := PurchaseImport.CreatePurchHeader();
-                    PrevDocumentNo := PurchaseImport."Document No.";
+                    PrevDocumentNo := PurchaseImport."External Document No." + PurchaseImport."Vendor No.";
                 End;
 
-                PurchaseImport.CreatePurchLine(LineNo);
+                PurchaseImport.CreatePurchLine(LineNo, PurchHeader);
+                PurchaseImport."Invoice No." := PurchHeader."No.";
                 PurchaseImport.Status := PurchaseImport.Status::Created;
                 PurchaseImport.Modify();
             Until PurchaseImport.Next() = 0;
@@ -40,15 +41,15 @@ codeunit 60004 "MFCC01 Purchase Import"
     begin
         Posted := false;
         PurchaseImport.Reset();
-        PurchaseImport.SetCurrentKey("Document No.");
+        PurchaseImport.SetCurrentKey("Invoice No.");
         PurchaseImport.SetRange(Status, PurchaseImport.Status::Created);
         IF PurchaseImport.FindSet(true) then
             repeat
-                IF PrevDocumentNo <> PurchaseImport."Document No." then Begin
+                IF PrevDocumentNo <> PurchaseImport."Invoice No." then Begin
                     Posted := false;
-                    PrevDocumentNo := PurchaseImport."Document No.";
+                    PrevDocumentNo := PurchaseImport."Invoice No.";
                     PurchHeader.SetRange("Document Type", PurchaseImport."Document Type");
-                    PurchHeader.SetRange("No.", PurchaseImport."Document No.");
+                    PurchHeader.SetRange("No.", PurchaseImport."Invoice No.");
                     IF PurchHeader.FindFirst() then;
                     UpdateComments(PurchHeader);
                     Commit();
@@ -77,7 +78,7 @@ codeunit 60004 "MFCC01 Purchase Import"
         PurchaseImport2: Record "MFCC01 Purchase Import";
     begin
         PurchaseImport2.Reset();
-        PurchaseImport2.SetCurrentKey("Document No.");
+        PurchaseImport2.SetCurrentKey("Invoice No.");
         PurchaseImport2.SetRange(Status, PurchaseImport.Status::Created);
         PurchaseImport2.SetRange("Invoice No.", PurchHeader."No.");
         IF PurchaseImport2.FindSet() then
@@ -86,10 +87,10 @@ codeunit 60004 "MFCC01 Purchase Import"
 
     local procedure UpdateComments(PurchHeader: Record "Purchase Header")
     var
-        PurchaseImport2: Record "MFCC01 Sales Import";
+        PurchaseImport2: Record "MFCC01 Purchase Import";
     begin
         PurchaseImport2.Reset();
-        PurchaseImport2.SetCurrentKey("Document No.");
+        PurchaseImport2.SetCurrentKey("Invoice No.");
         PurchaseImport2.SetRange(Status, PurchaseImport.Status::Created);
         PurchaseImport2.SetRange("Invoice No.", PurchHeader."No.");
         IF PurchaseImport2.FindSet() then

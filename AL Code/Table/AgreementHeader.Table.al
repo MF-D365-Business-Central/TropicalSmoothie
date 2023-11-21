@@ -12,7 +12,7 @@ table 60003 "MFCC01 Agreement Header"
             TableRelation = Customer."No.";
             trigger OnValidate()
             Begin
-                TransfereedAgreement();
+                TransferedAgreement();
             End;
         }
         field(2; "No."; Code[20])
@@ -116,9 +116,9 @@ table 60003 "MFCC01 Agreement Header"
             Caption = 'Posted Commission Amount';
             Editable = false;
         }
-        field(52; "RoyaltyscheduleNo."; Code[20])
+        field(52; "FranchiseFeescheduleNo."; Code[20])
         {
-            Caption = 'Royalty Schedule No.';
+            Caption = 'Franchise Fee Schedule No.';
             TableRelation = "MFCC01 Deferral Header"."Document No.";
             trigger OnValidate()
             Begin
@@ -177,6 +177,20 @@ table 60003 "MFCC01 Agreement Header"
             Editable = false;
             DataClassification = CustomerContent;
         }
+        field(61; "RenewalFeescheduleNo."; Code[20])
+        {
+            Caption = 'Renewal Fee Schedule No.';
+            TableRelation = "MFCC01 Deferral Header"."Document No.";
+            trigger OnValidate()
+            Begin
+                TestStatusNew(Rec);
+            End;
+        }
+        field(62; "Renewal No. of Periods"; Decimal)
+        {
+            Editable = false;
+            DataClassification = CustomerContent;
+        }
     }
 
     keys
@@ -189,7 +203,7 @@ table 60003 "MFCC01 Agreement Header"
 
     var
 
-        CZ: Record "MFCC01 Customization Setup";
+        CZ: Record "MFCC01 Franchise Setup";
         NoSeriesMgt: Codeunit NoSeriesManagement;
         OpenDateEDDateErrorLbl: Label 'Ending Date %1 must be greater then Franchise Revenue Start Date %2';
         OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Franchise Revenue Start Date %2';
@@ -211,7 +225,7 @@ table 60003 "MFCC01 Agreement Header"
             NoSeriesMgt.InitSeries(CZ."Agreement Nos.", xRec."No. Series", 0D, "No.", "No. Series");
             Rec.NonGapInitialRevenueRecognized := CZ.NonGapInitialRevenueRecognized;
         end;
-        TransfereedAgreement();
+        TransferedAgreement();
     End;
 
 
@@ -278,10 +292,15 @@ table 60003 "MFCC01 Agreement Header"
         Error(DuplicateAgreementErr, AgreementHeader."No.");
     end;
 
-    local procedure TransfereedAgreement()
+    local procedure TransferedAgreement()
     var
         AgreementHeader: Record "MFCC01 Agreement Header";
+        Customer: Record Customer;
     begin
+        IF Not Customer.Get(Rec."Customer No.") then
+            Exit;
+        Customer.TestField("Customer Posting Group");
+        Customer.TestField("Gen. Bus. Posting Group");
         AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
         AgreementHeader.SetFilter(Status, '%1|%2|%3', AgreementHeader.Status::Signed, AgreementHeader.Status::Opened, AgreementHeader.Status::Terminated);
         IF Not AgreementHeader.FindFirst() then
@@ -289,14 +308,6 @@ table 60003 "MFCC01 Agreement Header"
         Rec."License Type" := Rec."License Type"::Transferred;
     end;
 
-    local procedure CalcExpirationDate()
-    var
-        DeferalTemplate: Record "Deferral Template";
-    begin
-        CZ.GetRecordonce();
-        DeferalTemplate.Get(CZ."Deferral Template");
-        Rec."Term Expiration Date" := CalcDate(Strsubstno('<+%1M>', DeferalTemplate."No. of Periods"), rec."Agreement Date")
-    end;
 
     local procedure CalcPeriods()
     var
@@ -356,7 +367,13 @@ table 60003 "MFCC01 Agreement Header"
     end;
 
     procedure SetStatusOpen(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    var
+        ConfirmTxt: Label 'Do you want to Open the Cafe.?';
     begin
+        IF not Confirm(ConfirmTxt, false, true) then
+            exit;
+
+        //AgreementHeader.TestField("SalesPerson Commission");
         AgreementHeader.TestField(Status, Status::Signed);
         AgreementHeader.Status := AgreementHeader.Status::Opened;
         AgreementHeader.TestField("Franchise Revenue Start Date");
@@ -369,16 +386,21 @@ table 60003 "MFCC01 Agreement Header"
 
     procedure SetStatusSigned(Var AgreementHeader: Record "MFCC01 Agreement Header")
     var
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
+        ConfirmTxt: Label 'Do you want to Sign the Cafe.?';
     begin
+        IF not Confirm(ConfirmTxt, false, true) then
+            exit;
         CheckActiveAgreement();
         CZSetup.GetRecordonce();
+
         CZSetup.TestField(PrepaidCommisionLT);
         CZSetup.TestField("Accrued Fran Bonus GAAP");
         CZSetup.TestField(DefRevenueCafesinOperationGAAP);
         CZSetup.TestField(DeferredRevenueDevelopmentGAPP);
         CZSetup.TestField(RevenueRecognizedGAAP);
 
+        AgreementHeader.TestField("Agreement Amount");
         AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
         AgreementHeader.Status := AgreementHeader.Status::Signed;
         AgreementHeader.Modify();
@@ -386,12 +408,19 @@ table 60003 "MFCC01 Agreement Header"
     end;
 
     procedure SetStatusTerminate(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    var
+        DefHeader: Record "MFCC01 Deferral Header";
+        ConfirmTxt: Label 'Do you want to Terminate the Cafe.?';
     begin
+        IF not Confirm(ConfirmTxt, false, true) then
+            exit;
         CheckLinesExist(AgreementHeader, true);
         AgreementHeader.TestField("Termination Date");
         IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
             AgreementHeader.Status := AgreementHeader.Status::Terminated;
             AgreementHeader.Modify();
+            DefHeader.SetRange("Agreement No.", Rec."No.");
+            DefHeader.ModifyAll(Status, DefHeader.Status::Terminated);
         end;
     end;
 

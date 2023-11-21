@@ -192,7 +192,11 @@ page 60010 "MFCC01 Franchise Journal"
                 ApplicationArea = All;
                 Image = Post;
                 trigger OnAction()
+                var
+                    ConfirmTxt: Label 'Do you want to Post Franchise Journals.?';
                 begin
+                    IF not Confirm(ConfirmTxt, false, true) then
+                        exit;
                     Codeunit.RUn(Codeunit::"MFCC01 Franchise Jnl. Post", Rec);
                 end;
             }

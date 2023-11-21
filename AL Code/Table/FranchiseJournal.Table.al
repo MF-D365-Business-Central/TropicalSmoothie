@@ -170,7 +170,7 @@ table 60008 "MFCC01 Franchise Journal"
 
     var
 
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
         FranchiseBatch: Record "MFCC01 Franchise Batch";
         FranchiseJnlLine: Record "MFCC01 Franchise Journal";
         NoSeriesMgt: Codeunit NoSeriesManagement;
@@ -319,11 +319,20 @@ table 60008 "MFCC01 Franchise Journal"
     local procedure CopyAgreement()
     var
         AgreementHeader: Record "MFCC01 Agreement Header";
+        AgreementLine: Record "MFCC01 Agreement Line";
     begin
         AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
         AgreementHeader.SetRange(Status, AgreementHeader.Status::Opened);
         AgreementHeader.FindFirst();
         Rec."Agreement ID" := AgreementHeader."No.";
+        IF Rec."Agreement ID" = '' then
+            Exit;
+        AgreementLine.SetRange("Agreement No.", Rec."Agreement ID");
+        AgreementLine.SetFilter("Starting Date", '<=%1|%2', Rec."Document Date", 0D);
+        AgreementLine.SetFilter("Ending Date", '>=%1|%2', Rec."Document Date", 0D);
+        AgreementLine.Findlast();
+        IF AgreementLine.Description <> '' then
+            Rec.Description := AgreementLine.Description;
     end;
 
     local procedure CalcAmounts()

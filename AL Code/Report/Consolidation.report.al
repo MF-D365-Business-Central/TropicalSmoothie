@@ -435,7 +435,7 @@ report 60007 "Import Consolidation Non GAAP"
     end;
 
     var
-        CZSetup: Record "MFCC01 Customization Setup";
+        CZSetup: Record "MFCC01 Franchise Setup";
         SelectedDim: Record "Selected Dimension";
         Dim: Record Dimension;
         DimVal: Record "Dimension Value";

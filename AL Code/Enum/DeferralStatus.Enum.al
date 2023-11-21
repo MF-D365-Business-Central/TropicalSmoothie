@@ -17,4 +17,7 @@ enum 60000 "MFCC01 Deferral Status"
     value(15; "Short Closed")
     {
     }
+    value(20; Terminated)
+    {
+    }
 }
