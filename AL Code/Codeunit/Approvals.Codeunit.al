@@ -7,85 +7,125 @@ codeunit 60007 MFCC01Approvals
 
     var
         WorkflowEventHandling: Codeunit "Workflow Event Handling";
+        WorkflowResponse: Codeunit "Workflow Response Handling";
         WorkflowManagement: Codeunit "Workflow Management";
+        ApprovalMgmt: Codeunit "Approvals Mgmt.";
         NoWorkflowEnabledErr: Label 'No approval workflow for this record type is enabled.';
+        DocStatusChangedMsg: Label '%1 %2 has been automatically approved. The status has been changed to %3.', Comment = 'Order 1001 has been automatically approved. The status has been changed to Released.';
+        PendingApprovalMsg: Label 'An approval request has been sent.';
 
     [IntegrationEvent(false, false)]
-    procedure OnSendVendorBankAccForApproval(var VendorBankAcc: Record "Vendor Bank Account")
+    procedure OnSendVBADocForApproval(var VBA: Record "Vendor Bank Account")
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    procedure OnCancelVendorBankAccApprovalRequest(var VendorBankAcc: Record "Vendor Bank Account")
+    procedure OnCancelVBAApprovalRequest(var VBA: Record "Vendor Bank Account")
     begin
     end;
 
-    procedure IsVendorBankAccApprovalsWorkflowEnabled(var VendorBankAcc: Record "Vendor Bank Account") Result: Boolean
+    local procedure ShowVBAApprovalStatus(VBA: Record "Vendor Bank Account")
     var
         IsHandled: Boolean;
     begin
         IsHandled := false;
-        OnBeforeIsVendorBankAccApprovalsWorkflowEnabled(VendorBankAcc, Result, IsHandled);
+        OnBeforeShowVBAApprovalStatus(VBA, IsHandled);
         if IsHandled then
-            exit(Result);
-        exit(WorkflowManagement.CanExecuteWorkflow(VendorBankAcc, RunWorkflowOnSendVendorBankAccForApprovalCode()));
+            exit;
+
+        VBA.Find();
+
+        case VBA.Status of
+            VBA.Status::Released:
+                Message(DocStatusChangedMsg, 0, VBA.Code, VBA.Status);
+            VBA.Status::"Pending Approval":
+                if ApprovalMgmt.HasOpenOrPendingApprovalEntries(VBA.RecordId) then
+                    Message(PendingApprovalMsg);
+        end;
     end;
 
-    procedure CheckVendorBankAccApprovalPossible(var VendorBankAcc: Record "Vendor Bank Account"): Boolean
+    procedure IsVBAApprovalsWorkflowEnabled(var VBA: Record "Vendor Bank Account"): Boolean
+    begin
+        exit(WorkflowManagement.CanExecuteWorkflow(VBA, RunWorkflowOnSendVBADocForApprovalCode()));
+    end;
+
+    procedure IsVBAPendingApproval(var VBA: Record "Vendor Bank Account"): Boolean
+    begin
+        if VBA.Status <> VBA.Status::Open then
+            exit(false);
+
+        exit(IsVBAApprovalsWorkflowEnabled(VBA));
+    end;
+
+
+    procedure CheckVBAApprovalPossible(var VBA: Record "Vendor Bank Account"): Boolean
     var
         IsHandled: Boolean;
         Result: Boolean;
     begin
         IsHandled := false;
-        OnBeforeCheckVendorBankAccApprovalPossible(VendorBankAcc, Result, IsHandled);
+        OnBeforeCheckVBAApprovalPossible(VBA, Result, IsHandled);
         if IsHandled then
             exit(Result);
 
-        if not IsVendorBankAccApprovalsWorkflowEnabled(VendorBankAcc) then
+        if not IsVBAApprovalsWorkflowEnabled(VBA) then
             Error(NoWorkflowEnabledErr);
 
-
-        OnAfterCheckVendorBankAccApprovalPossible(VendorBankAcc);
+        OnAfterCheckVBAApprovalPossible(VBA);
 
         exit(true);
     end;
 
-
-    procedure RunWorkflowOnSendVendorBankAccForApprovalCode(): Code[128]
-    begin
-        exit('RUNWORKFLOWONSENDVENDORBANKACCFORAPPROVAL');
-    end;
-
-    procedure RunWorkflowOnCancelVendorBankAccApprovalRequestCode(): Code[128]
-    begin
-        exit('RUNWORKFLOWONCANCELVENDORBANKACCAPPROVALREQUEST');
-    end;
-
-    procedure RunWorkflowOnAfterReleaseVendorBankAccCode(): Code[128]
-    begin
-        exit('RUNWORKFLOWONAFTERRELEASEVENDORBANKACC');
-    end;
-
-    procedure OpenApprovalsVandorBankAcc(var VendorBankAcc: Record "Vendor Bank Account")
+    procedure InformUserOnStatusChange(Variant: Variant; WorkflowInstanceId: Guid)
     var
-        AprrovalsMgmt: Codeunit "Approvals Mgmt.";
+        RecRef: RecordRef;
     begin
-        AprrovalsMgmt.RunWorkflowEntriesPage(
-            VendorBankAcc.RecordId(), DATABASE::"Vendor Bank Account", 0, VendorBankAcc.Code);
+        RecRef.GetTable(Variant);
+
+        case RecRef.Number of
+
+            DATABASE::"Vendor Bank Account":
+                ShowVBAApprovalStatus(Variant);
+
+        end;
+    end;
+
+    procedure OpenApprovalsVBA(VBA: Record "Vendor Bank Account")
+
+    begin
+        ApprovalMgmt.RunWorkflowEntriesPage(
+            VBA.RecordId(), DATABASE::"Vendor Bank Account", 0, VBA.Code);
+    end;
+
+
+    procedure RunWorkflowOnSendVBADocForApprovalCode(): Code[128]
+    begin
+        exit('RUNWORKFLOWONSENDVBADOCFORAPPROVAL');
+    end;
+
+    procedure RunWorkflowOnCancelVBAApprovalRequestCode(): Code[128]
+    begin
+        exit('RUNWORKFLOWONCANCELVBAAPPROVALREQUEST');
+    end;
+
+    procedure RunWorkflowOnAfterReleaseVBADocCode(): Code[128]
+    begin
+        exit('RUNWORKFLOWONAFTERRELEASEVBADOC');
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeIsVendorBankAccApprovalsWorkflowEnabled(var VendorBankAcc: Record "Vendor Bank Account"; var Result: Boolean; var IsHandled: Boolean);
+    local procedure OnBeforeShowVBAApprovalStatus(var VBA: Record "Vendor Bank Account"; var IsHandled: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeCheckVendorBankAccApprovalPossible(var VendorBankAcc: Record "Vendor Bank Account"; var Result: Boolean; var IsHandled: Boolean)
+    local procedure OnBeforeCheckVBAApprovalPossible(var vba: Record "Vendor Bank Account"; var Result: Boolean; var IsHandled: Boolean)
     begin
     end;
 
     [IntegrationEvent(false, false)]
-    local procedure OnAfterCheckVendorBankAccApprovalPossible(var VendorBankAcc: Record "Vendor Bank Account")
+    local procedure OnAfterCheckVBAApprovalPossible(var vba: Record "Vendor Bank Account")
     begin
     end;
+
 }

@@ -31,7 +31,7 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
                 var
                     MFCC01Approvals: Codeunit MFCC01Approvals;
                 begin
-                    MFCC01Approvals.OpenApprovalsVandorBankAcc(Rec);
+                    MFCC01Approvals.OpenApprovalsVBA(Rec);
                 end;
             }
 
@@ -147,8 +147,8 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
                     var
                         MFCC01Approvals: Codeunit MFCC01Approvals;
                     begin
-                        if MFCC01Approvals.CheckVendorBankAccApprovalPossible(Rec) then
-                            MFCC01Approvals.OnSendVendorBankAccForApproval(Rec);
+                        if MFCC01Approvals.CheckVBAApprovalPossible(Rec) then
+                            MFCC01Approvals.OnSendVBADocForApproval(Rec);
                     end;
                 }
                 action(CancelApprovalRequest)
@@ -164,7 +164,7 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
                         MFCC01Approvals: Codeunit MFCC01Approvals;
                         WorkflowWebhookMgt: Codeunit "Workflow Webhook Management";
                     begin
-                        MFCC01Approvals.OnCancelVendorBankAccApprovalRequest(Rec);
+                        MFCC01Approvals.OnCancelVBAApprovalRequest(Rec);
                     end;
                 }
             }

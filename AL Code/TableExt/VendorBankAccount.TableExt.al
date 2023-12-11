@@ -39,7 +39,7 @@ tableextension 60003 "MFCC01 Vendor Bank Account" extends "Vendor Bank Account"
 
     begin
         Rec.TestField(Status, Rec.Status::Open);
-        IF Approvals.IsVendorBankAccApprovalsWorkflowEnabled(Rec) then
+        IF Approvals.IsVBAApprovalsWorkflowEnabled(Rec) then
             Error(Text002);
         Rec.Status := Rec.Status::Released;
         Rec.Modify();

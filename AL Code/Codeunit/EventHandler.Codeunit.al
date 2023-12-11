@@ -10,9 +10,10 @@ codeunit 60005 "Event handler"
         WorkFlowEvent: Codeunit "Workflow Event Handling";
         WorkflowResponse: Codeunit "Workflow Response Handling";
         MFCC01Approvals: Codeunit MFCC01Approvals;
-        VendBankAccSendForApprovalEventDescTxt: Label 'Approval of a vendor bank account is requested.';
-        VendBankAccApprReqCancelledEventDescTxt: Label 'An approval request for a vendor bank account is canceled.';
-        VendBankAccReleasedEventDescTxt: Label 'A vendor bank account is released.';
+        VBADocSendForApprovalEventDescTxt: Label 'Approval of a Bank for Vendor document is requested.';
+        VBADocApprReqCancelledEventDescTxt: Label 'An approval request for a Bank for Vendor document is canceled.';
+        VBADocReleasedEventDescTxt: Label 'A Bank for Vendor document is released.';
+
 
     [EventSubscriber(ObjectType::Table, Database::"G/L Entry", OnAfterCopyGLEntryFromGenJnlLine, '', false, false)]
     local procedure OnAfterCopyGLEntryFromGenJnlLine(var GLEntry: Record "G/L Entry"; var GenJournalLine: Record "Gen. Journal Line")
@@ -87,131 +88,46 @@ codeunit 60005 "Event handler"
 
     //VendorBankAccount
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Event Handling", 'OnAddWorkflowEventsToLibrary', '', false, false)]
-    local procedure CU_1520_OnAddWorkflowEventsToLibrary()
-    begin
-        WorkFlowEvent.AddEventToLibrary(
-          MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode(), DATABASE::"Vendor Bank Account", VendBankAccSendForApprovalEventDescTxt, 0, false);
+    #region Codeunit1535
 
-        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnCancelVendorBankAccApprovalRequestCode(), DATABASE::"Vendor Bank Account",
-          VendBankAccApprReqCancelledEventDescTxt, 0, false);
-        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnAfterReleaseVendorBankAccCode(), DATABASE::"Vendor Bank Account",
-          VendBankAccReleasedEventDescTxt, 0, false);
-    end;
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnAfterPopulateApprovalEntryArgument', '', false, false)]
+    local procedure CU_1535_OnAfterPopulateApprovalEntryArgument(WorkflowStepInstance: Record "Workflow Step Instance"; var ApprovalEntryArgument: Record "Approval Entry"; var IsHandled: Boolean; var RecRef: RecordRef)
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Event Handling", 'OnAddWorkflowEventPredecessorsToLibrary', '', false, false)]
-    local procedure CU_1520_OnAddWorkflowEventPredecessorsToLibrary(EventFunctionName: Code[128])
-    begin
-        case EventFunctionName of
-            MFCC01Approvals.RunWorkflowOnCancelVendorBankAccApprovalRequestCode():
-                WorkFlowEvent.AddEventPredecessor(MFCC01Approvals.RunWorkflowOnCancelVendorBankAccApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode());
-            WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode():
-                begin
-                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode());
-                end;
-            WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode():
-                begin
-                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode());
-                end;
-            WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode():
-                begin
-                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode());
-                end;
-        end;
-
-    end;
-
-
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnSendVendorBankAccForApproval', '', false, false)]
-    procedure RunWorkflowOnSendVendorBankAccForApproval(var VendorBankAcc: Record "Vendor Bank Account")
-    begin
-        OnBeforeRunWorkflowOnSendVendorBankAccForApproval(VendorBankAcc);
-        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode(), VendorBankAcc);
-    end;
-
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnCancelVendorBankAccApprovalRequest', '', false, false)]
-    procedure RunWorkflowOnCancelVendorBankAccApprovalRequest(var VendorBankAcc: Record "Vendor Bank Account")
-    begin
-        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnCancelVendorBankAccApprovalRequestCode(), VendorBankAcc);
-    end;
-
-
-    [IntegrationEvent(false, false)]
-    local procedure OnBeforeRunWorkflowOnSendVendorBankAccForApproval(var VendorBankAcc: Record "Vendor Bank Account")
-    begin
-    end;
-
-
-    //Response
-
-
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAddWorkflowResponsePredecessorsToLibrary', '', false, false)]
-    local procedure OnAddWorkflowResponsePredecessorsToLibrary(ResponseFunctionName: Code[128])
-    var
-        WorkFlowEvent: Codeunit "Workflow Event Handling";
-    begin
-        case ResponseFunctionName of
-            WorkflowResponse.SetStatusToPendingApprovalCode():
-                begin
-                    WorkflowResponse.AddResponsePredecessor(
-                        WorkflowResponse.SetStatusToPendingApprovalCode(), MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode());
-
-                end;
-            WorkflowResponse.CreateApprovalRequestsCode():
-                begin
-                    WorkflowResponse.AddResponsePredecessor(
-                        WorkflowResponse.CreateApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode());
-
-                end;
-            WorkflowResponse.SendApprovalRequestForApprovalCode():
-                begin
-                    WorkflowResponse.AddResponsePredecessor(
-                        WorkflowResponse.SendApprovalRequestForApprovalCode(), MFCC01Approvals.RunWorkflowOnSendVendorBankAccForApprovalCode());
-
-                end;
-
-            WorkflowResponse.CancelAllApprovalRequestsCode():
-                begin
-                    WorkflowResponse.AddResponsePredecessor(
-                        WorkflowResponse.CancelAllApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnCancelVendorBankAccApprovalRequestCode());
-                end;
-        end;
-        OnAddWorkflowResponsePredecessorsToLibrary(ResponseFunctionName);
-    end;
-
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnReleaseDocument', '', false, false)]
-    local procedure CU_1521_OnReleaseDocument(RecRef: RecordRef; var Handled: Boolean)
-    var
+    Var
         VendorBankAcc: Record "Vendor Bank Account";
     begin
-
         case RecRef.Number of
             DATABASE::"Vendor Bank Account":
                 begin
-                    RecRef.SetTable(VendorBankAcc);
-                    VendorBankAcc.Validate(Status, VendorBankAcc.Status::Released);
-                    VendorBankAcc.Modify();
-                    Handled := True;
+                    RecRef.SetTable(VEndorBankAcc);
+                    ApprovalEntryArgument."Document Type" := 0;
+                    ApprovalEntryArgument."Document No." := VendorBankAcc."Code";
+                    IsHandled := true;
                 end;
         end;
-    End;
+    end;
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnOpenDocument', '', false, false)]
-    local procedure CU_1521_OnOpenDocument(RecRef: RecordRef; var Handled: Boolean)
-    var
-        VendorBankAcc: Record "Vendor Bank Account";
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnAfterIsSufficientApprover', '', false, false)]
+    local procedure CU_1535_OnAfterIsSufficientApprover(UserSetup: Record "User Setup"; ApprovalEntryArgument: Record "Approval Entry"; var IsSufficient: Boolean; var IsHandled: Boolean)
     begin
-
-        case RecRef.Number of
+        case ApprovalEntryArgument."Table ID" of
             DATABASE::"Vendor Bank Account":
-                begin
-                    RecRef.SetTable(VendorBankAcc);
-                    VendorBankAcc.Validate(Status, VendorBankAcc.Status::Open);
-                    VendorBankAcc.Modify();
-                    Handled := True;
-                end;
-        end;
-    End;
+                IsSufficient := IsSufficientVBAApprover(UserSetup, IsHandled);
+        End;
+    ENd;
+
+    local procedure IsSufficientVBAApprover(UserSetup: Record "User Setup"; var IsHandled: Boolean): Boolean
+    var
+    begin
+        IsHandled := True;
+        if UserSetup."User ID" = UserSetup."Approver ID" then
+            exit(true);
+
+        if UserSetup."Approver ID" = '' then
+            exit(true);
+
+        exit(false);
+    end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnSetStatusToPendingApproval', '', false, false)]
     local procedure CU_1535_OnSetStatusToPendingApproval(RecRef: RecordRef; var Variant: Variant; var IsHandled: Boolean)
@@ -219,8 +135,9 @@ codeunit 60005 "Event handler"
         VendorBankAcc: Record "Vendor Bank Account";
     begin
         case RecRef.Number of
+
             DATABASE::"Vendor Bank Account":
-                Begin
+                begin
                     RecRef.SetTable(VendorBankAcc);
                     VendorBankAcc.Validate(Status, VendorBankAcc.Status::"Pending Approval");
                     VendorBankAcc.Modify();
@@ -230,61 +147,128 @@ codeunit 60005 "Event handler"
         end;
     end;
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnPopulateApprovalEntryArgument', '', false, false)]
-    local procedure CU_1535_OnPopulateApprovalEntryArgument(var RecRef: RecordRef; var ApprovalEntryArgument: Record "Approval Entry"; WorkflowStepInstance: Record "Workflow Step Instance")
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeIsSufficientVBAApprover(UserSetup: Record "User Setup"; var IsSufficient: Boolean; var IsHandled: Boolean)
+    begin
+    end;
+    #endregion Codeunit1535
+
+    #region Codeunit1520
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Event Handling", 'OnAddWorkflowEventsToLibrary', '', false, false)]
+    local procedure CU_1520_OnAddWorkflowEventsToLibrary()
+    begin
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode(), DATABASE::"Vendor Bank Account",
+  VBADocSendForApprovalEventDescTxt, 0, false);
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode(), DATABASE::"Vendor Bank Account",
+          VBADocApprReqCancelledEventDescTxt, 0, false);
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnAfterReleaseVBADocCode(), DATABASE::"Vendor Bank Account",
+          VBADocReleasedEventDescTxt, 0, false);
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Event Handling", OnAddWorkflowEventPredecessorsToLibrary, '', false, false)]
+    local procedure CU_1520_OnAddWorkflowEventPredecessorsToLibrary(EventFunctionName: Code[128])
+    begin
+        case EventFunctionName of
+            MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode():
+                WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnCancelSalesApprovalRequestCode(), WorkFlowEvent.RunWorkflowOnSendSalesDocForApprovalCode());
+            WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode():
+                begin
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                end;
+            WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode():
+                begin
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                end;
+            WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode():
+                begin
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                end;
+        end;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnSendVBADocForApproval', '', false, false)]
+    procedure RunWorkflowOnSendVBADocForApproval(var VBA: Record "Vendor Bank Account")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode(), VBA);
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnCancelVBAApprovalRequest', '', false, false)]
+    procedure RunWorkflowOnCancelVBAApprovalRequest(var VBA: Record "Vendor Bank Account")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode(), VBA);
+    end;
+
+    #endregion Codeunit1520
+
+    #region Codeunit1521
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnReleaseDocument', '', false, false)]
+    local procedure CU_1520_OnReleaseDocument(RecRef: RecordRef; var Handled: Boolean)
     var
-        VendorBankAcc: Record "Vendor Bank Account";
+        VBA: Record "Vendor Bank Account";
     begin
         case RecRef.Number of
             DATABASE::"Vendor Bank Account":
                 begin
-                    RecRef.SetTable(VendorBankAcc);
-                    ApprovalEntryArgument."Document Type" := ApprovalEntryArgument."Document Type"::Quote;
-                    ApprovalEntryArgument."Document No." := VendorBankAcc."Code";
-                    ApprovalEntryArgument."Salespers./Purch. Code" := '';
-
+                    RecRef.SetTable(VBA);
+                    VBA.Validate(Status, VBA.Status::Released);
+                    VBA.Modify();
+                    Handled := true;
                 end;
         End;
     end;
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAfterAllowRecordUsage', '', false, false)]
-    local procedure CU_1521_OnAfterAllowRecordUsage(Variant: Variant; var RecRef: RecordRef)
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnOpenDocument', '', false, false)]
+    local procedure CU_1520_OnOpenDocument(RecRef: RecordRef; var Handled: Boolean)
     var
-        GenJournalBatch: Record "Gen. Journal Batch";
-        GenJounaline: Record "Gen. Journal Line";
-        ApprovalEntry2: Record "Approval Entry";
-
+        VBA: Record "Vendor Bank Account";
     begin
-
-        Case RecRef.Number of
-            DATABASE::"Gen. Journal Batch":
+        case RecRef.Number of
+            DATABASE::"Vendor Bank Account":
                 begin
-                    RecRef.SetTable(GenJournalBatch);
-                    GenJounaline.SetRange("Journal Template Name", GenJournalBatch."Journal Template Name");
-                    GenJounaline.SetRange("Journal Batch Name", GenJournalBatch."Name");
-                    GenJounaline.Modifyall("Approver ID", UserId)
-                end;
-
-            DATABASE::"Gen. Journal Line":
-                begin
-                    RecRef.SetTable(GenJounaline);
-                    GenJounaline."Approver ID" := UserId;
-                    GenJounaline.Modify();
+                    RecRef.SetTable(VBA);
+                    VBA.Validate(Status, VBA.Status::Open);
+                    VBA.Modify();
+                    Handled := true;
                 end;
         End;
-
-
     end;
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Setup", 'OnAfterInsertApprovalsTableRelations', '', false, false)]
-    local procedure OnAfterInsertApprovalsTableRelations()
-    var
-        WorkflowSetup: Codeunit "Workflow Setup";
-        ApprovalEntry: Record "Approval Entry";
-    begin
-        WorkflowSetup.InsertTableRelation(DATABASE::"Vendor Bank Account", 0,
-                  DATABASE::"Approval Entry", ApprovalEntry.FieldNo("Record ID to Approve"));
-    end;
-    //Response
-    //Vendor BankAcoount
+
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAddWorkflowResponsePredecessorsToLibrary', '', false, false)]
+    local procedure CU_1520_OnAddWorkflowResponsePredecessorsToLibrary(ResponseFunctionName: Code[128])
+    Begin
+        case ResponseFunctionName of
+            WorkflowResponse.SetStatusToPendingApprovalCode():
+                begin
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.SetStatusToPendingApprovalCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+
+                end;
+            WorkflowResponse.CreateApprovalRequestsCode():
+                begin
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.CreateApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+                end;
+            WorkflowResponse.SendApprovalRequestForApprovalCode():
+                begin
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.SendApprovalRequestForApprovalCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+                end;
+            WorkflowResponse.OpenDocumentCode():
+                begin
+                    WorkflowResponse.AddResponsePredecessor(WorkflowResponse.OpenDocumentCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                end;
+            WorkflowResponse.CancelAllApprovalRequestsCode():
+                begin
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.CancelAllApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                end;
+
+        end;
+    End;
+    #endregion Codeunit1521
 }
