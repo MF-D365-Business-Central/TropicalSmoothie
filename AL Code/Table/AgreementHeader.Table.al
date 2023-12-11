@@ -72,7 +72,7 @@ table 60003 "MFCC01 Agreement Header"
             TableRelation = "Customer Bank Account".Code where("Customer No." = field("Customer No."));
             trigger OnValidate()
             Begin
-                TestStatusNew(Rec);
+                //TestStatusNew(Rec);
             End;
         }
         field(19; "Royalty Bank Account"; Code[20])
@@ -81,7 +81,7 @@ table 60003 "MFCC01 Agreement Header"
             TableRelation = "Customer Bank Account".Code where("Customer No." = field("Customer No."));
             trigger OnValidate()
             Begin
-                TestStatusNew(Rec);
+                //TestStatusNew(Rec);
             End;
         }
         field(20; "Agreement Amount"; Decimal)
@@ -169,7 +169,7 @@ table 60003 "MFCC01 Agreement Header"
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
-                Rec.TestField(Status, Rec.Status::Opened);
+
             End;
         }
         field(60; "No. of Periods"; Decimal)
@@ -368,16 +368,22 @@ table 60003 "MFCC01 Agreement Header"
 
     procedure SetStatusOpen(Var AgreementHeader: Record "MFCC01 Agreement Header")
     var
+        CZSetup: Record "MFCC01 Franchise Setup";
         ConfirmTxt: Label 'Do you want to Open the Cafe.?';
+        DimensionMsg: Label 'Please check and Verify Dimension Values for Cafe, Market, and FMM.';
     begin
+        Message(DimensionMsg);
         IF not Confirm(ConfirmTxt, false, true) then
             exit;
-
+        CZSetup.GetRecordonce();
+        CZSetup.TestField("Corp Department Code");
         //AgreementHeader.TestField("SalesPerson Commission");
         AgreementHeader.TestField(Status, Status::Signed);
         AgreementHeader.Status := AgreementHeader.Status::Opened;
         AgreementHeader.TestField("Franchise Revenue Start Date");
         AgreementHeader.TestField("Term Expiration Date");
+        IF AgreementHeader."License Type" = AgreementHeader."License Type"::New then
+            AgreementHeader.TestField("SalesPerson Commission");
         CheckLinesExist(AgreementHeader, true);
         AgreementHeader.Status := AgreementHeader.Status::Opened;
         AgreementHeader.Modify();
@@ -399,7 +405,7 @@ table 60003 "MFCC01 Agreement Header"
         CZSetup.TestField(DefRevenueCafesinOperationGAAP);
         CZSetup.TestField(DeferredRevenueDevelopmentGAPP);
         CZSetup.TestField(RevenueRecognizedGAAP);
-
+        CZSetup.TestField("Corp Department Code");
         AgreementHeader.TestField("Agreement Amount");
         AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
         AgreementHeader.Status := AgreementHeader.Status::Signed;
@@ -414,7 +420,7 @@ table 60003 "MFCC01 Agreement Header"
     begin
         IF not Confirm(ConfirmTxt, false, true) then
             exit;
-        CheckLinesExist(AgreementHeader, true);
+        //CheckLinesExist(AgreementHeader, true);
         AgreementHeader.TestField("Termination Date");
         IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
             AgreementHeader.Status := AgreementHeader.Status::Terminated;

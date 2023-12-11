@@ -55,13 +55,17 @@ codeunit 60004 "MFCC01 Purchase Import"
                     Commit();
                     PostOneDocument(PurchHeader, Posted);
                     UpdateComments(PurchHeader, GetLastErrorText());
+                    IF Posted then
+                        UpdatePosted(PurchHeader);
                 End;
 
-                IF Posted then Begin
-                    PurchaseImport.Status := PurchaseImport.Status::Posted;
-                    PurchaseImport.Modify();
-                End;
+                // IF Posted then Begin
+                //     PurchaseImport.Status := PurchaseImport.Status::Posted;
+                //     PurchaseImport.Modify();
+                // End;
+                Commit();
             Until PurchaseImport.Next() = 0;
+        DeletePosted();
     end;
 
     [CommitBehavior(CommitBehavior::Ignore)]
@@ -95,5 +99,28 @@ codeunit 60004 "MFCC01 Purchase Import"
         PurchaseImport2.SetRange("Invoice No.", PurchHeader."No.");
         IF PurchaseImport2.FindSet() then
             PurchaseImport2.ModifyAll(Remarks, '');
+    end;
+
+
+    local procedure UpdatePosted(PurchHeader: Record "Purchase Header")
+    var
+        PurchaseImport2: Record "MFCC01 Purchase Import";
+    begin
+        PurchaseImport2.Reset();
+        PurchaseImport2.SetCurrentKey("Invoice No.");
+        PurchaseImport2.SetRange(Status, PurchaseImport2.Status::Created);
+        PurchaseImport2.SetRange("Invoice No.", PurchHeader."No.");
+        IF PurchaseImport2.FindSet() then
+            PurchaseImport2.ModifyAll(Status, PurchaseImport2.Status::Posted);
+    end;
+
+    local procedure DeletePosted()
+    var
+        PurchaseImport2: Record "MFCC01 Purchase Import";
+    begin
+        PurchaseImport2.Reset();
+        PurchaseImport2.SetCurrentKey("Invoice No.");
+        PurchaseImport2.SetRange(Status, PurchaseImport2.Status::Posted);
+        PurchaseImport2.DeleteAll();
     end;
 }

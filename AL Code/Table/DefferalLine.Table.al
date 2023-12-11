@@ -120,7 +120,7 @@ table 60002 "MFCC01 Deferral Line"
 
     begin
         GetDeferralHeader();
-        DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
+        DeferralHeader.TestField(Status, DeferralHeader.Status::" ");
     end;
 
     local procedure GetDeferralHeader()

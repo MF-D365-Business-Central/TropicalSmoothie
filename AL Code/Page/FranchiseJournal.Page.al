@@ -67,14 +67,15 @@ page 60010 "MFCC01 Franchise Journal"
                 {
                     ToolTip = 'Specifies the value of the Royalty Fee field.';
                 }
-                field("Ad Fee"; Rec."Ad Fee")
+                field("Local Fees"; Rec."Local Fees")
                 {
-                    ToolTip = 'Specifies the value of the Ad Fee field.';
+                    ToolTip = 'Specifies the value of the Local Fees field.';
                 }
-                field("Other Fee"; Rec."Other Fee")
+                field("National Fee"; Rec."National Fee")
                 {
-                    ToolTip = 'Specifies the value of the Other Fee field.';
+                    ToolTip = 'Specifies the value of the National Fee field.';
                 }
+
                 field("Shortcut Dimension 1 Code"; Rec."Shortcut Dimension 1 Code")
                 {
                     ToolTip = 'Specifies the value of the Shortcut Dimension 1 Code field.';

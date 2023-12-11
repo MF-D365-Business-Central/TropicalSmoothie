@@ -9,14 +9,14 @@ report 60000 "MFCC01 Process Deferral"
     {
         dataitem("MFCC01 Deferral Header"; "MFCC01 Deferral Header")
         {
-            DataItemTableView = where(Status = const(Certified));
+            DataItemTableView = where(Status = const(Open));
             dataitem("MFCC01 Deferral Line"; "MFCC01 Deferral Line")
             {
                 DataItemLink = "Document No." = field("Document No.");
                 DataItemTableView = where(Posted = const(false));
                 trigger OnPreDataItem()
                 Begin
-                    SetRange("Posting Date", PostingDate);
+                    Setrange("Posting Date", PostingDate, Todate);
                 End;
 
                 trigger OnAfterGetRecord()
@@ -51,9 +51,13 @@ report 60000 "MFCC01 Process Deferral"
                 {
                     field(PostingDate; PostingDate)
                     {
-                        Caption = 'Posting Date';
+                        Caption = 'From Date';
                         ApplicationArea = All;
-
+                    }
+                    field(ToDate; ToDate)
+                    {
+                        Caption = 'TO Date';
+                        ApplicationArea = All;
                     }
                 }
             }
@@ -73,6 +77,7 @@ report 60000 "MFCC01 Process Deferral"
         trigger OnInit()
         Begin
             PostingDate := WorkDate();
+            Todate := WorkDate();
         End;
     }
 
@@ -163,5 +168,6 @@ report 60000 "MFCC01 Process Deferral"
         CZSetup: Record "MFCC01 Franchise Setup";
         DimMgt: Codeunit DimensionManagement;
         PostingDate: Date;
+        ToDate: Date;
         GLEntry: Record "G/L Entry";
 }

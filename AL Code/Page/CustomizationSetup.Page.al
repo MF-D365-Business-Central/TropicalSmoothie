@@ -148,6 +148,10 @@ page 60000 "MFCC01 Franchise Setup"
             }
             group(Dimensions)
             {
+                field("Corp Department Code"; Rec."Corp Department Code")
+                {
+                    ToolTip = 'Specifies the value of the Corp Department Code field.';
+                }
 
                 field("Local Department Code"; Rec."Local Department Code")
                 {

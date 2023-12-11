@@ -15,7 +15,10 @@ tableextension 60002 "MFCC01 G/L Entry" extends "G/L Entry"
             DataClassification = CustomerContent;
         }
 
-
+        field(60003; "Approver ID"; Code[50])
+        {
+            DataClassification = CustomerContent;
+        }
     }
 
 

@@ -113,7 +113,7 @@ page 60003 "MFCC01 Deferrals"
                     Caption = 'Calculate Schedule';
                     Image = CalculateCalendar;
                     ToolTip = 'Calculate the MFC Deferral Schedule by which revenue or expense amounts will be distributed over multiple accounting periods.';
-
+                    Visible = false;
                     trigger OnAction()
                     begin
                         Rec.CalculateSchedule();

@@ -125,10 +125,13 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
 
     local procedure Prepareposting()
     var
+        AgreementHeader: Record "MFCC01 Agreement Header";
         AccountType: Enum "Gen. Journal Account Type";
         BalanceAmount: Decimal;
         DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
+
     begin
+        AgreementHeader.Get(GlobalFranchiseLedgerEntry."Agreement ID");
         IF GlobalFranchiseLedgerEntry."Royalty Fee" <> 0 then Begin
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."Royalty Account", Sign() * GlobalFranchiseLedgerEntry."Royalty Fee");
@@ -141,30 +144,31 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
             PostJournal();
             BalanceAmount := Sign() * GlobalFranchiseLedgerEntry."Royalty Fee";
         End;
-        IF GlobalFranchiseLedgerEntry."Ad Fee" <> 0 then Begin
+        IF GlobalFranchiseLedgerEntry."Local Fee" <> 0 then Begin
             InitJpurnalLine(
-            AccountType::"G/L Account", CZSetup."Local Account", Sign() * GlobalFranchiseLedgerEntry."Ad Fee");
+            AccountType::"G/L Account", CZSetup."Local Account", Sign() * GlobalFranchiseLedgerEntry."Local Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Local Department Code");
             GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
             GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
-            BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Ad Fee";
+            BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Local Fee";
         End;
-        IF GlobalFranchiseLedgerEntry."Other Fee" <> 0 then Begin
+        IF GlobalFranchiseLedgerEntry."National Fee" <> 0 then Begin
             InitJpurnalLine(
-            AccountType::"G/L Account", CZSetup."National Account", Sign() * GlobalFranchiseLedgerEntry."Other Fee");
+            AccountType::"G/L Account", CZSetup."National Account", Sign() * GlobalFranchiseLedgerEntry."National Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."National Department Code");
             GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
             GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
-            BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Other Fee";
+            BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."National Fee";
         End;
 
         IF BalanceAmount <> 0 then Begin
             InitJpurnalLine(AccountType::Customer, GlobalFranchiseLedgerEntry."Customer No.",
               Sign() * BalanceAmount);
+            GenJnlLine."Recipient Bank Account" := AgreementHeader."Royalty Bank Account";
             GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
             GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();

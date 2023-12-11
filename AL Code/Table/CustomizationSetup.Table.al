@@ -166,6 +166,12 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
+
+        field(214; "Corp Department Code"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Dimension Value".Code Where("Global Dimension No." = const(1));
+        }
     }
 
     keys

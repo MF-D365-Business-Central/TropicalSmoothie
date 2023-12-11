@@ -80,12 +80,12 @@ table 60008 "MFCC01 Franchise Journal"
             DataClassification = CustomerContent;
             Editable = false;
         }
-        field(15; "Ad Fee"; Decimal)
+        field(15; "Local Fees"; Decimal)
         {
             DataClassification = CustomerContent;
             Editable = false;
         }
-        field(16; "Other Fee"; Decimal)
+        field(16; "National Fee"; Decimal)
         {
             DataClassification = CustomerContent;
             Editable = false;
@@ -347,8 +347,8 @@ table 60008 "MFCC01 Franchise Journal"
         AgreementLine.Findlast();
 
         Rec."Royalty Fee" := (AgreementLine."Royalty Fees %" * Rec."Net Sales") / 100;
-        Rec."Ad Fee" := (AgreementLine."Local Fees %" * Rec."Net Sales") / 100;
-        Rec."Other Fee" := (AgreementLine."National Fees %" * Rec."Net Sales") / 100;
+        Rec."Local Fees" := (AgreementLine."Local Fees %" * Rec."Net Sales") / 100;
+        Rec."National Fee" := (AgreementLine."National Fees %" * Rec."Net Sales") / 100;
 
     end;
 

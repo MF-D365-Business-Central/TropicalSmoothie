@@ -53,13 +53,13 @@ page 60011 "MFCC01 FranchiseLedgerEntries"
                 {
                     ToolTip = 'Specifies the value of the Royalty Fee field.';
                 }
-                field("Ad Fee"; Rec."Ad Fee")
+                field("Local Fee"; Rec."Local Fee")
                 {
-                    ToolTip = 'Specifies the value of the Ad Fee field.';
+                    ToolTip = 'Specifies the value of the Local Fee field.';
                 }
-                field("Other Fee"; Rec."Other Fee")
+                field("National Fee"; Rec."National Fee")
                 {
-                    ToolTip = 'Specifies the value of the Other Fee field.';
+                    ToolTip = 'Specifies the value of the National Fee field.';
                 }
                 field("Shortcut Dimension 1 Code"; Rec."Shortcut Dimension 1 Code")
                 {

@@ -20,7 +20,6 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
             DataClassification = CustomerContent;
 
         }
-
         field(4; "Posting Date"; Date)
         {
             DataClassification = CustomerContent;
@@ -64,11 +63,11 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
         {
             DataClassification = CustomerContent;
         }
-        field(15; "Ad Fee"; Decimal)
+        field(15; "Local Fee"; Decimal)
         {
             DataClassification = CustomerContent;
         }
-        field(16; "Other Fee"; Decimal)
+        field(16; "National Fee"; Decimal)
         {
             DataClassification = CustomerContent;
         }

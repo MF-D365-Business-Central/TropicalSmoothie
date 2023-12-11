@@ -52,13 +52,19 @@ codeunit 60003 "MFCC01 Sales Import"
                     Commit();
                     PostOneDocument(SalesHeader, Posted);
                     UpdateComments(SalesHeader, GetLastErrorText());
+                    IF Posted then
+                        UpdatePosted(SalesHeader);
                 End;
 
-                IF Posted then Begin
-                    SalesImport.Status := SalesImport.Status::Posted;
-                    SalesImport.Modify();
-                End;
+                // IF Posted then Begin
+                //     SalesImport.Status := SalesImport.Status::Posted;
+                //     SalesImport.Modify();
+                //     Commit();
+                // End;
+                Commit();
             Until SalesImport.Next() = 0;
+
+        DeletePosted();
     end;
 
     [CommitBehavior(CommitBehavior::Ignore)]
@@ -83,6 +89,19 @@ codeunit 60003 "MFCC01 Sales Import"
             SalesImport2.ModifyAll(Remarks, CopyStr(ErrorText, 1, 500));
     end;
 
+
+    local procedure UpdatePosted(SalesHeader: Record "Sales Header")
+    var
+        SalesImport2: Record "MFCC01 Sales Import";
+    begin
+        SalesImport2.Reset();
+        SalesImport2.SetCurrentKey("Invoice No.");
+        SalesImport2.SetRange(Status, SalesImport.Status::Created);
+        SalesImport2.SetRange("Invoice No.", SalesHeader."No.");
+        IF SalesImport2.FindSet() then
+            SalesImport2.ModifyAll(Status, SalesImport2.Status::Posted);
+    end;
+
     local procedure UpdateComments(SalesHeader: Record "Sales Header")
     var
         SalesImport2: Record "MFCC01 Sales Import";
@@ -93,5 +112,15 @@ codeunit 60003 "MFCC01 Sales Import"
         SalesImport2.SetRange("Invoice No.", SalesHeader."No.");
         IF SalesImport2.FindSet() then
             SalesImport2.ModifyAll(Remarks, '');
+    end;
+
+    local procedure DeletePosted()
+    var
+        SalesImport2: Record "MFCC01 Sales Import";
+    begin
+        SalesImport2.Reset();
+        SalesImport2.SetCurrentKey("Invoice No.");
+        SalesImport2.SetRange(Status, SalesImport.Status::Posted);
+        SalesImport2.DeleteAll();
     end;
 }

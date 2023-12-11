@@ -126,7 +126,7 @@ page 60001 "MFCC01 DeferralSchedule"
                     Caption = 'Calculate Schedule';
                     Image = CalculateCalendar;
                     ToolTip = 'Calculate the MFC Deferral Schedule by which revenue or expense amounts will be distributed over multiple accounting periods.';
-
+                    Visible = false;
                     trigger OnAction()
                     begin
                         Changed := Rec.CalculateSchedule();
@@ -197,7 +197,7 @@ page 60001 "MFCC01 DeferralSchedule"
 
 
     [IntegrationEvent(false, false)]
-    local procedure OnBeforeInitForm(var DeferralHeader: Record "MFCC01 Deferral Header"; DisplayCustomerNo: Code[20]; DisplayDocumentNo: Code[20];  var IsHandled: Boolean)
+    local procedure OnBeforeInitForm(var DeferralHeader: Record "MFCC01 Deferral Header"; DisplayCustomerNo: Code[20]; DisplayDocumentNo: Code[20]; var IsHandled: Boolean)
     begin
     end;
 

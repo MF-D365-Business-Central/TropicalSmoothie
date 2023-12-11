@@ -19,7 +19,12 @@ table 60006 "MFCC01 Sales Import"
             TableRelation = Customer;
         }
 
-
+        field(5; "Customer Name"; Text[100])
+        {
+            FieldClass = FlowField;
+            CalcFormula = lookup(Customer.Name where("No." = field("Customer No.")));
+            Editable = false;
+        }
         field(6; "Posting Date"; Date)
         {
             DataClassification = CustomerContent;

@@ -315,20 +315,20 @@ table 60001 "MFCC01 Deferral Header"
 
     procedure TestStausOpen(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
-        DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
+        DeferralHeader.TestField(Status, DeferralHeader.Status::" ");
     end;
 
     procedure ReopenDocument(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
 
-        DeferralHeader.Status := DeferralHeader.Status::Open;
+        DeferralHeader.Status := DeferralHeader.Status::" ";
         DeferralHeader.Modify();
     end;
 
     procedure SetDocumentSheduleCreated(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
-        DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
+        DeferralHeader.TestField(Status, DeferralHeader.Status::" ");
 
         DeferralHeader.Status := DeferralHeader.Status::"Schedule Created";
         DeferralHeader.Modify();
@@ -338,13 +338,13 @@ table 60001 "MFCC01 Deferral Header"
     begin
         DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
 
-        DeferralHeader.Status := DeferralHeader.Status::Certified;
+        DeferralHeader.Status := DeferralHeader.Status::Open;
         DeferralHeader.Modify();
     end;
 
     procedure SetDocumentCompleted(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
-        DeferralHeader.TestField(Status, DeferralHeader.Status::Certified);
+        DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
 
         DeferralHeader.Status := DeferralHeader.Status::Completed;
         DeferralHeader.Modify();
@@ -352,7 +352,7 @@ table 60001 "MFCC01 Deferral Header"
 
     procedure SetDocumentShortClosed(Var DeferralHeader: Record "MFCC01 Deferral Header")
     begin
-        DeferralHeader.TestField(Status, DeferralHeader.Status::Certified);
+        DeferralHeader.TestField(Status, DeferralHeader.Status::Open);
 
         DeferralHeader.Status := DeferralHeader.Status::"Short Closed";
         DeferralHeader.Modify();

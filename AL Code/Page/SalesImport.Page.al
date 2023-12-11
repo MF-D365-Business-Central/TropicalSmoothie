@@ -27,6 +27,10 @@ page 60008 "MFCC01 Sales Import"
                 {
                     ToolTip = 'Specifies the value of the Customer No. field.';
                 }
+                field("Customer Name"; Rec."Customer Name")
+                {
+                    ToolTip = 'Specifies the value of the Customer Name field.';
+                }
                 field("Posting Description"; Rec."Posting Description")
                 {
                     ToolTip = 'Specifies the value of the Posting Description field.';

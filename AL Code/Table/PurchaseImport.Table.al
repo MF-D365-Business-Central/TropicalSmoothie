@@ -18,7 +18,12 @@ table 60010 "MFCC01 Purchase Import"
             DataClassification = CustomerContent;
             TableRelation = Vendor;
         }
-
+        field(8; "Vendor Name"; Text[100])
+        {
+            FieldClass = FlowField;
+            CalcFormula = lookup(Vendor.Name where("No." = field("Vendor No.")));
+            Editable = false;
+        }
         field(4; "Posting Date"; Date)
         {
             DataClassification = CustomerContent;

@@ -1,6 +1,6 @@
-report 60002 "Suggest Customer Payments"
+report 60002 "Suggest Customer Collections"
 {
-    Caption = 'Suggest Customer Payments';
+    Caption = 'Suggest Customer Collections';
     ProcessingOnly = true;
     Permissions = tabledata "Cust. Ledger Entry" = RM;
     dataset
@@ -8,13 +8,13 @@ report 60002 "Suggest Customer Payments"
         dataitem(Customer; Customer)
         {
             DataItemTableView = SORTING(Blocked) WHERE(Blocked = FILTER(= " "));
-            RequestFilterFields = "No.", "Payment Method Code";
+            RequestFilterFields = "No.", "Payment Method Code", "Customer Posting Group";
 
 
             dataitem("Cust. Ledger Entry"; "Cust. Ledger Entry")
             {
                 DataItemLink = "Customer No." = field("No.");
-                DataItemTableView = where(Open = const(True), "Document Type" = const(Invoice));
+                DataItemTableView = where(Open = const(True), "Document Type" = const(Invoice), "Applies-to ID" = const(''));
                 CalcFields = "Remaining Amount";
                 trigger OnPreDataItem()
                 begin
@@ -59,8 +59,8 @@ report 60002 "Suggest Customer Payments"
                 CustomerBalance := "Balance (LCY)";
 
                 //Window.Update(1, "No.");
-                if Not IncludeCustomer(Customer, CustomerBalance) then
-                    CurrReport.Skip();
+                // if Not IncludeCustomer(Customer, CustomerBalance) then
+                //     CurrReport.Skip();
 
             End;
         }
@@ -179,6 +179,12 @@ report 60002 "Suggest Customer Payments"
                                 end;
                         end;
                     }
+                    field(ClearingAccount; ClearingAccount)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Clearing Account';
+                        TableRelation = "G/L Account" where(Blocked = const(false), "Direct Posting" = const(true));
+                    }
                     field(BankPaymentType; GenJnlLine2."Bank Payment Type")
                     {
                         ApplicationArea = Basic, Suite;
@@ -212,6 +218,11 @@ report 60002 "Suggest Customer Payments"
     {
     }
 
+    trigger OnPostReport()
+    Begin
+        CreateBalJournalLine();
+    End;
+
     var
         GenJnlLine: Record "Gen. Journal Line";
         GenJnlLine2: Record "Gen. Journal Line";
@@ -228,6 +239,8 @@ report 60002 "Suggest Customer Payments"
         LineCreated: Boolean;
         NextLine: Integer;
         Window: Dialog;
+        BalancingAmt: Decimal;
+        ClearingAccount: Code[20];
         StartingDocumentNoErr: Label 'The value in the Starting Document No. field must have a number so that we can assign the next number in the series.';
         Text009: Label '%1 must be G/L Account or Bank Account.';
         Text010: Label '%1 must be filled only when %2 is Bank Account.';
@@ -311,7 +324,28 @@ report 60002 "Suggest Customer Payments"
         NextLine += 10000;
         GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
         GenJnlLine.Insert(true);
+        BalancingAmt += GenJnlLine.Amount;
+    end;
 
+    local procedure CreateBalJournalLine()
+    begin
+        IF BalancingAmt = 0 then
+            Exit;
+        GenJnlLine.Init();
+        GenJnlLine."Journal Template Name" := GenJnlBatch."Journal Template Name";
+        GenJnlLine."Journal Batch Name" := GenJnlBatch.Name;
+        GenJnlLine."Posting Date" := PostingDate;
+        GenJnlLine."Document No." := NextDocNo;
+        GenJnlLine."Line No." := NextLine;
+        GenJnlLine."Document Type" := GenJnlLine."Document Type"::Payment;
+        GenJnlLine."Account Type" := GenJnlLine."Account Type"::"Bank Account";
+        GenJnlLine.Validate("Account No.", GenJnlLine2."Bal. Account No.");
+        GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
+        GenJnlLine.Validate(Amount, Abs(BalancingAmt));
+        GenJnlLine.Validate("Bal. Account No.", ClearingAccount);
+        GenJnlLine.Validate("Bank Payment Type", GenJnlLine2."Bank Payment Type");
+        NextLine += 10000;
+        GenJnlLine.Insert(true);
     end;
 
     [IntegrationEvent(false, false)]

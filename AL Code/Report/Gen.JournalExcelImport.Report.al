@@ -57,8 +57,8 @@ Report 60001 "Gen. Journal Excel Import"
         ExcelBuf: Record "Excel Buffer" temporary;
         FileName: Text[250];
         SheetName: Text[250];
-        Text001: label 'You must enter a file name.';
-        Text002: label 'You must enter an Excel worksheet name.', Comment = '{Locked="Excel"}';
+        Text001: label 'The field with name %1 does not exist';
+        Text002: label 'Enum %2 is not matching with %1 out of %3', Comment = '{Locked="Excel"}';
         NewBatchNo: Code[20];
         FileMgt: Codeunit "File Management";
         ExcelFileExtensionTok: label '.xlsx', Locked = true;
@@ -113,6 +113,8 @@ Report 60001 "Gen. Journal Excel Import"
         NoFields: Integer;
         CurField: Integer;
         TempDec: Decimal;
+        Test: Text;
+        Test2: Text;
     begin
         // Analyze Data
         GLSetup.Get;
@@ -248,9 +250,14 @@ Report 60001 "Gen. Journal Excel Import"
 
                                     // Find out which option number is the value
                                     OptionNo := -1;
-                                    for j := 1 to (NoOption) do
-                                        if ExcelBuf."Cell Value as Text" = SelectStr(j, GenFieldRef.OptionCaption) then
+                                    for j := 1 to (NoOption) do begin
+                                        Test := SelectStr(j, GenFieldRef.OptionCaption);
+                                        Test := Test.Replace(' ', '');
+                                        Test2 := ExcelBuf."Cell Value as Text";
+                                        Test2 := DelChr(Test2, '=', DelChr(Test2, '=', 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz/\'));
+                                        if Test = Test2 then
                                             OptionNo := j - 1;
+                                    end;
 
                                     // Find out which option number is the value (Caption)
                                     if OptionNo = -1 then

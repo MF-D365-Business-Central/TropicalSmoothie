@@ -27,6 +27,10 @@ page 60012 "MFCC01 Purchase Import"
                 {
                     ToolTip = 'Specifies the value of the Vendor No. field.';
                 }
+                field("Vendor Name"; Rec."Vendor Name")
+                {
+                    ToolTip = 'Specifies the value of the Vendor Name field.';
+                }
 
                 field("Posting Date"; Rec."Posting Date")
                 {

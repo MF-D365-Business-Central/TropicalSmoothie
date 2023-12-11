@@ -2,13 +2,13 @@ enum 60000 "MFCC01 Deferral Status"
 {
     Extensible = true;
 
-    value(0; Open)
+    value(0; " ")
     {
     }
     value(1; "Schedule Created")
     {
     }
-    value(2; Certified)
+    value(2; Open)
     {
     }
     value(10; Completed)

@@ -1,4 +1,4 @@
-codeunit 60014 "MFCC01 PowerBI Integration"
+codeunit 60006 "MFCC01 PowerBI Integration"
 {
     trigger OnRun()
     begin

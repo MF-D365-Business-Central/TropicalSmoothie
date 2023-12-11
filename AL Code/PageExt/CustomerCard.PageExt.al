@@ -7,7 +7,7 @@ pageextension 60000 "MFCC01 Customer Card" extends "Customer Card"
         {
             group(Franchisee)
             {
-
+                Editable = false;
                 field("Franchisee Type"; Rec."Franchisee Type")
                 {
                     ApplicationArea = All;
