@@ -13,7 +13,6 @@ page 60008 "MFCC01 Sales Import"
         {
             repeater(Control1)
             {
-
                 field("Entry No."; Rec."Entry No.")
                 {
                     ToolTip = 'Specifies the value of the Entry No. field.';
@@ -22,7 +21,6 @@ page 60008 "MFCC01 Sales Import"
                 {
                     ToolTip = 'Specifies the value of the Document Type field.';
                 }
-
                 field("Customer No."; Rec."Customer No.")
                 {
                     ToolTip = 'Specifies the value of the Customer No. field.';
@@ -39,7 +37,6 @@ page 60008 "MFCC01 Sales Import"
                 {
                     ToolTip = 'Specifies the value of the Posting Date field.';
                 }
-
                 field("No."; Rec."No.")
                 {
                     ToolTip = 'Specifies the value of the No. field.';
@@ -120,10 +117,8 @@ page 60008 "MFCC01 Sales Import"
                                                 PageHeler.PageRun(SalesInvoice);
                                         End;
                                 End;
-
                             End;
                     End;
-
                 end;
             }
         }
@@ -135,7 +130,6 @@ page 60008 "MFCC01 Sales Import"
                 Image = Import;
                 Caption = 'Import';
                 RunObject = report MFCC01SalesExcelImport;
-
             }
             action(Create)
             {
@@ -149,7 +143,6 @@ page 60008 "MFCC01 Sales Import"
                 Begin
                     SalesImport.GenerateInvoice();
                 End;
-
             }
 
             action(Post)
@@ -164,9 +157,6 @@ page 60008 "MFCC01 Sales Import"
                     SalesImport.PostDocuments();
                 End;
             }
-
         }
     }
-
-
 }

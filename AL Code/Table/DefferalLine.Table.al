@@ -9,7 +9,6 @@ table 60002 "MFCC01 Deferral Line"
         {
             Caption = 'Customer No.';
             TableRelation = Customer;
-
         }
         field(5; "Document No."; Code[20])
         {
@@ -17,7 +16,6 @@ table 60002 "MFCC01 Deferral Line"
             TableRelation = "Deferral Header"."Document No.";
             NotBlank = true;
         }
-
         field(7; "Posting Date"; Date)
         {
             Caption = 'Posting Date';
@@ -115,7 +113,6 @@ table 60002 "MFCC01 Deferral Line"
         AmountToDeferPositiveErr: Label 'The deferral amount must be positive.';
         AmountToDeferNegativeErr: Label 'The deferral amount must be negative.';
 
-
     procedure TestStausOpen()
 
     begin
@@ -138,4 +135,3 @@ table 60002 "MFCC01 Deferral Line"
     begin
     end;
 }
-

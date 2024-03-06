@@ -99,4 +99,3 @@ page 60002 "MFCC01 DeferralScheduleSubform"
         exit(Changed);
     end;
 }
-

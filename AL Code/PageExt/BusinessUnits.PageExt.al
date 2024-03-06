@@ -11,6 +11,10 @@ pageextension 60003 "MFCC01Business Unit List" extends "Business Unit List"
         {
             Enabled = Not NonGaapEnable;
         }
+        modify(StartConsolidation)
+        {
+            Enabled = Not NonGaapEnable;
+        }
         // Add changes to page actions here
         addafter("Run Consolidation")
         {
@@ -26,7 +30,6 @@ pageextension 60003 "MFCC01Business Unit List" extends "Business Unit List"
             }
         }
     }
-
 
     trigger OnOpenPage()
     Begin

@@ -129,36 +129,53 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         AccountType: Enum "Gen. Journal Account Type";
         BalanceAmount: Decimal;
         DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
+        Customer: Record Customer;
 
     begin
+        Clear(DefaultDimSource);
         AgreementHeader.Get(GlobalFranchiseLedgerEntry."Agreement ID");
+        Customer.Get(AgreementHeader."Customer No.");
         IF GlobalFranchiseLedgerEntry."Royalty Fee" <> 0 then Begin
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."Royalty Account", Sign() * GlobalFranchiseLedgerEntry."Royalty Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
-            InitDefaultDimSource(DefaultDimSource, CZSetup."Royalty Account");
+            InitDefaultDimSource(DefaultDimSource, GlobalFranchiseLedgerEntry."Customer No.");
+            InitDefaultDimSourceGL(DefaultDimSource, CZSetup."Royalty Account");
             GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
             GenJnlLine."Dimension Set ID", 0);
+            GenJnlLine.Validate("Shortcut Dimension 2 Code", Customer."Global Dimension 2 Code");
             GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
             GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
             BalanceAmount := Sign() * GlobalFranchiseLedgerEntry."Royalty Fee";
         End;
+        Clear(DefaultDimSource);
         IF GlobalFranchiseLedgerEntry."Local Fee" <> 0 then Begin
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."Local Account", Sign() * GlobalFranchiseLedgerEntry."Local Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
+            InitDefaultDimSource(DefaultDimSource, GlobalFranchiseLedgerEntry."Customer No.");
+            InitDefaultDimSourceGL(DefaultDimSource, CZSetup."Local Account");
+            GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
+                GenJnlLine."Dimension Set ID", 0);
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Local Department Code");
+            GenJnlLine.Validate("Shortcut Dimension 2 Code", Customer."Global Dimension 2 Code");
             GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
             GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
             BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Local Fee";
         End;
+        Clear(DefaultDimSource);
         IF GlobalFranchiseLedgerEntry."National Fee" <> 0 then Begin
             InitJpurnalLine(
             AccountType::"G/L Account", CZSetup."National Account", Sign() * GlobalFranchiseLedgerEntry."National Fee");
             GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
+            InitDefaultDimSource(DefaultDimSource, GlobalFranchiseLedgerEntry."Customer No.");
+            InitDefaultDimSourceGL(DefaultDimSource, CZSetup."National Account");
+            GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
+                GenJnlLine."Dimension Set ID", 0);
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."National Department Code");
+            GenJnlLine.Validate("Shortcut Dimension 2 Code", Customer."Global Dimension 2 Code");
             GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
             GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
             PostJournal();
@@ -204,11 +221,16 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         GenJnlLine.Validate(Amount, Amount);
     end;
 
-
     local procedure InitDefaultDimSource(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]]; Accountno: Code[20])
     begin
         Clear(DefaultDimSource);
-        DimMgt.AddDimSource(DefaultDimSource, Database::"G/L Account", Accountno);
+        DimMgt.AddDimSource(DefaultDimSource, Database::Customer, Accountno);
+    end;
+
+    local procedure InitDefaultDimSourceGL(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]]; GLAccountno: Code[20])
+    begin
+        Clear(DefaultDimSource);
+        DimMgt.AddDimSource(DefaultDimSource, Database::"G/L Account", GLAccountno);
     end;
 
     procedure PostJournal()

@@ -1,6 +1,5 @@
 codeunit 60017 "MFCC01Generate EFT"
 {
-
     trigger OnRun()
     begin
     end;
@@ -22,7 +21,6 @@ codeunit 60017 "MFCC01Generate EFT"
         CustTransitNumNotValidErr: Label 'The specified transit number %1 for customer %2  is not valid.', Comment = '%1 the transit number, %2 The customer  No.';
         ZipFileName: Text;
 
-
     procedure ProcessAndGenerateEFTFile(BalAccountNo: Code[20]; SettlementDate: Date; var TempEFTExportWorkset: Record "EFT Export Workset" temporary; var EFTValues: Codeunit "MFCC01EFT Values")
     var
         Window: Dialog;
@@ -31,7 +29,6 @@ codeunit 60017 "MFCC01Generate EFT"
 
         ACHFileCreated := false;
         IATFileCreated := false;
-
 
         Window.Open(GeneratingFileMsg);
 
@@ -102,7 +99,6 @@ codeunit 60017 "MFCC01Generate EFT"
         Path := SavePath;
     end;
 
-
     procedure UpdateEFTExport(var TempEFTExportWorkset: Record "EFT Export Workset" temporary)
     var
         EFTExport: Record "EFT Export";
@@ -169,7 +165,6 @@ codeunit 60017 "MFCC01Generate EFT"
                 CustomerBankAccount.TestField("Bank Account No.");
             until TempEFTExportWorkset.Next() = 0;
 
-
         TempEFTExportWorkset.FindFirst();
 
         if ProcessOrderNo >= 1 then
@@ -178,7 +173,6 @@ codeunit 60017 "MFCC01Generate EFT"
                 CheckAndStartExport(TempEFTExportWorkset, EFTValues);
                 ProcessOrderNo := ProcessOrderNo - 1;
             until ProcessOrderNo = 0;
-
     end;
 
     procedure CheckcustTransitNum(AccountNo: Code[20]; var customer: Record customer; var customerBankAccount: Record "customer Bank Account"; CheckTheCheckDigit: Boolean)
@@ -208,4 +202,3 @@ codeunit 60017 "MFCC01Generate EFT"
     begin
     end;
 }
-

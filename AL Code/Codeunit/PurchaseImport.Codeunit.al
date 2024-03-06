@@ -2,7 +2,6 @@ codeunit 60004 "MFCC01 Purchase Import"
 {
     trigger OnRun()
     begin
-
     end;
 
     var
@@ -76,7 +75,6 @@ codeunit 60004 "MFCC01 Purchase Import"
             Posted := True;
     end;
 
-
     local procedure UpdateComments(PurchHeader: Record "Purchase Header"; ErrorText: Text)
     var
         PurchaseImport2: Record "MFCC01 Purchase Import";
@@ -100,7 +98,6 @@ codeunit 60004 "MFCC01 Purchase Import"
         IF PurchaseImport2.FindSet() then
             PurchaseImport2.ModifyAll(Remarks, '');
     end;
-
 
     local procedure UpdatePosted(PurchHeader: Record "Purchase Header")
     var

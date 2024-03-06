@@ -26,7 +26,6 @@ page 60010 "MFCC01 Franchise Journal"
             }
             repeater(Control1)
             {
-
                 field("Posting Date"; Rec."Posting Date")
                 {
                     ToolTip = 'Specifies the value of the Posting Date field.';
@@ -75,7 +74,6 @@ page 60010 "MFCC01 Franchise Journal"
                 {
                     ToolTip = 'Specifies the value of the National Fee field.';
                 }
-
                 field("Shortcut Dimension 1 Code"; Rec."Shortcut Dimension 1 Code")
                 {
                     ToolTip = 'Specifies the value of the Shortcut Dimension 1 Code field.';

@@ -2,10 +2,10 @@ pageextension 60006 "MFCC01GeneralJournalBatches" extends "General Journal Batch
 {
     layout
     {
-        modify("Allow Payment Export")
-        {
-            Visible = false;
-        }
+        // modify("Allow Payment Export")
+        // {
+        //     //Visible = false;
+        // }
         // Add changes to page layout here
         addlast(Control1)
         {

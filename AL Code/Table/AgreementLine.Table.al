@@ -105,7 +105,7 @@ table 60004 "MFCC01 Agreement Line"
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
         // AgreementHeader.Get(Rec."Agreement No.");
-        // AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
+        // AgreementHeader.TestField(Status, AgreementHeader.Status::"Not Signed");
     end;
 
     local procedure CheckDates()
@@ -140,12 +140,10 @@ table 60004 "MFCC01 Agreement Line"
 
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
@@ -155,7 +153,5 @@ table 60004 "MFCC01 Agreement Line"
 
     trigger OnRename()
     begin
-
     end;
-
 }

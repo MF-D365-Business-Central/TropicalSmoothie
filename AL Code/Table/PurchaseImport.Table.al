@@ -12,7 +12,6 @@ table 60010 "MFCC01 Purchase Import"
         {
             DataClassification = CustomerContent;
         }
-
         field(3; "Vendor No."; Code[20])
         {
             DataClassification = CustomerContent;
@@ -40,7 +39,6 @@ table 60010 "MFCC01 Purchase Import"
         {
             DataClassification = CustomerContent;
         }
-
         field(51; "No."; Code[20])
         {
             DataClassification = CustomerContent;
@@ -50,12 +48,10 @@ table 60010 "MFCC01 Purchase Import"
         {
             DataClassification = CustomerContent;
         }
-
         field(56; Quantity; Decimal)
         {
             DataClassification = CustomerContent;
         }
-
         field(57; "Direct Unit Cost"; Decimal)
         {
             DataClassification = CustomerContent;
@@ -74,7 +70,6 @@ table 60010 "MFCC01 Purchase Import"
         {
             DataClassification = CustomerContent;
         }
-
         field(92; "Department Code"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -101,26 +96,20 @@ table 60010 "MFCC01 Purchase Import"
         }
     }
 
-
-
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
     begin
-
     end;
 
     trigger OnRename()
     begin
-
     end;
 
     procedure CreatePurchHeader() PurchHeader: Record "Purchase Header";
@@ -143,7 +132,6 @@ table 60010 "MFCC01 Purchase Import"
         else
             PurchHeader."Vendor Invoice No." := Rec."External Document No.";
         PurchHeader.Modify(true);
-
     end;
 
     procedure CreatePurchLine(Var LineNo: Integer; PurchHeader: Record "Purchase Header")
@@ -170,13 +158,11 @@ table 60010 "MFCC01 Purchase Import"
         IF Rec."Cafe Code" <> '' then
             PurchLine.ValidateShortcutDimCode(3, Rec."Cafe Code");
         PurchLine.Modify(true);
-
     end;
 
     local procedure GetSetId(Var DimSetID: Integer)
     var
         DimSetEntry: Record "Dimension Set Entry";
     begin
-
     end;
 }

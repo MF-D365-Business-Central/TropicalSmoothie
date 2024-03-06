@@ -2,7 +2,6 @@ codeunit 60007 MFCC01Approvals
 {
     trigger OnRun()
     begin
-
     end;
 
     var
@@ -57,7 +56,6 @@ codeunit 60007 MFCC01Approvals
         exit(IsVBAApprovalsWorkflowEnabled(VBA));
     end;
 
-
     procedure CheckVBAApprovalPossible(var VBA: Record "Vendor Bank Account"): Boolean
     var
         IsHandled: Boolean;
@@ -86,7 +84,6 @@ codeunit 60007 MFCC01Approvals
 
             DATABASE::"Vendor Bank Account":
                 ShowVBAApprovalStatus(Variant);
-
         end;
     end;
 
@@ -96,7 +93,6 @@ codeunit 60007 MFCC01Approvals
         ApprovalMgmt.RunWorkflowEntriesPage(
             VBA.RecordId(), DATABASE::"Vendor Bank Account", 0, VBA.Code);
     end;
-
 
     procedure RunWorkflowOnSendVBADocForApprovalCode(): Code[128]
     begin
@@ -127,5 +123,4 @@ codeunit 60007 MFCC01Approvals
     local procedure OnAfterCheckVBAApprovalPossible(var vba: Record "Vendor Bank Account")
     begin
     end;
-
 }

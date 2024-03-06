@@ -13,16 +13,17 @@ page 60000 "MFCC01 Franchise Setup"
         {
             group(Deferral)
             {
-
                 field("Non GAAP Consolidation Company"; Rec."Non GAAP Consolidation Company")
                 {
                     ToolTip = 'Specifies the value of the Non GAAP Consolidation Company field.';
                 }
-
+                field("Franchise Journal Batch"; Rec."Franchise Journal Batch")
+                {
+                    ToolTip = 'Specifies the value of the Franchise Journal Batch field.';
+                }
             }
             group(Numbering)
             {
-
                 field("Deferral Nos."; Rec."Deferral Nos.")
                 {
                     ToolTip = 'Specifies the value of the Deferral Nos. field.';
@@ -34,7 +35,6 @@ page 60000 "MFCC01 Franchise Setup"
             }
             group(Journal)
             {
-
                 field("Royalty Account"; Rec."Royalty Account")
                 {
                     ToolTip = 'Specifies the value of the Royalty Account field.';
@@ -47,14 +47,11 @@ page 60000 "MFCC01 Franchise Setup"
                 {
                     ToolTip = 'Specifies the value of the National Account field.';
                 }
-
             }
             group(Agreement)
             {
                 group(GAAP)
                 {
-
-
                     field("Accrued Fran Bonus GAAP"; Rec."Accrued Fran Bonus GAAP")
                     {
                         ToolTip = 'Specifies the value of the Accrued Fran Bonus field.';
@@ -83,11 +80,25 @@ page 60000 "MFCC01 Franchise Setup"
                     {
                         ToolTip = 'Specifies the value of the Def Revenue Cafes in Development field.';
                     }
+                    field("PrePaid Commissions ST GAAP"; Rec."PrePaid Commissions ST GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the PrePaid Commissions ST GAAP field.';
+                    }
+                    field("Deferred Revenue ST GAAP"; Rec."Deferred Revenue ST GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the Deferred Revenue ST GAAP field.';
+                    }
+                    field("Deferred Revenue LT GAAP"; Rec."Deferred Revenue LT GAAP")
+                    {
+                        ToolTip = 'Specifies the value of the Deferred Revenue LT GAAP field.';
+                    }
+                    field("Tansfer Fee GAPP"; Rec."Tansfer Fee GAPP")
+                    {
+                        ToolTip = 'Specifies the value of the Tansfer Fee field.';
+                    }
                 }
                 Group(Statistical)
                 {
-
-
                     field(NonGapInitialRevenueRecognized; Rec.NonGapInitialRevenueRecognized)
                     {
                         ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognized field.';
@@ -116,8 +127,23 @@ page 60000 "MFCC01 Franchise Setup"
                     {
                         ToolTip = 'Specifies the value of the Def Revenue Cafes in Development field.';
                     }
+                    field("PrePaid Commissions ST"; Rec."PrePaid Commissions ST")
+                    {
+                        ToolTip = 'Specifies the value of the PrePaid Commissions ST field.';
+                    }
+                    field("Deferred Revenue ST"; Rec."Deferred Revenue ST")
+                    {
+                        ToolTip = 'Specifies the value of the Deferred Revenue ST field.';
+                    }
+                    field("Deferred Revenue LT"; Rec."Deferred Revenue LT")
+                    {
+                        ToolTip = 'Specifies the value of the Deferred Revenue LT field.';
+                    }
+                    field("Tansfer Fee"; Rec."Tansfer Fee")
+                    {
+                        ToolTip = 'Specifies the value of the Tansfer Fee field.';
+                    }
                 }
-
             }
             group(Renewal)
             {
@@ -152,7 +178,6 @@ page 60000 "MFCC01 Franchise Setup"
                 {
                     ToolTip = 'Specifies the value of the Corp Department Code field.';
                 }
-
                 field("Local Department Code"; Rec."Local Department Code")
                 {
                     ToolTip = 'Specifies the value of the Local Department Code field.';
@@ -169,7 +194,6 @@ page 60000 "MFCC01 Franchise Setup"
     {
         area(Processing)
         {
-
         }
     }
 

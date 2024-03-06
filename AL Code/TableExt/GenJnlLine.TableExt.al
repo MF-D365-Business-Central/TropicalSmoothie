@@ -20,8 +20,8 @@ tableextension 60001 "MFCC01 Gen. Journal Line" extends "Gen. Journal Line"
             TableRelation = Customer."No.";
             trigger OnValidate()
             Begin
-                IF xRec."Cafe No." <> Rec."Cafe No." then
-                    CopyCustomerDefaultDimensions();
+                // IF xRec."Cafe No." <> Rec."Cafe No." then
+                //     CopyCustomerDefaultDimensions();
             End;
         }
         modify("Recipient Bank Account")
@@ -38,10 +38,8 @@ tableextension 60001 "MFCC01 Gen. Journal Line" extends "Gen. Journal Line"
                         IF VendorBankAccount.Get(Rec."Bal. Account No.", Rec."Recipient Bank Account") then
                             VendorBankAccount.TestField(Status, VendorBankAccount.Status::Released);
                 End;
-
             end;
         }
-
     }
 
     local procedure CopyCustomerDefaultDimensions()
@@ -67,6 +65,7 @@ tableextension 60001 "MFCC01 Gen. Journal Line" extends "Gen. Journal Line"
             DefDimension.Reset();
             DefDimension.SetRange("Table ID", Database::Customer);
             DefDimension.SetRange("No.", Customer."No.");
+            DefDimension.Setfilter("Dimension Value Code", '<>%1', '');
             IF DefDimension.FindSet() then
                 repeat
                     TempDimensionSetEntry.Reset();
@@ -82,6 +81,5 @@ tableextension 60001 "MFCC01 Gen. Journal Line" extends "Gen. Journal Line"
 
             Rec.Validate("Dimension Set ID", DimMgmt.GetDimensionSetID(TempDimensionSetEntry));
         End;
-
     end;
 }

@@ -9,7 +9,6 @@ table 60013 "MFCC01 Dimension Combination"
             DataClassification = CustomerContent;
             NotBlank = true;
         }
-
         field(2; "Parent Dimension Value"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -25,8 +24,6 @@ table 60013 "MFCC01 Dimension Combination"
             DataClassification = CustomerContent;
             NotBlank = true;
         }
-
-
     }
 
     keys
@@ -47,22 +44,17 @@ table 60013 "MFCC01 Dimension Combination"
 
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
     begin
-
     end;
 
     trigger OnRename()
     begin
-
     end;
-
 }

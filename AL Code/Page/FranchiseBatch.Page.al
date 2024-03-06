@@ -12,7 +12,6 @@ page 60009 "MFCC01 Franchise Batches"
         {
             repeater(Control1)
             {
-
                 field("Code"; Rec."Code")
                 {
                     ToolTip = 'Specifies the value of the Code field.';
@@ -53,6 +52,4 @@ page 60009 "MFCC01 Franchise Batches"
             }
         }
     }
-
-
 }

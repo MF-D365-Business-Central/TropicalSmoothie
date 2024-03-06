@@ -6,12 +6,10 @@ table 60012 "MFCC01 Agreement Renewal"
     DrillDownPageId = "MFCC01 Agreement Renewal";
     fields
     {
-
         field(2; "Agreement No."; Code[20])
         {
             DataClassification = CustomerContent;
         }
-
         field(13; "Renewal Date"; Date)
         {
             DataClassification = CustomerContent;
@@ -83,7 +81,6 @@ table 60012 "MFCC01 Agreement Renewal"
         }
     }
 
-
     var
         CZ: Record "MFCC01 Franchise Setup";
         ChangeErr: Label 'Changes not allowed as renewal fee already processed.';
@@ -135,7 +132,6 @@ table 60012 "MFCC01 Agreement Renewal"
             Rec."No. of Periods" := DeferalUtilities.CalcNoOfPeriods(Rec."Effective Date", Rec."Term Expiration Date");
     end;
 
-
     procedure SetStatusRenewed()
     var
         CZSetup: Record "MFCC01 Franchise Setup";
@@ -161,12 +157,10 @@ table 60012 "MFCC01 Agreement Renewal"
 
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
@@ -176,7 +170,6 @@ table 60012 "MFCC01 Agreement Renewal"
 
     trigger OnRename()
     begin
-
     end;
 
     [IntegrationEvent(false, false)]

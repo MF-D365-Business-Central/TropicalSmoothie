@@ -1,6 +1,5 @@
 codeunit 60008 "Bulk Customer Remit Reporting"
 {
-
     trigger OnRun()
     begin
     end;
@@ -16,7 +15,6 @@ codeunit 60008 "Bulk Customer Remit Reporting"
         BankPaymentType: Integer;
         LastUsedTxLbl: Label 'Last used options and filters';
 
-
     procedure RunWithRecord(var GenJournalLine: Record "Gen. Journal Line")
     var
         // ReportSelections: Record "Report Selections";
@@ -29,8 +27,6 @@ codeunit 60008 "Bulk Customer Remit Reporting"
         JoinDatabaseFieldName: Text;
     begin
         GenJournalLine.SetFilter("Check Exported", '=FALSE');
-
-
 
         GenJournalLine.Find('-');
         GenJournalBatch.Get(GenJournalLine."Journal Template Name", GenJournalLine."Journal Batch Name");
@@ -123,12 +119,10 @@ codeunit 60008 "Bulk Customer Remit Reporting"
         ReportDataRecordRef.SETVIEW(RequestPageParamsView);
         ReportDataRecordRef.FILTERGROUP(FilterGroup);
 
-
         Report.SaveAs(Report::"ExportElecPayments - Word", GetRequestParametersText(11383), ReportFormat::Pdf, OutStr, ReportDataRecordRef);
         TempBlob.CREATEINSTREAM(instr);
         MyPath := 'My.pdf';
         DOWNLOADFROMSTREAM(instr, '', '', '', MyPath);
-
     end;
 
     procedure FindNextEmptyFilterGroup(VAR RecordRef: RecordRef): Integer
@@ -156,7 +150,6 @@ codeunit 60008 "Bulk Customer Remit Reporting"
         EXIT(FilterGroup);
     end;
     // Finds the next empty filter group, with a minimum of group 10 to ensure we're in a non-system group.
-
 
     procedure StoreRequestParameters(Parameters: Text)
     var
@@ -199,7 +192,6 @@ codeunit 60008 "Bulk Customer Remit Reporting"
         Outstr: OutStream;
     begin
 
-
         IF XMLText = '' THEN
             EXIT;
 
@@ -216,10 +208,6 @@ codeunit 60008 "Bulk Customer Remit Reporting"
         OutStr.WRITETEXT(XMLText);
         ObjectOptions.INSERT();
     end;
-
-
-
-
 
     procedure GetRequestParametersText(ReportID: Integer): Text
     var
@@ -279,9 +267,6 @@ codeunit 60008 "Bulk Customer Remit Reporting"
 
         exit(RecordRef.GetView());
     end;
-
-
-
 
     local procedure PreviewModeSelected(): Boolean
     var
@@ -456,10 +441,8 @@ codeunit 60008 "Bulk Customer Remit Reporting"
                             if ProcessLine(GenJournalLine) and (BankAccountNo = GenJournalLineBankAccount) then
                                 UpdateDocNoForGenLedgLine(GenJournalLine, BankAccountNo);
                         until GenJournalLineRecRef.Next() = 0;
-
                 end;
             until ReportSelections.Next() = 0;
-
     end;
 
     local procedure UpdateDocNoForGenLedgLine(var GenJournalLine: Record "Gen. Journal Line"; BankAccountNo: Code[20])
@@ -553,7 +536,6 @@ codeunit 60008 "Bulk Customer Remit Reporting"
         exit(1);
     end;
 
-
     procedure ProcessLine(GenJournalLine: Record "Gen. Journal Line"): Boolean
     var
         ExportNewLines: Boolean;
@@ -582,6 +564,5 @@ codeunit 60008 "Bulk Customer Remit Reporting"
                     GenJournalLine.Modify();
                 end;
             until GenJournalLineRecRef.Next() = 0;
-
     end;
 }

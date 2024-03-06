@@ -111,7 +111,6 @@ pageextension 60001 "MFCC01GenJournalImportExt" extends "General Journal"
         }
         // addafter(Description)
         // {
-
         //     field("Recipient Bank Account"; Rec."Recipient Bank Account")
         //     {
         //         ApplicationArea = All;
@@ -125,7 +124,6 @@ pageextension 60001 "MFCC01GenJournalImportExt" extends "General Journal"
         // }
         addlast(Control1)
         {
-
             field("Approver ID"; Rec."Approver ID")
             {
                 ApplicationArea = All;

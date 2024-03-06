@@ -21,7 +21,6 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
 
         outputFileName: Text;
 
-
     procedure EFTPaymentProcess(var TempEFTExportWorkset: Record "EFT Export Workset" temporary; var TempNameValueBuffer: Record "Name/Value Buffer" temporary; var DataCompression: Codeunit "Data Compression"; var ZipFileName: Text; var EFTValues: Codeunit "MFCC01EFT Values")
     var
         DataExch: Record "Data Exch.";
@@ -46,7 +45,6 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
         case BankAccount."Export Format" of
             BankAccount."Export Format"::US:
                 ExpWritingEFT.PreCleanUpUSWorkTables();
-
         end;
 
         if TempEFTExportWorkset."Bank Payment Type" = TempEFTExportWorkset."Bank Payment Type"::"Electronic Payment-IAT" then
@@ -59,7 +57,6 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
             ACHFileName := BankAccount."E-Recevbl Exp. File Name";
             UpdateLastEPayExportFileName(BankAccount);
             Filepath := TempEFTExportWorkset.Pathname;
-
 
             TempBlob.CreateOutStream(Ostream);
 
@@ -89,7 +86,6 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
                 DataExch.Get(DataExchEntryCodeDetail);
                 CODEUNIT.Run(DataExchDef."User Feedback Codeunit", DataExch);
             end;
-
         end;
 
         // Clean up the work tables.
@@ -183,8 +179,6 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
                 if DataExchDef."Reading/Writing Codeunit" = CODEUNIT::"Exp. Writing EFT" then
                     ExportDataExchToFlatFile(DataExch."Entry No.", Filename, DataExchLineDef."Line Type", HdrCount);
             until DataExchLineDef.Next() = 0;
-
-
     end;
 
     procedure ExportDataExchToFlatFile(DataExchNo: Integer; Filename: Text; LineFileType: Integer; HeaderCount: Integer)
@@ -294,9 +288,7 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
                         ExportDataExchToFlatFile(DataExch."Entry No.", Filename, DataExchLineDef."Line Type", 0)
                     else
                         CODEUNIT.Run(DataExchDef."Reading/Writing Codeunit", DataExch);
-
             until DataExchLineDef.Next() = 0;
-
     end;
 
     local procedure ProcessFooters(var TempEFTExportWorkset: Record "EFT Export Workset" temporary; var BankAccount: Record "Bank Account"; DataExchDefCode: Code[20]; var FooterArray: array[100] of Integer; Filename: Text; var DataExchEntryCodeFooter: Integer; var EFTValues: Codeunit "MFCC01EFT Values")
@@ -375,7 +367,6 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
             until DataExchLineDef.Next() = 0;
         //if BankAccount."Export Format" = BankAccount."Export Format"::US then
         //  AddPadBlocks(Filename, EFTValues);
-
     end;
 
     procedure AddPadBlocks(Filename: Text; var EFTValues: Codeunit "MFCC01EFT Values")
@@ -392,8 +383,6 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
             NoOfRec := NoOfRec + 1;
             EFTValues.SetNoOfRec(NoOfRec);
         end;
-
-
     end;
 
     local procedure UpdateLastEPayExportFileName(BankAccount: Record "Bank Account")
@@ -428,4 +417,3 @@ codeunit 60011 "MFCC01Exp. Launcher EFT"
         Commit();
     end;
 }
-

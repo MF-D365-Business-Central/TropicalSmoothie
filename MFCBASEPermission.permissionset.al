@@ -69,5 +69,13 @@ permissionset 60000 MFCBASEPermission
         page "MFC01Generate EFT Files" = X,
         page "MFCC01 Agreement Renewal" = X,
         page "MFCC01 Fxied Asset" = X,
-        page "MFCC01Generate EFT File Lines" = X;
+        page "MFCC01Generate EFT File Lines" = X,
+        tabledata "MFCC01 Dimension Combination" = RIMD,
+        tabledata "MFCC01 Snowflake Entry" = RIMD,
+        table "MFCC01 Dimension Combination" = X,
+        table "MFCC01 Snowflake Entry" = X,
+        report "MFCC01 Depreciation" = X,
+        page "Dimension Combination FM" = X,
+        page "Dimension Combination MC" = X,
+        page "MFCC01 Snowflake Entries" = X;
 }

@@ -11,8 +11,6 @@ page 60005 "MFCC01 Agreement"
         {
             group(General)
             {
-
-
                 field("No."; Rec."No.")
                 {
                     ApplicationArea = All;
@@ -32,7 +30,6 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Agreement Date field.';
                 }
-
                 field("Franchise Revenue Start Date"; Rec."Franchise Revenue Start Date")
                 {
                     ApplicationArea = All;
@@ -54,7 +51,6 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Agreement Amount field.';
                 }
-
                 field("SalesPerson Commission"; Rec."SalesPerson Commission")
                 {
                     ToolTip = 'Specifies the value of the SalesPerson Commission field.';
@@ -63,7 +59,6 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognized GAAP field.';
                 }
-
                 field("Royalty Bank Account"; Rec."Royalty Bank Account")
                 {
                     ApplicationArea = All;
@@ -73,7 +68,6 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Franchise Bank Account field.';
                 }
-
                 field("License Type"; Rec."License Type")
                 {
                     ApplicationArea = All;
@@ -98,13 +92,11 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Termination Date field.';
                 }
-
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Status field.';
                 }
-
             }
             part(Lines; "MFCC01 Agreement Lines")
             {
@@ -153,7 +145,6 @@ page 60005 "MFCC01 Agreement"
             }
             group(Entries)
             {
-
                 action(GLntries)
                 {
                     Caption = 'G/L Entries';
@@ -253,7 +244,6 @@ page 60005 "MFCC01 Agreement"
                 end;
             }
 
-
             action(ProcessLateCommission)
             {
                 Caption = 'Process Late Commission';
@@ -268,6 +258,4 @@ page 60005 "MFCC01 Agreement"
             }
         }
     }
-
-
 }

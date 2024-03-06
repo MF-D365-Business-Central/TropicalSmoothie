@@ -1,6 +1,5 @@
 codeunit 60000 "MFCC01 Deferral Utilities"
 {
-
     trigger OnRun()
     begin
     end;
@@ -52,7 +51,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
 
         InitCurrency(CurrencyCode);
 
-
         AdjustedDeferralAmount := AmountToDefer;
         if ApplyDeferralPercentage then
             AdjustedDeferralAmount := Round(AdjustedDeferralAmount * (100 / 100), AmountRoundingPrecision);
@@ -78,19 +76,16 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         if AccountingPeriod."Starting Date" <> StartDate then
             NoOfPeriods := 1;
 
-
         StartDate := AccountingPeriod."Starting Date";
         repeat
 
             NoOfPeriods += 1;
             IF NoOfPeriods = 83 then
                 NoOfPeriods := NoOfPeriods;
-
         Until AccountingPeriod.Next() = 0;
         AccountingPeriod2.SetFilter("Starting Date", '>%1&<=%2', AccountingPeriod."Starting Date", EndDate);
         IF AccountingPeriod2.FindFirst() then
             NoOfPeriods += 1;
-
     end;
 
     local procedure CheckPostingDate(DeferralHeader: Record "MFCC01 Deferral Header"; DeferralLine: Record "MFCC01 Deferral Line")
@@ -128,7 +123,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             if not AccountingPeriod.FindFirst() then
                 Error(DeferSchedOutOfBoundsErr);
         end;
-
 
         // If comparison used <=, it messes up the calculations
 
@@ -366,7 +360,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         exit(false);
     end;
 
-
     local procedure GetNextPeriodStartingDate(PostingDate: Date): Date
     var
         AccountingPeriod: Record "Accounting Period";
@@ -459,7 +452,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             AgreementHeader."Renewal No. of Periods" := Renewal."No. of Periods";
             AgreementHeader.Modify();
         End;
-
     end;
 
     local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Agreementheader: Record "MFCC01 Agreement Header"; CZSetup: Record "MFCC01 Franchise Setup"; Type: Enum "MFCC01 Deferral Type")
@@ -471,7 +463,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader."Start Date" := Agreementheader."Franchise Revenue Start Date";
         DeferralHeader.Validate("End Date", Agreementheader."Term Expiration Date");
         DeferralHeader.Type := Type;
-        IF (Type = Type::"Franchise Fee")OR(Type=Type::Transferred) then
+        IF (Type = Type::"Franchise Fee") OR (Type = Type::Transferred) then
             DeferralHeader.validate("Amount to Defer", Agreementheader."Agreement Amount");
         IF Type = Type::Commission then
             DeferralHeader.validate("Amount to Defer", Agreementheader."SalesPerson Commission");
@@ -479,9 +471,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader."Customer No." := Agreementheader."Customer No.";
         //DeferralHeader.Commision := Commision;
         DeferralHeader.Modify(true)
-
     end;
-
 
     local procedure CreateDeferralHeader(var DeferralHeader: Record "MFCC01 Deferral Header"; Renewal: Record "MFCC01 Agreement Renewal"; CZSetup: Record "MFCC01 Franchise Setup"; Agreementheader: Record "MFCC01 Agreement Header")
 
@@ -496,7 +486,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         DeferralHeader."Customer No." := Agreementheader."Customer No.";
         DeferralHeader.Type := DeferralHeader.Type::Renewal;
         DeferralHeader.Modify(true)
-
     end;
 
     [IntegrationEvent(false, false)]
@@ -523,8 +512,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     local procedure OnAfterCreateDeferralSchedule(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: Record "MFCC01 Deferral Line")
     begin
     end;
-
-
 
     [IntegrationEvent(false, false)]
     local procedure OnAfterSetStartDate(DeferralTemplate: Record "Deferral Template"; var StartDate: Date; var AdjustedStartDate: Date)
@@ -560,7 +547,6 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     local procedure OnBeforeDeferralCodeOnValidate(customerno: Code[20]; DocumentNo: Code[20]; Amount: Decimal; PostingDate: Date; Description: Text[100]; CurrencyCode: Code[10]; var IsHandled: Boolean)
     begin
     end;
-
 
     [IntegrationEvent(false, false)]
     local procedure OnAfterAdjustTotalAmountForDeferrals(var AmtToDefer: Decimal; var AmtToDeferACY: Decimal; var TotalAmount: Decimal; var TotalAmountACY: Decimal);
@@ -647,4 +633,3 @@ codeunit 60000 "MFCC01 Deferral Utilities"
     begin
     end;
 }
-

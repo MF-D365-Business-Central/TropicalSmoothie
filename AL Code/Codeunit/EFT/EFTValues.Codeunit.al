@@ -1,6 +1,5 @@
 Codeunit 60010 "MFCC01EFT Values"
 {
-
     trigger OnRun()
     begin
     end;
@@ -235,4 +234,3 @@ Codeunit 60010 "MFCC01EFT Values"
         EFTFileIsCreated := SetEFTFile;
     end;
 }
-

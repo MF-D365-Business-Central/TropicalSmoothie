@@ -6,7 +6,6 @@ tableextension 60005 "MFCC01Bank Account Ext" extends "Bank Account"
         {
             Caption = 'E-Receivables Export File Name';
             DataClassification = CustomerContent;
-
         }
         field(80001; "Receivables Export Format"; Code[20])
         {
@@ -20,7 +19,5 @@ tableextension 60005 "MFCC01Bank Account Ext" extends "Bank Account"
             DataClassification = CustomerContent;
             TableRelation = "Bank Export/Import Setup".Code WHERE(Direction = CONST("Export-EFT"));
         }
-
     }
-
 }

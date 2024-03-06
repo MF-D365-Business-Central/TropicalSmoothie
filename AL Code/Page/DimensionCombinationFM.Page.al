@@ -13,7 +13,6 @@ page 60018 "Dimension Combination FM"
         {
             repeater(Control1)
             {
-
                 field("Parent Dimension Code"; Rec."Parent Dimension Code")
                 {
                     ToolTip = 'Specifies the value of the Parent Dimension Code field.';
@@ -51,9 +50,26 @@ page 60018 "Dimension Combination FM"
                     UpdateCombination();
                 end;
             }
+            action(DeleteAll)
+            {
+                ApplicationArea = All;
+                Image = Delete;
+                trigger OnAction()
+                begin
+                    DeleteALLDimCombintion();
+                end;
+            }
         }
     }
 
+    local procedure DeleteALLDimCombintion()
+    var
+        DimValueCombination: Record "Dimension Value Combination";
+    begin
+        IF DimValueCombination.FindSet() then
+            DimValueCombination.DeleteAll();
+        Message('Completed');
+    end;
 
     local procedure UpdateCombination()
     var
@@ -112,10 +128,8 @@ page 60018 "Dimension Combination FM"
                                 DimValueCombination.Delete();
                         end;
                     until MARKETDimValues.Next() = 0;
-
             until FMMDimValues.Next() = 0;
 
         Message('Completed');
     end;
-
 }

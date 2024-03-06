@@ -3,8 +3,10 @@ page 60011 "MFCC01 FranchiseLedgerEntries"
     Caption = 'Franchise Ledger Entries';
     PageType = List;
     ApplicationArea = All;
-    UsageCategory = Lists;
+    UsageCategory = History;
     SourceTable = "MFCC01 FranchiseLedgerEntry";
+    SourceTableView = sorting("Entry No.")
+                      order(descending);
     Editable = false;
     layout
     {
@@ -16,7 +18,6 @@ page 60011 "MFCC01 FranchiseLedgerEntries"
                 {
                     ToolTip = 'Specifies the value of the Entry No. field.';
                 }
-
                 field("Posting Date"; Rec."Posting Date")
                 {
                     ToolTip = 'Specifies the value of the Posting Date field.';
@@ -121,6 +122,4 @@ page 60011 "MFCC01 FranchiseLedgerEntries"
             }
         }
     }
-
-
 }

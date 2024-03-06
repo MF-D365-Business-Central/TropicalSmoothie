@@ -8,6 +8,4 @@ tableextension 60006 "MFCC01Gen. Journal Batch" extends "Gen. Journal Batch"
             DataClassification = CustomerContent;
         }
     }
-
-
 }

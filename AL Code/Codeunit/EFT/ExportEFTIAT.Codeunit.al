@@ -1,6 +1,5 @@
 codeunit 60013 "MFCC01Export EFT (IAT)"
 {
-
     trigger OnRun()
     begin
     end;
@@ -48,8 +47,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
         IsBlockedErr: Label 'Account type is blocked for processing.';
         PrivacyBlockedErr: Label 'Account type is blocked for privacy.';
 
-
-
     procedure StartExportFile(BankAccountNo: Code[20]; ReferenceCode: Code[10]; DataExchEntryNo: Integer; var EFTValues: Codeunit "MFCC01EFT Values")
     var
         ACHUSHeader: Record "ACH US Header";
@@ -69,7 +66,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
         BankAccount.TestField("E-Recevbl Exp. File Name");
         BankAccount.TestField(Blocked, false);
 
-
         if BankAccount."Last ACH File ID Modifier" = '' then
             BankAccount."Last ACH File ID Modifier" := 'A'
         else begin
@@ -85,8 +81,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
             BankAccount."Last ACH File ID Modifier" := DummyModifierValues[i];
         end;
         BankAccount.Modify();
-
-
 
         FileDate := Today();
         FileTime := Time();
@@ -119,7 +113,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
         ACHUSHeader.Modify();
         EFTValues.SetNoOfRec := EFTValues.GetNoOfRec() + 1;
     end;
-
 
     procedure StartExportBatch(var TempEFTExportWorkset: Record "EFT Export Workset" temporary; SettleDate: Date; DataExchEntryNo: Integer; var EFTValues: Codeunit "MFCC01EFT Values")
     var
@@ -175,7 +168,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
 
         EFTValues.SetNoOfRec := EFTValues.GetNoOfRec() + 1;
     end;
-
 
     procedure ExportElectronicPayment(var TempEFTExportWorkset: Record "EFT Export Workset" temporary; PaymentAmount: Decimal; DataExchEntryNo: Integer; DataExchLineDefCode: Code[20]; var EFTValues: Codeunit "MFCC01EFT Values"): Code[250]
     var
@@ -324,7 +316,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
         exit(GenerateFullTraceNoCode(EFTValues.GetTraceNo(), EFTValues));
     end;
 
-
     procedure EndExportBatch(DataExchEntryNo: Integer; var EFTValues: Codeunit "MFCC01EFT Values")
     var
         ACHUSFooter: Record "ACH US Footer";
@@ -349,7 +340,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
         EFTValues.SetTotalFileCredit(EFTValues.GetTotalFileCredit() + EFTValues.GetTotalBatchCredit());
         EFTValues.SetFileEntryAddendaCount(EFTValues.GetFileEntryAddendaCount() + EFTValues.GetEntryAddendaCount());
     end;
-
 
     procedure EndExportFile(DataExchEntryNo: Integer; var EFTValues: Codeunit "MFCC01EFT Values")
     var
@@ -475,7 +465,6 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
         //    FileManagement.DeleteServerFile(FileName);
     end;
 
-
     procedure GetRecipientData(var TempEFTExportWorkset: Record "EFT Export Workset" temporary)
     begin
         if TempEFTExportWorkset."Account Type" = TempEFTExportWorkset."Account Type"::Vendor then begin
@@ -562,4 +551,3 @@ codeunit 60013 "MFCC01Export EFT (IAT)"
             end;
     end;
 }
-

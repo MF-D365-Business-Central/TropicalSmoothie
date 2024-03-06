@@ -12,13 +12,11 @@ table 60006 "MFCC01 Sales Import"
         {
             DataClassification = CustomerContent;
         }
-
         field(4; "Customer No."; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = Customer;
         }
-
         field(5; "Customer Name"; Text[100])
         {
             FieldClass = FlowField;
@@ -29,30 +27,23 @@ table 60006 "MFCC01 Sales Import"
         {
             DataClassification = CustomerContent;
         }
-
-
-
         field(8; "Posting Description"; Code[20])
         {
             DataClassification = CustomerContent;
         }
-
         field(51; "No."; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No.";
-
         }
         field(52; "Description"; Text[100])
         {
             DataClassification = CustomerContent;
         }
-
         field(56; Quantity; Decimal)
         {
             DataClassification = CustomerContent;
         }
-
         field(57; "Unit Price"; Decimal)
         {
             DataClassification = CustomerContent;
@@ -75,7 +66,6 @@ table 60006 "MFCC01 Sales Import"
         {
             DataClassification = CustomerContent;
         }
-
         field(93; Remarks; Text[500])
         {
             DataClassification = CustomerContent;
@@ -90,25 +80,20 @@ table 60006 "MFCC01 Sales Import"
         }
     }
 
-
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
     begin
-
     end;
 
     trigger OnRename()
     begin
-
     end;
 
     procedure CreateSalesHeader() SalesHeader: Record "Sales Header";
@@ -126,7 +111,6 @@ table 60006 "MFCC01 Sales Import"
 
         SalesHeader."Posting Description" := Rec."Posting Description";
         SalesHeader.Modify(True);
-
     end;
 
     procedure CreateSalesLine(Var LineNo: Integer; SalesHeader: Record "Sales Header")
@@ -149,6 +133,5 @@ table 60006 "MFCC01 Sales Import"
         IF Rec."Department Code" <> '' then
             SalesLine.Validate("Shortcut Dimension 1 Code", Rec."Department Code");
         SalesLine.Modify(true);
-
     end;
 }

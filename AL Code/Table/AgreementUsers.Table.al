@@ -19,8 +19,6 @@ table 60005 "MFCC01 Agreement Users"
         {
             DataClassification = CustomerContent;
         }
-
-
         field(10; "Owner First Name"; Text[50])
         {
             DataClassification = CustomerContent;
@@ -59,7 +57,6 @@ table 60005 "MFCC01 Agreement Users"
         {
             DataClassification = CustomerContent;
         }
-
     }
 
     keys
@@ -70,34 +67,27 @@ table 60005 "MFCC01 Agreement Users"
         }
     }
 
-
-
     procedure TestStatusOpen()
     Var
         AgreementHeader: Record "MFCC01 Agreement Header";
     begin
         // AgreementHeader.Get(Rec."Agreement No.");
-        // AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
+        // AgreementHeader.TestField(Status, AgreementHeader.Status::"Not Signed");
     end;
 
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
     begin
-
     end;
 
     trigger OnRename()
     begin
-
     end;
-
 }

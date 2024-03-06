@@ -13,7 +13,6 @@ pageextension 60004 "MFCC01General Ledger Entries" extends "General Ledger Entri
         }
         addafter("Source No.")
         {
-            
             field("Source Name"; Rec."Source Name")
             {
                 ApplicationArea = All;
@@ -26,6 +25,4 @@ pageextension 60004 "MFCC01General Ledger Entries" extends "General Ledger Entri
     {
         // Add changes to page actions here
     }
-
-
 }

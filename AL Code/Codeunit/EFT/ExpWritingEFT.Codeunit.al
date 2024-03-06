@@ -115,7 +115,6 @@ codeunit 60015 "MFCC01Exp. Writing EFT"
         end;
     end;
 
-
     procedure PreCleanUpUSWorkTables()
     var
         ACHUSHeader: Record "ACH US Header";
@@ -154,4 +153,3 @@ codeunit 60015 "MFCC01Exp. Writing EFT"
         Commit();
     end;
 }
-

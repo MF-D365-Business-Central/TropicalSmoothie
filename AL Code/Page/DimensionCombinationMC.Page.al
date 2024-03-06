@@ -13,7 +13,6 @@ page 60019 "Dimension Combination MC"
         {
             repeater(Control1)
             {
-
                 field("Parent Dimension Code"; Rec."Parent Dimension Code")
                 {
                     ToolTip = 'Specifies the value of the Parent Dimension Code field.';
@@ -111,10 +110,8 @@ page 60019 "Dimension Combination MC"
                                 DimValueCombination.Delete();
                         end;
                     until CAFEDimValues.Next() = 0;
-
             until MARKETDimValues.Next() = 0;
 
         Message('Completed');
     end;
-
 }

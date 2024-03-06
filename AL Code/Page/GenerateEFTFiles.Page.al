@@ -15,8 +15,6 @@ page 60016 "MFC01Generate EFT Files"
     {
         area(content)
         {
-
-
             field("Bank Account"; BankAccountNo)
             {
                 ApplicationArea = Basic, Suite;
@@ -92,7 +90,6 @@ page 60016 "MFC01Generate EFT Files"
                         UpdateSubForm();
                     end else
                         Message(NoLineMsg);
-
                 end;
             }
             action(GenerateEFTFile)
@@ -198,6 +195,4 @@ page 60016 "MFC01Generate EFT Files"
     local procedure OnAfterOpenPage(var SettlementDate: date; var BankAccountNo: Code[20])
     begin
     end;
-
 }
-

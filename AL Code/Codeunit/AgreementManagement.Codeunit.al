@@ -1,9 +1,7 @@
 codeunit 60002 "MFCC01 Agreement Management"
 {
-
     trigger OnRun()
     begin
-
     end;
 
     [EventSubscriber(ObjectType::Table, Database::"MFCC01 Agreement Header", 'OnaferSignEvent', '', false, false)]
@@ -91,7 +89,7 @@ codeunit 60002 "MFCC01 Agreement Management"
 
     procedure ProcessCommission(Var AgreementHeader: Record "MFCC01 Agreement Header")
     var
-        DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
+        //DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
         AccountType: Enum "Gen. Journal Account Type";
         BalAccountType: Enum "Gen. Journal Account Type";
     begin
@@ -125,11 +123,12 @@ codeunit 60002 "MFCC01 Agreement Management"
         CZSetup.GetRecordonce();
         AgreementHeader.Get(Renewal."Agreement No.");
         CounterRenewal.SetRange("Agreement No.", Renewal."Agreement No.");
-        SetPostingDate(Renewal."Effective Date");
+        SetPostingDate(Renewal."Renewal Date");
         //AgreementHeader."Agreement Date" := Renewal."Renewal Date";
         IF Renewal."Posted Renewal Fees" = 0 then
             IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup."Deferred Renewal Fee GAAP", Renewal."Renewal Fees", true, AgreementHeader."Franchise Bank Account", CounterRenewal.Count) then
-                IF PostStatsAmounts(AgreementHeader, CZSetup."Deferred Renewal Fee", CZSetup."Franchise Renewal Fee", Renewal."Renewal Fees", CounterRenewal.Count) then Begin
+                IF PostStatsAmounts(AgreementHeader, '', CZSetup."Deferred Renewal Fee", Renewal."Renewal Fees", CounterRenewal.Count) then Begin
+                    //IF PostStatsAmounts(AgreementHeader, CZSetup."Deferred Renewal Fee", CZSetup."Franchise Renewal Fee", Renewal."Renewal Fees", CounterRenewal.Count) then Begin
                     Renewal."Posted Renewal Fees" := Renewal."Renewal Fees";
                     Renewal.Modify();
                     AgreementHeader."License Type" := AgreementHeader."License Type"::Renewed;
@@ -192,7 +191,6 @@ codeunit 60002 "MFCC01 Agreement Management"
         Exit(GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0);
     end;
 
-
     local procedure PostStatsAmounts(Var AgreementHeader: Record "MFCC01 Agreement Header"; AccountNo: Code[20];
      BalAccountNo: Code[20]; Amount: Decimal; counter: Integer): Boolean
     var
@@ -202,27 +200,29 @@ codeunit 60002 "MFCC01 Agreement Management"
     begin
         IF Amount = 0 then
             Exit(True);
-        StatisticalJnlLine.Init();
-        StatisticalJnlLine."Posting Date" := PostingDate;
-        IF counter <> 0 then
-            StatisticalJnlLine."Document No." := AgreementHeader."No." + '/' + Format(counter)
-        else
-            StatisticalJnlLine."Document No." := AgreementHeader."No.";
-        //StatisticalJnlLine."Document No." := AgreementHeader."No.";
-        StatisticalJnlLine.Validate("Statistical Account No.", AccountNo);
-        StatisticalJnlLine.Validate(Amount, Amount);
-        //Customer Dimensions
-        InitDefaultDimSource(DefaultDimSource, AgreementHeader);
-        StatisticalJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', StatisticalJnlLine."Shortcut Dimension 1 Code", StatisticalJnlLine."Shortcut Dimension 2 Code",
-        StatisticalJnlLine."Dimension Set ID", 0);
-        StatisticalJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Corp Department Code");
-        IF BalAccountNo <> '' then
-            Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine)
-        else Begin
-            Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine);
-            Exit(true);
+        IF AccountNo <> '' then Begin
+            StatisticalJnlLine.Init();
+            StatisticalJnlLine."Posting Date" := PostingDate;
+            IF counter <> 0 then
+                StatisticalJnlLine."Document No." := AgreementHeader."No." + '/' + Format(counter)
+            else
+                StatisticalJnlLine."Document No." := AgreementHeader."No.";
+            //StatisticalJnlLine."Document No." := AgreementHeader."No.";
+            StatisticalJnlLine.Validate("Statistical Account No.", AccountNo);
+            StatisticalJnlLine.Validate(Amount, Amount);
+            //Customer Dimensions
+            StatisticalJnlLine."Agreement No." := AgreementHeader."No.";
+            InitDefaultDimSource(DefaultDimSource, AgreementHeader);
+            StatisticalJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', StatisticalJnlLine."Shortcut Dimension 1 Code", StatisticalJnlLine."Shortcut Dimension 2 Code",
+            StatisticalJnlLine."Dimension Set ID", 0);
+            StatisticalJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Corp Department Code");
+            IF BalAccountNo <> '' then
+                Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine)
+            else Begin
+                Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine);
+                Exit(true);
+            End;
         End;
-
 
         IF BalAccountNo <> '' then Begin
             StatisticalJnlLine.Init();
@@ -239,7 +239,6 @@ codeunit 60002 "MFCC01 Agreement Management"
             StatisticalJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Corp Department Code");
             Codeunit.Run(Codeunit::"Stat. Acc. Jnl. Line Post", StatisticalJnlLine);
             Exit(true);
-
         End;
     end;
 
@@ -248,7 +247,6 @@ codeunit 60002 "MFCC01 Agreement Management"
         Clear(DefaultDimSource);
         DimMgt.AddDimSource(DefaultDimSource, Database::"Customer", AgreementHeader."Customer No.");
     end;
-
 
     [EventSubscriber(ObjectType::Table, Database::"Statistical Ledger Entry", 'OnBeforeInsertEvent', '', false, false)]
     local procedure TBL_2633_OnBeforeInsertEvent(var Rec: Record "Statistical Ledger Entry"; RunTrigger: Boolean)
@@ -263,9 +261,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         LastStatisticalLedgerEntry.LockTable();
         if LastStatisticalLedgerEntry.FindLast() then;
         NextEntryNo := LastStatisticalLedgerEntry."Entry No." + 1;
-
     end;
-
 
     local procedure SetPostingDate(PostDate: Date)
     begin
@@ -277,6 +273,4 @@ codeunit 60002 "MFCC01 Agreement Management"
         DimMgt: Codeunit DimensionManagement;
         GLEntry: Record "G/L Entry";
         PostingDate: Date;
-
-
 }

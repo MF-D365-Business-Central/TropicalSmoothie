@@ -2,6 +2,15 @@ pageextension 60008 "Bank Account Card Ext" extends "Bank Account Card"
 {
     layout
     {
+        addafter(Name)
+        {
+
+            field("Name 2"; Rec."Name 2")
+            {
+                ApplicationArea = All;
+                ToolTip = 'Specifies the value of the Name 2 field.';
+            }
+        }
         addlast(Transfer)
         {
             field("Receivables Export Format"; Rec."Receivables Export Format")
@@ -22,11 +31,8 @@ pageextension 60008 "Bank Account Card Ext" extends "Bank Account Card"
         }
     }
 
-
     actions
     {
         // Add changes to page actions here
     }
-
-
 }

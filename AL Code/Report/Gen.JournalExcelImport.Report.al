@@ -38,7 +38,6 @@ Report 60001 "Gen. Journal Excel Import"
 
         UploadIntoStream(UploadExcelMsg, '', '', FromFile, IStream);
 
-
         if FromFile <> '' then begin
             FileName := FileMgt.GetFileName(FromFile);
             SheetName := ExcelBuf.SelectSheetsNameStream(IStream);
@@ -79,13 +78,11 @@ Report 60001 "Gen. Journal Excel Import"
         FieldsRec: Record "Field";
         DocumentNo: Code[20];
 
-
     procedure SetValues(NewTemplateCode: Code[20]; NewBatchNo: Code[20])
     begin
         TemplateName := NewTemplateCode;
         BatchNo := NewBatchNo;
     end;
-
 
     procedure GenerateJnlLines(Template: Code[10]; Batch: Code[20])
     var
@@ -115,6 +112,7 @@ Report 60001 "Gen. Journal Excel Import"
         TempDec: Decimal;
         Test: Text;
         Test2: Text;
+        lastRow: Integer;
     begin
         // Analyze Data
         GLSetup.Get;
@@ -145,6 +143,11 @@ Report 60001 "Gen. Journal Excel Import"
         if ExcelBuf.FindSet then
             repeat
                 RecNo += 1;
+                If lastRow <> ExcelBuf."Row No." then Begin
+                    lastRow := ExcelBuf."Row No.";
+                    TempDimSetEntry.Reset();
+                    TempDimSetEntry.DeleteAll();
+                End;
                 Window.Update(1, ROUND(RecNo / TotalRecNo * 10000, 1));
 
                 GenRecRef.Open(Database::"Gen. Journal Line");
@@ -214,7 +217,7 @@ Report 60001 "Gen. Journal Excel Import"
                             // Don't have to create any field entry, just put it in the Dimension Table
 
                             TempDimSetEntry."Dimension Code" := Dimension.Code;
-                            TempDimSetEntry."Dimension Value Code" := ExcelBuf."Cell Value as Text";
+                            TempDimSetEntry.validate("Dimension Value Code", ExcelBuf."Cell Value as Text");
                             TempDimSetEntry.Insert;
 
                             DimgMgt.GetDimensionSetID(TempDimSetEntry);
@@ -321,7 +324,6 @@ Report 60001 "Gen. Journal Excel Import"
                                 GenFieldRef.Validate(ExcelBuf."Cell Value as Text");
                             end;
                         end;
-
                     end;
                     RowNo := ExcelBuf."Row No.";
                     ExcelBuf.Next;
@@ -341,7 +343,6 @@ Report 60001 "Gen. Journal Excel Import"
 
         Window.Close;
     end;
-
 
     procedure GetJnlLineNo(Template: Code[10]; Batch: Code[20]): Integer
     var
@@ -363,7 +364,6 @@ Report 60001 "Gen. Journal Excel Import"
 
         GLSetup.Get;
     end;
-
 
     procedure AutoPopulateDocNo(GenJournalLine: Record "Gen. Journal Line")
     var

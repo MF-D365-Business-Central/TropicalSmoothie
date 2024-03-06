@@ -11,13 +11,9 @@ tableextension 60000 MFCC01Customer extends Customer
         {
             DataClassification = CustomerContent;
         }
-
         field(60002; "Opening Date"; Date)
         {
             DataClassification = CustomerContent;
         }
-
     }
-
-
 }

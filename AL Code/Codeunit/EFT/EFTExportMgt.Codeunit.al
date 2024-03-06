@@ -23,7 +23,6 @@ codeunit 60009 "MFCC01EFT Export Mgt"
         IncorrectLengthOfValuesErr: Label 'The payment that you are trying to export is different from the specified %1, %2.\\The value in the %3 field does not have the length that is required by the export format. \Expected: %4 \Actual: %5 \Field Value: %6.', Comment = '%1=Data Exch.Def Type;%2=Data Exch. Def Code;%3=Field;%4=Expected length;%5=Actual length;%6=Actual Value';
         DateTxt: Label 'Date';
 
-
     procedure ExportDataExchToFlatFile(DataExchNo: Integer; Filename: Text; LineFileType: Integer; HeaderCount: Integer)
     var
 
@@ -43,7 +42,6 @@ codeunit 60009 "MFCC01EFT Export Mgt"
     begin
         DataExchField.SetRange("Data Exch. No.", DataExchNo);
         if DataExchField.Count() > 0 then begin
-
 
             //if (ExportFile.Len > 0) and
             if ((LineFileType <> LineType::Header) or ((LineFileType = LineType::Header) and (HeaderCount > 1)))
@@ -148,7 +146,6 @@ codeunit 60009 "MFCC01EFT Export Mgt"
                 DataExchField.Value := ValueAsString;
                 DataExchField.Modify();
             end;
-
         until DataExchFieldMapping.Next() = 0;
     end;
 
@@ -297,7 +294,6 @@ codeunit 60009 "MFCC01EFT Export Mgt"
         exit(Format(DataExchDef.Type));
     end;
 
-
     procedure PrepareEFTHeader(DataExch: Record "Data Exch."; BankAccountNo: Text[30]; BankAccCode: Code[20])
     var
         BankAccount: Record "Bank Account";
@@ -358,7 +354,6 @@ codeunit 60009 "MFCC01EFT Export Mgt"
             end;
     end;
 
-
     procedure PrepareEFTFooter(DataExch: Record "Data Exch."; NoOfBankAccount: Code[20])
     var
         BankAccount: Record "Bank Account";
@@ -389,9 +384,6 @@ codeunit 60009 "MFCC01EFT Export Mgt"
         end;
     end;
 
-
-
-
     [IntegrationEvent(false, false)]
     local procedure OnBeforeACHRBHeaderInsert(var ACHRBHeader: Record "ACH RB Header"; BankAccCode: Code[20])
     begin
@@ -407,4 +399,3 @@ codeunit 60009 "MFCC01EFT Export Mgt"
     begin
     end;
 }
-

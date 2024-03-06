@@ -70,7 +70,6 @@ page 60017 "MFCC01Generate EFT File Lines"
         CurrPage.Update(false);
     end;
 
-
     procedure GetColumns(var TempEFTExportWorkset: Record "EFT Export Workset" temporary)
     begin
         TempEFTExportWorkset.DeleteAll();
@@ -83,7 +82,6 @@ page 60017 "MFCC01Generate EFT File Lines"
         Rec.Reset();
     end;
 
-
     procedure MarkUnmarkInclude(SetInclude: Boolean; BankAccountNumber: Code[20])
     begin
         Rec.SetCurrentKey("Bal. Account No.");
@@ -95,4 +93,3 @@ page 60017 "MFCC01Generate EFT File Lines"
             until Rec.Next() = 0;
     end;
 }
-

@@ -2,7 +2,7 @@
   "id": "12605ed5-49f4-4537-a8a8-0e28bbd6887c",
   "name": "MFC Base App",
   "publisher": "MorganFranklin Consulting",
-  "version": "1.0.1.4",
+  "version": "23.3.0.8",
   "brief": "",
   "description": "",
   "privacyStatement": "",
@@ -10,10 +10,10 @@
   "help": "",
   "url": "",
   "logo": "",
-  "dependencies": [{"id": "ea130081-c669-460f-a5f4-5dde14f03131","name": "Statistical Accounts","publisher": "Microsoft","version": "22.0.0.0"}],
+  "dependencies": [{"id": "ea130081-c669-460f-a5f4-5dde14f03131","name": "Statistical Accounts","publisher": "Microsoft","version": "23.0.0.0"}],
   "screenshots": [],
-  "platform": "1.0.0.0",
-  "application": "22.0.0.0",
+  "platform": "23.0.0.0",
+  "application": "23.0.0.0",
   "idRanges": [
     {
       "from": 60000,

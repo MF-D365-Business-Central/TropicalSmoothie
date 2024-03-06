@@ -1,7 +1,7 @@
 enum 60003 "MFCC01 Agreement Status"
 {
     Extensible = true;
-    value(0; InDevelopment)
+    value(0; "Not Signed")
     {
     }
     value(1; Signed)

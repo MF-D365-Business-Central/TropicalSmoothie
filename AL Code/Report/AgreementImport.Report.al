@@ -41,7 +41,6 @@ Report 60008 "MFCC01AgreementExcelImport"
         Window.Open(Text006 + '@1@@@@@@@@@@@@@@@@@@@@@@@@@\');
         UploadIntoStream(UploadExcelMsg, '', '', FromFile, IStream);
 
-
         if FromFile <> '' then begin
             FileName := FileMgt.GetFileName(FromFile);
             SheetName := ExcelBuf.SelectSheetsNameStream(IStream);
@@ -86,7 +85,6 @@ Report 60008 "MFCC01AgreementExcelImport"
         ExcelBuf.SetRange("Row No.", 1);
         TotalColumns := ExcelBuf.Count;
 
-
         for R := 2 to TotalRows DO Begin
             AgreementLine.Init();
             AgreementLine."Agreement No." := GetCellvalueatPoistion(R, 1);
@@ -99,7 +97,6 @@ Report 60008 "MFCC01AgreementExcelImport"
             Evaluate(AgreementLine."National Fees %", GetCellvalueatPoistion(R, 6));
             AgreementLine.Insert();
         End;
-
     end;
 
     procedure LineTypeEnumConvert(TyepName: Text) SaleLineType: Enum "Sales Line Type"
@@ -144,7 +141,5 @@ Report 60008 "MFCC01AgreementExcelImport"
             Clear(ExcelBuf);
 
         exit(ExcelBuf."Cell Value as Text");
-
     end;
-
 }

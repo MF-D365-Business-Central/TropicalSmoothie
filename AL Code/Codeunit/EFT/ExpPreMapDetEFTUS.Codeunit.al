@@ -7,7 +7,6 @@ codeunit 60014 "MFCC01Exp. Pre-Map Det EFT US"
     begin
     end;
 
-
     procedure PrepareEFTDetails(var TempEFTExportWorkset: Record "EFT Export Workset" temporary; DataExchangeEntryNo: Integer; LineNo: Integer; var DetailArray: array[100] of Integer; var ExportEFTACH: Codeunit "MFCC01Export EFT (ACH)"; var ExportEFTIAT: Codeunit "MFCC01Export EFT (IAT)"; DataExchLineDefCode: Code[20]; var EFTValues: Codeunit "MFCC01EFT Values")
     var
         BankAccount: Record "Bank Account";
@@ -49,4 +48,3 @@ codeunit 60014 "MFCC01Exp. Pre-Map Det EFT US"
         ACHUSDetail.Insert(true);
     end;
 }
-

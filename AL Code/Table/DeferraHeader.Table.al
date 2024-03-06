@@ -10,16 +10,12 @@ table 60001 "MFCC01 Deferral Header"
         {
             Caption = 'Agreement No.';
             TableRelation = "MFCC01 Agreement Header"."No.";
-
         }
-
         field(2; "Customer No."; Code[20])
         {
             Caption = 'Customer No.';
             TableRelation = Customer;
-
         }
-
         field(5; "Document No."; Code[20])
         {
             Caption = 'Document No.';
@@ -29,7 +25,6 @@ table 60001 "MFCC01 Deferral Header"
                 TestNoSeries();
             end;
         }
-
         field(8; "Amount to Defer"; Decimal)
         {
             AutoFormatExpression = "Currency Code";
@@ -43,7 +38,6 @@ table 60001 "MFCC01 Deferral Header"
                     Error(ZeroAmountToDeferErr);
             end;
         }
-
         field(11; "Start Date"; Date)
         {
             Caption = 'Start Date';
@@ -135,11 +129,9 @@ table 60001 "MFCC01 Deferral Header"
         {
             CalcFormula = Sum("MFCC01 Deferral Line".Amount WHERE(
                                                             "Document No." = FIELD("Document No.")));
-
             Caption = 'Schedule Line Total';
             FieldClass = FlowField;
         }
-
         field(22; Status; enum "MFCC01 Deferral Status")
         {
             Caption = 'Status';
@@ -150,23 +142,20 @@ table 60001 "MFCC01 Deferral Header"
             Caption = 'No. Series';
             Editable = false;
         }
-
         field(24; Commision; Boolean)
         {
             Caption = 'Commision';
             Editable = false;
         }
-
         field(25; Type; Enum "MFCC01 Deferral Type")
         {
             Editable = false;
         }
         field(26; "Net Balance"; Decimal)
         {
-
             Editable = false;
             FieldClass = FlowField;
-            CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(false), "Posting Date" = field("Date Filter")));
+            CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(false), "Posting Date" = field(UPPERLIMIT("Date Filter"))));
         }
         field(27; "Net Amortized"; Decimal)
         {
@@ -178,10 +167,8 @@ table 60001 "MFCC01 Deferral Header"
         {
             FieldClass = FlowFilter;
         }
-
         field(29; Balance; Decimal)
         {
-
             Editable = false;
             FieldClass = FlowField;
             CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(false)));
@@ -192,8 +179,6 @@ table 60001 "MFCC01 Deferral Header"
             FieldClass = FlowField;
             CalcFormula = sum("MFCC01 Deferral Line".Amount where("Document No." = field("Document No."), Posted = const(true)));
         }
-
-
         field(33; "Remaining Periods"; Integer)
         {
             Editable = false;
@@ -245,9 +230,7 @@ table 60001 "MFCC01 Deferral Header"
             CustSetup.Get();
             CustSetup.TestField("Deferral Nos.");
             NoSeriesMgt.InitSeries(CustSetup."Deferral Nos.", xRec."No. Series", 0D, "Document No.", "No. Series");
-
         end;
-
     End;
 
     var
@@ -295,7 +278,6 @@ table 60001 "MFCC01 Deferral Header"
             OnAssistEditOnBeforeExit(Deferral);
             exit(true);
         end;
-
     end;
 
     procedure CalculateSchedule(): Boolean
@@ -371,7 +353,6 @@ table 60001 "MFCC01 Deferral Header"
             Exit;
 
         SetDocumentCompleted(Rec);
-
     end;
 
     local procedure CalcPeriods()
@@ -412,4 +393,3 @@ table 60001 "MFCC01 Deferral Header"
     begin
     end;
 }
-

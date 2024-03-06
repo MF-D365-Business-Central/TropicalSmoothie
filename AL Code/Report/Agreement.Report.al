@@ -87,7 +87,6 @@ report 60010 "Agreements"
             {
                 DataItemLink = "Agreement No." = field("No.");
 
-
                 column(StartingDate_MFCC01AgreementLine; "Starting Date")
                 {
                 }
@@ -109,12 +108,10 @@ report 60010 "Agreements"
                 AgreementUsers.SetRange("Agreement No.", "MFCC01 Agreement Header"."No.");
                 IF AgreementUsers.FindFirst() then;
 
-
                 Renewal.SetRange("Agreement No.", "MFCC01 Agreement Header"."No.");
                 Renewal.SetRange(Status, Renewal.Status::Renewed);
                 IF Renewal.FindFirst() then;
             End;
-
         }
     }
 
@@ -124,7 +121,6 @@ report 60010 "Agreements"
         {
             area(Content)
             {
-
             }
         }
 
@@ -135,7 +131,6 @@ report 60010 "Agreements"
                 action(ActionName)
                 {
                     ApplicationArea = All;
-
                 }
             }
         }
@@ -170,6 +165,4 @@ report 60010 "Agreements"
         royaltypercentageactiveoneLbl: Label 'royalty percentage (active one)';
         nationaladfeeLbl: Label 'national ad fee %';
         localadfundfeeLbl: Label 'local ad fund fee %';
-
-
 }

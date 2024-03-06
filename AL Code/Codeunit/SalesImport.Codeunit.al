@@ -2,7 +2,6 @@ codeunit 60003 "MFCC01 Sales Import"
 {
     trigger OnRun()
     begin
-
     end;
 
     var
@@ -25,7 +24,7 @@ codeunit 60003 "MFCC01 Sales Import"
                 SalesImport.Status := SalesImport.Status::Created;
                 SalesImport."Invoice No." := SalesHeader."No.";
                 SalesImport.Modify();
-
+                Commit();
             Until SalesImport.Next() = 0;
     end;
 
@@ -74,7 +73,6 @@ codeunit 60003 "MFCC01 Sales Import"
         Posted := false;
         IF Codeunit.Run(Codeunit::"Sales-Post", SalesHeader) then
             Posted := True;
-
     end;
 
     local procedure UpdateComments(SalesHeader: Record "Sales Header"; ErrorText: Text)
@@ -88,7 +86,6 @@ codeunit 60003 "MFCC01 Sales Import"
         IF SalesImport2.FindSet() then
             SalesImport2.ModifyAll(Remarks, CopyStr(ErrorText, 1, 500));
     end;
-
 
     local procedure UpdatePosted(SalesHeader: Record "Sales Header")
     var

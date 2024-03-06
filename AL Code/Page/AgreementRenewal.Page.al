@@ -10,7 +10,6 @@ page 60015 "MFCC01 Agreement Renewal"
         {
             repeater(control1)
             {
-
                 field("Renewal Date"; Rec."Renewal Date")
                 {
                     ApplicationArea = All;
@@ -54,7 +53,6 @@ page 60015 "MFCC01 Agreement Renewal"
     {
         area(Processing)
         {
-
             action(Renew)
             {
                 ApplicationArea = All;
@@ -78,7 +76,6 @@ page 60015 "MFCC01 Agreement Renewal"
             }
             group(Entries)
             {
-
                 action(GLntries)
                 {
                     Caption = 'G/L Entries';
@@ -120,4 +117,3 @@ page 60015 "MFCC01 Agreement Renewal"
         }
     }
 }
-

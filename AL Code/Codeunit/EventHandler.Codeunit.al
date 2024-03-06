@@ -2,7 +2,6 @@ codeunit 60005 "Event handler"
 {
     trigger OnRun()
     begin
-
     end;
 
     var
@@ -13,7 +12,6 @@ codeunit 60005 "Event handler"
         VBADocSendForApprovalEventDescTxt: Label 'Approval of a Bank for Vendor document is requested.';
         VBADocApprReqCancelledEventDescTxt: Label 'An approval request for a Bank for Vendor document is canceled.';
         VBADocReleasedEventDescTxt: Label 'A Bank for Vendor document is released.';
-
 
     [EventSubscriber(ObjectType::Table, Database::"G/L Entry", OnAfterCopyGLEntryFromGenJnlLine, '', false, false)]
     local procedure OnAfterCopyGLEntryFromGenJnlLine(var GLEntry: Record "G/L Entry"; var GenJournalLine: Record "Gen. Journal Line")
@@ -56,26 +54,26 @@ codeunit 60005 "Event handler"
         End;
     end;
 
-    [EventSubscriber(ObjectType::Table, Database::"Gen. Journal Line", 'OnAfterValidateShortcutDimCode', '', false, false)]
-    local procedure TBL_81_OnAfterValidateShortcutDimCode(var GenJournalLine: Record "Gen. Journal Line"; var xGenJournalLine: Record "Gen. Journal Line"; FieldNumber: Integer; var ShortcutDimCode: Code[20]; CallingFieldNo: Integer)
-    var
-        Customer: Record Customer;
-        TempDimensionSetEntry: Record "Dimension Set Entry" temporary;
-        DimensionSetEntry: Record "Dimension Set Entry";
-        DefDimension: Record "Default Dimension";
-        GLSetup: Record "General Ledger Setup";
-        DimMgmt: Codeunit DimensionManagement;
-        CafeCode: Code[20];
-    begin
-        IF (GenJournalLine."Dimension Set ID" <> xGenJournalLine."Dimension Set ID") then begin
-            GLSetup.Get();
-            DimensionSetEntry.SetRange("Dimension Set ID", GenJournalLine."Dimension Set ID");
-            DimensionSetEntry.SetRange(DimensionSetEntry."Dimension Code", GLSetup."Shortcut Dimension 3 Code");
-            IF DimensionSetEntry.FindSet() then
-                IF DimensionSetEntry."Dimension Value Code" <> GenJournalLine."Cafe No." then
-                    GenJournalLine.Validate("Cafe No.", DimensionSetEntry."Dimension Value Code");
-        end;
-    end;
+    // [EventSubscriber(ObjectType::Table, Database::"Gen. Journal Line", 'OnAfterValidateShortcutDimCode', '', false, false)]
+    // local procedure TBL_81_OnAfterValidateShortcutDimCode(var GenJournalLine: Record "Gen. Journal Line"; var xGenJournalLine: Record "Gen. Journal Line"; FieldNumber: Integer; var ShortcutDimCode: Code[20]; CallingFieldNo: Integer)
+    // var
+    //     Customer: Record Customer;
+    //     TempDimensionSetEntry: Record "Dimension Set Entry" temporary;
+    //     DimensionSetEntry: Record "Dimension Set Entry";
+    //     DefDimension: Record "Default Dimension";
+    //     GLSetup: Record "General Ledger Setup";
+    //     DimMgmt: Codeunit DimensionManagement;
+    //     CafeCode: Code[20];
+    // begin
+    //     IF (GenJournalLine."Dimension Set ID" <> xGenJournalLine."Dimension Set ID") then begin
+    //         GLSetup.Get();
+    //         DimensionSetEntry.SetRange("Dimension Set ID", GenJournalLine."Dimension Set ID");
+    //         DimensionSetEntry.SetRange(DimensionSetEntry."Dimension Code", GLSetup."Shortcut Dimension 3 Code");
+    //         IF DimensionSetEntry.FindSet() then
+    //             IF DimensionSetEntry."Dimension Value Code" <> GenJournalLine."Cafe No." then
+    //                 GenJournalLine.Validate("Cafe No.", DimensionSetEntry."Dimension Value Code");
+    //     end;
+    // end;
 
     // [EventSubscriber(ObjectType::Page, Page::"Generate EFT Files", 'OnOpenPageOnBeforeUpdateSubForm', '', false, false)]
     // local procedure Page_10810_OnOpenPageOnBeforeUpdateSubForm(var SettlementDate: date; var BankAccountNo: Code[20])
@@ -236,8 +234,6 @@ codeunit 60005 "Event handler"
         End;
     end;
 
-
-
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAddWorkflowResponsePredecessorsToLibrary', '', false, false)]
     local procedure CU_1520_OnAddWorkflowResponsePredecessorsToLibrary(ResponseFunctionName: Code[128])
     Begin
@@ -246,7 +242,6 @@ codeunit 60005 "Event handler"
                 begin
                     WorkflowResponse.AddResponsePredecessor(
                         WorkflowResponse.SetStatusToPendingApprovalCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
-
                 end;
             WorkflowResponse.CreateApprovalRequestsCode():
                 begin
@@ -267,8 +262,16 @@ codeunit 60005 "Event handler"
                     WorkflowResponse.AddResponsePredecessor(
                         WorkflowResponse.CancelAllApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
                 end;
-
         end;
     End;
     #endregion Codeunit1521
+
+    #Region Codeunit2624
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
+    // local procedure CU_2624_OnBeforeInsertStatisticalLedgerEntry(var StatisticalAccJournalLine: Record "Statistical Acc. Journal Line"; var StatisticalLedgerEntry: Record "Statistical Ledger Entry")
+    // begin
+    //     StatisticalLedgerEntry."Agreement No." := StatisticalAccJournalLine."Agreement No.";
+    // end;
+
+    #endRegion Codeunit2624
 }

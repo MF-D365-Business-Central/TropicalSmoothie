@@ -5,7 +5,6 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
         // Add changes to page layout here
         addafter(Description)
         {
-
             field("Recipient Bank Account"; Rec."Recipient Bank Account")
             {
                 ApplicationArea = All;
@@ -84,10 +83,8 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
                 end;
             }
         }
-
         addafter("F&unctions")
         {
-
             action(ExportPaymentsToFile)
             {
                 ApplicationArea = Basic, Suite;
@@ -174,7 +171,6 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
                             repeat
                                 ExportNewLines := ProcessLine(GenJnlLine);
                             until (ExportNewLines = true) or (GenJnlLine.Next() = 0);
-
 
                         if ExportNewLines then begin
                             GenJnlLineRecordRef.GetTable(GenJnlLine);
@@ -273,7 +269,6 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
                 end;
             }
         }
-
     }
 
     procedure UseForElecPaymentChecked(Var GenJnlLine3: Record "Gen. Journal Line"): Boolean
@@ -299,7 +294,6 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
                     END ELSE
                             EXIT(TRUE)
             end;
-
 
         IF GenJnlLine3."Account Type" <> GenJnlLine3."Account Type"::"Bank Account" THEN
             CASE GenJnlLine3."Account Type" OF
@@ -371,7 +365,6 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
                 exit(false);
     end;
 
-
     var
         GenJnlLine: Record "Gen. Journal Line";
         ExportNewLines: Boolean;
@@ -385,5 +378,4 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
         LastRemittanceErrLbl: Label 'Last Remittance Advice No. must have a value in the bank account.';
         UseForElecPaymentCheckedErrLbl: Label 'The Use for Electronic Payments check box must be selected on the vendor or customer bank account card.';
         HasErrorsErrLbl: Label 'The file export has one or more errors.\\For each line to be exported, resolve the errors displayed to the right and then try to export again.';
-
 }

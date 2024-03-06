@@ -2,7 +2,6 @@ codeunit 60016 "General Journal Handler"
 {
     trigger OnRun()
     begin
-
     end;
 
     [EventSubscriber(ObjectType::Table, 81, 'OnAfterValidateEvent', 'Account No.', false, false)]
@@ -40,10 +39,5 @@ codeunit 60016 "General Journal Handler"
         if Cashreceiptjournal.checkEFTBankaccount(Rec."Journal Template Name", Rec."Journal Batch Name") then
             if (Rec."Check Printed" = true) then
                 Error(CashreceiptjournalLbl, rec.TableCaption, rec."Journal Template Name", Rec."Journal Batch Name", Rec."Line No.");
-
     end;
-
-
-
-
 }

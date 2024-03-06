@@ -5,7 +5,6 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
         // Add changes to page layout here
         addlast(General)
         {
-
             field(Status; Rec.Status)
             {
                 ApplicationArea = All;
@@ -34,7 +33,6 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
                     MFCC01Approvals.OpenApprovalsVBA(Rec);
                 end;
             }
-
         }
         addlast(Processing)
         {
@@ -175,7 +173,6 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
         OpenApprovalEntriesExistForCurrUser: Boolean;
         OpenApprovalEntriesExist: Boolean;
         CanCancelApprovalForRecord: Boolean;
-
 
     trigger OnAfterGetRecord()
     Begin

@@ -4,14 +4,13 @@ page 60014 "MFCC01 Fxied Asset"
     ApplicationArea = All;
     UsageCategory = Lists;
     SourceTable = "Fixed Asset";
-    
+
     layout
     {
         area(Content)
         {
             repeater(GroupName)
             {
-
                 field("No."; Rec."No.")
                 {
                     ToolTip = 'Specifies the number of the involved entry or record, according to the specified number series.';
@@ -31,7 +30,7 @@ page 60014 "MFCC01 Fxied Asset"
             }
         }
     }
-    
+
     actions
     {
         area(Processing)
@@ -39,15 +38,14 @@ page 60014 "MFCC01 Fxied Asset"
             action(ActionName)
             {
                 ApplicationArea = All;
-                
+
                 trigger OnAction()
                 begin
-                    
                 end;
             }
         }
     }
-    
+
     var
         myInt: Integer;
 }

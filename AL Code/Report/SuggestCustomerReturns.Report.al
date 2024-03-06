@@ -10,7 +10,6 @@ report 60009 "Suggest Customer Refunds"
             DataItemTableView = SORTING(Blocked) WHERE(Blocked = FILTER(= " "));
             RequestFilterFields = "No.", "Payment Method Code", "Customer Posting Group";
 
-
             dataitem("Cust. Ledger Entry"; "Cust. Ledger Entry")
             {
                 DataItemLink = "Customer No." = field("No.");
@@ -27,7 +26,6 @@ report 60009 "Suggest Customer Refunds"
 
                 trigger OnAfterGetRecord()
                 Begin
-
 
                     Case SummarizePerCust OF
 
@@ -61,7 +59,6 @@ report 60009 "Suggest Customer Refunds"
                 //Window.Update(1, "No.");
                 // if Not IncludeCustomer(Customer, CustomerBalance) then
                 //     CurrReport.Skip();
-
             End;
         }
     }
@@ -179,7 +176,6 @@ report 60009 "Suggest Customer Refunds"
                                 end;
                         end;
                     }
-
                     field(BankPaymentType; GenJnlLine2."Bank Payment Type")
                     {
                         ApplicationArea = Basic, Suite;
@@ -205,14 +201,11 @@ report 60009 "Suggest Customer Refunds"
         actions
         {
         }
-
-
     }
 
     labels
     {
     }
-
 
     var
         GenJnlLine: Record "Gen. Journal Line";
@@ -252,7 +245,6 @@ report 60009 "Suggest Customer Refunds"
             NextDocNo := NoSeriesMgt.GetNextNo(GenJnlBatch."No. Series", PostingDate, false);
             Clear(NoSeriesMgt);
         end;
-
     end;
 
     trigger OnPreReport()
@@ -313,11 +305,11 @@ report 60009 "Suggest Customer Refunds"
             NextDocNo := IncStr(NextDocNo);
 
         NextLine += 10000;
-        GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
+        IF "Cust. Ledger Entry"."Recipient Bank Account" <> '' then
+            GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
         GenJnlLine.Insert(true);
         BalancingAmt += GenJnlLine.Amount;
     end;
-
 
     [IntegrationEvent(false, false)]
     local procedure OnAfterIncludeCustomer(Customer: Record Customer; CustomerBalance: Decimal; var Result: Boolean)

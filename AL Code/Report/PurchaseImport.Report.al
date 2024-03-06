@@ -39,7 +39,6 @@ Report 60004 "MFCC01PurchaseExcelImport"
         Window.Open(Text006 + '@1@@@@@@@@@@@@@@@@@@@@@@@@@\');
         UploadIntoStream(UploadExcelMsg, '', '', FromFile, IStream);
 
-
         if FromFile <> '' then begin
             FileName := FileMgt.GetFileName(FromFile);
             SheetName := ExcelBuf.SelectSheetsNameStream(IStream);
@@ -85,7 +84,6 @@ Report 60004 "MFCC01PurchaseExcelImport"
         ExcelBuf.SetRange("Row No.", 1);
         TotalColumns := ExcelBuf.Count;
 
-
         for R := 2 to TotalRows DO Begin
             PurchaseImport.Init();
             PurchaseImport."Entry No." := EntryNo;
@@ -115,7 +113,6 @@ Report 60004 "MFCC01PurchaseExcelImport"
             EntryNo += 1;
             PurchaseImport.Insert();
         End;
-
     end;
 
     procedure LineTypeEnumConvert(TyepName: Text) PurchaseLineType: Enum "Purchase Line Type"
@@ -160,7 +157,5 @@ Report 60004 "MFCC01PurchaseExcelImport"
             Clear(ExcelBuf);
 
         exit(ExcelBuf."Cell Value as Text");
-
     end;
-
 }

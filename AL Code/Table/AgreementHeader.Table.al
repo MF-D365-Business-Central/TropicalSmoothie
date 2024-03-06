@@ -163,13 +163,11 @@ table 60003 "MFCC01 Agreement Header"
             DataClassification = CustomerContent;
             Editable = false;
         }
-
         field(59; "Termination Date"; Date)
         {
             DataClassification = CustomerContent;
             trigger OnValidate()
             Begin
-
             End;
         }
         field(60; "No. of Periods"; Decimal)
@@ -228,11 +226,8 @@ table 60003 "MFCC01 Agreement Header"
         TransferedAgreement();
     End;
 
-
-
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
@@ -252,7 +247,6 @@ table 60003 "MFCC01 Agreement Header"
 
     trigger OnRename()
     begin
-
     end;
 
     local procedure CheckDates()
@@ -262,7 +256,6 @@ table 60003 "MFCC01 Agreement Header"
         IF (Rec."Term Expiration Date" <> 0D) And (
                      Rec."Term Expiration Date" < Rec."Franchise Revenue Start Date") then
             Error(RoyaltyDateStDateErrorLbl, Rec."Term Expiration Date", Rec."Franchise Revenue Start Date");
-
 
         AgreementLine.SetRange("Customer No.", Rec."Customer No.");
         AgreementLine.SetRange("Agreement No.", Rec."No.");
@@ -275,10 +268,7 @@ table 60003 "MFCC01 Agreement Header"
                 IF (AgreementLine."Ending Date" <> 0D) AND (AgreementLine."Ending Date" < Rec."Franchise Revenue Start Date")
                      then
                     Error(OpenDateEDDateErrorLbl, AgreementLine."Ending Date", Rec."Franchise Revenue Start Date");
-
-
             Until AgreementLine.Next() = 0;
-
     end;
 
     local procedure CheckActiveAgreement()
@@ -308,7 +298,6 @@ table 60003 "MFCC01 Agreement Header"
         Rec."License Type" := Rec."License Type"::Transferred;
     end;
 
-
     local procedure CalcPeriods()
     var
         DeferalUtilities: Codeunit "MFCC01 Deferral Utilities";
@@ -332,7 +321,6 @@ table 60003 "MFCC01 Agreement Header"
                 CZ.Get();
                 NoSeriesMgt.TestManual(CZ."Agreement Nos.");
                 "No. Series" := '';
-
             end;
     end;
 
@@ -351,7 +339,6 @@ table 60003 "MFCC01 Agreement Header"
             OnAssistEditOnBeforeExit(AgreementHeader);
             exit(true);
         end;
-
     end;
 
     procedure TestStatusForDates(Var AgreementHeader: Record "MFCC01 Agreement Header")
@@ -363,7 +350,7 @@ table 60003 "MFCC01 Agreement Header"
 
     procedure TestStatusNew(Var AgreementHeader: Record "MFCC01 Agreement Header")
     begin
-        AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
+        AgreementHeader.TestField(Status, AgreementHeader.Status::"Not Signed");
     end;
 
     procedure SetStatusOpen(Var AgreementHeader: Record "MFCC01 Agreement Header")
@@ -407,7 +394,7 @@ table 60003 "MFCC01 Agreement Header"
         CZSetup.TestField(RevenueRecognizedGAAP);
         CZSetup.TestField("Corp Department Code");
         AgreementHeader.TestField("Agreement Amount");
-        AgreementHeader.TestField(Status, AgreementHeader.Status::"InDevelopment");
+        AgreementHeader.TestField(Status, AgreementHeader.Status::"Not Signed");
         AgreementHeader.Status := AgreementHeader.Status::Signed;
         AgreementHeader.Modify();
         OnaferSignEvent(AgreementHeader);

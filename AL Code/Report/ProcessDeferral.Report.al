@@ -10,10 +10,11 @@ report 60000 "MFCC01 Process Deferral"
         dataitem("MFCC01 Deferral Header"; "MFCC01 Deferral Header")
         {
             DataItemTableView = where(Status = const(Open));
+            RequestFilterFields = "Agreement No.", "Document No.", "Customer No.";
             dataitem("MFCC01 Deferral Line"; "MFCC01 Deferral Line")
             {
                 DataItemLink = "Document No." = field("Document No.");
-                DataItemTableView = where(Posted = const(false));
+                DataItemTableView = where(Posted = const(false), Amount = filter(<> 0));
                 trigger OnPreDataItem()
                 Begin
                     Setrange("Posting Date", PostingDate, Todate);
@@ -36,7 +37,6 @@ report 60000 "MFCC01 Process Deferral"
                 IF Agreement.Get("MFCC01 Deferral Header"."Agreement No.") then
                     IF Agreement.Status <> Agreement.Status::Opened then
                         CurrReport.Skip();
-
             End;
         }
     }
@@ -70,7 +70,6 @@ report 60000 "MFCC01 Process Deferral"
                 action(ActionName)
                 {
                     ApplicationArea = All;
-
                 }
             }
         }
@@ -115,16 +114,17 @@ report 60000 "MFCC01 Process Deferral"
         Case "MFCC01 Deferral Header".Type of
             "MFCC01 Deferral Header".Type::Commission:
                 GenJnlLine.Validate("Account No.", CZSetup.DefCommisionsinOperationsGAAP);
-            "MFCC01 Deferral Header".Type::"Franchise Fee":
+            "MFCC01 Deferral Header".Type::"Franchise Fee",
+            "MFCC01 Deferral Header".Type::Transferred:
                 GenJnlLine.Validate("Account No.", CZSetup.RevenueRecognizedgaap);
             "MFCC01 Deferral Header".Type::Renewal:
-                GenJnlLine.Validate("Account No.", CZSetup."Deferred Renewal Fee GAAP");
+                GenJnlLine.Validate("Account No.", CZSetup."Franchise Renewal Fee GAAP");
         End;
         GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
         GenJnlLine.Validate(Amount, -"MFCC01 Deferral Line".Amount);
         InitDefaultDimSource(DefaultDimSource);
         GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
-        GenJnlLine."Dimension Set ID", 0);
+    GenJnlLine."Dimension Set ID", 0);
         GenJnlLine."Agreement No." := "MFCC01 Deferral Header"."Agreement No.";
         "MFCC01 Deferral Line".Posted := GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0;
 
@@ -140,10 +140,11 @@ report 60000 "MFCC01 Process Deferral"
         Case "MFCC01 Deferral Header".Type of
             "MFCC01 Deferral Header".Type::Commission:
                 GenJnlLine.Validate("Account No.", CZSetup.CommissionRecognizedGAAP);
-            "MFCC01 Deferral Header".Type::"Franchise Fee":
+            "MFCC01 Deferral Header".Type::"Franchise Fee",
+            "MFCC01 Deferral Header".Type::Transferred:
                 GenJnlLine.Validate("Account No.", CZSetup.DefRevenueCafesinOperationGAAP);
             "MFCC01 Deferral Header".Type::Renewal:
-                GenJnlLine.Validate("Account No.", CZSetup."Franchise Renewal Fee GAAP");
+                GenJnlLine.Validate("Account No.", CZSetup."Deferred Renewal Fee GAAP");
         End;
         GenJnlLine.Validate("Currency Code", "MFCC01 Deferral Line"."Currency Code");
         GenJnlLine.Validate(Amount, "MFCC01 Deferral Line".Amount);
@@ -161,8 +162,6 @@ report 60000 "MFCC01 Process Deferral"
         Clear(DefaultDimSource);
         DimMgt.AddDimSource(DefaultDimSource, Database::"Customer", "MFCC01 Deferral Header"."Customer No.");
     end;
-
-
 
     var
         CZSetup: Record "MFCC01 Franchise Setup";

@@ -5,7 +5,6 @@ table 60008 "MFCC01 Franchise Journal"
 
     fields
     {
-
         field(2; "Batch Name"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -14,7 +13,6 @@ table 60008 "MFCC01 Franchise Journal"
         field(3; "Line No."; Integer)
         {
             DataClassification = CustomerContent;
-
         }
         field(4; "Posting Date"; Date)
         {
@@ -27,17 +25,14 @@ table 60008 "MFCC01 Franchise Journal"
             begin
                 CalcAmounts();
             end;
-
         }
         field(6; "Document Type"; Enum "MFCC01 Franchise Document Type")
         {
             DataClassification = CustomerContent;
-
         }
         field(7; "Document No."; Code[20])
         {
             DataClassification = CustomerContent;
-
         }
         field(10; "Customer No."; Code[20])
         {
@@ -49,13 +44,11 @@ table 60008 "MFCC01 Franchise Journal"
                 CreateDim();
                 CopyAgreement();
             End;
-
         }
         field(11; Description; Text[100])
         {
             DataClassification = CustomerContent;
         }
-
         field(12; "Agreement ID"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -90,7 +83,6 @@ table 60008 "MFCC01 Franchise Journal"
             DataClassification = CustomerContent;
             Editable = false;
         }
-
         field(480; "Dimension Set ID"; Integer)
         {
             DataClassification = CustomerContent;
@@ -133,8 +125,6 @@ table 60008 "MFCC01 Franchise Journal"
                 ValidateShortcutDimCode(2, Rec."Shortcut Dimension 2 Code");
             end;
         }
-
-
     }
 
     keys
@@ -145,28 +135,21 @@ table 60008 "MFCC01 Franchise Journal"
         }
     }
 
-
-
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
     begin
-
     end;
 
     trigger OnRename()
     begin
-
     end;
-
 
     var
 
@@ -303,7 +286,6 @@ table 60008 "MFCC01 Franchise Journal"
         DimMgt.AddDimSource(DefaultDimSource, Database::"Customer", Rec."Customer No.");
     end;
 
-
     procedure EmptyLine() Result: Boolean
     var
         IsHandled: Boolean;
@@ -321,10 +303,19 @@ table 60008 "MFCC01 Franchise Journal"
         AgreementHeader: Record "MFCC01 Agreement Header";
         AgreementLine: Record "MFCC01 Agreement Line";
     begin
+        AgreementHeader.Reset();
         AgreementHeader.SetRange("Customer No.", Rec."Customer No.");
-        AgreementHeader.SetRange(Status, AgreementHeader.Status::Opened);
-        AgreementHeader.FindFirst();
-        Rec."Agreement ID" := AgreementHeader."No.";
+        AgreementHeader.SetRange(Status, AgreementHeader.Status::Terminated);
+        AgreementHeader.SetFilter("Termination Date", '>=%1', Rec."Document Date");
+        IF AgreementHeader.FindFirst() then
+            Rec."Agreement ID" := AgreementHeader."No."
+        Else Begin
+            AgreementHeader.SetRange(Status, AgreementHeader.Status::Opened);
+            AgreementHeader.SetRange("Termination Date");
+            AgreementHeader.FindFirst();
+            Rec."Agreement ID" := AgreementHeader."No.";
+        End;
+
         IF Rec."Agreement ID" = '' then
             Exit;
         AgreementLine.SetRange("Agreement No.", Rec."Agreement ID");
@@ -346,17 +337,15 @@ table 60008 "MFCC01 Franchise Journal"
         AgreementLine.SetFilter("Ending Date", '>=%1|%2', Rec."Document Date", 0D);
         AgreementLine.Findlast();
 
-        Rec."Royalty Fee" := (AgreementLine."Royalty Fees %" * Rec."Net Sales") / 100;
-        Rec."Local Fees" := (AgreementLine."Local Fees %" * Rec."Net Sales") / 100;
-        Rec."National Fee" := (AgreementLine."National Fees %" * Rec."Net Sales") / 100;
-
+        Rec."Royalty Fee" := Round((AgreementLine."Royalty Fees %" * Rec."Net Sales") / 100, 0.01, '=');
+        Rec."Local Fees" := Round((AgreementLine."Local Fees %" * Rec."Net Sales") / 100, 0.01, '=');
+        Rec."National Fee" := Round((AgreementLine."National Fees %" * Rec."Net Sales") / 100, 0.01, '=');
     end;
 
     [IntegrationEvent(false, false)]
     local procedure OnBeforeShowDimensions(var FranchiseJnlLine: Record "MFCC01 Franchise Journal"; xFranchiseJnlLine: Record "MFCC01 Franchise Journal"; var IsHandled: Boolean)
     begin
     end;
-
 
     [IntegrationEvent(false, false)]
     local procedure OnBeforeValidateShortcutDimCode(var FranchiseJnlLine: Record "MFCC01 Franchise Journal"; var xFranchiseJnlLine: Record "MFCC01 Franchise Journal"; FieldNumber: Integer; var ShortcutDimCode: Code[20]; var IsHandled: Boolean)

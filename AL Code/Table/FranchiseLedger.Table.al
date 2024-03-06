@@ -18,7 +18,6 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
         field(3; "Line No."; Integer)
         {
             DataClassification = CustomerContent;
-
         }
         field(4; "Posting Date"; Date)
         {
@@ -27,29 +26,24 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
         field(5; "Document Date"; Date)
         {
             DataClassification = CustomerContent;
-
         }
         field(6; "Document Type"; Enum "MFCC01 Franchise Document Type")
         {
             DataClassification = CustomerContent;
-
         }
         field(7; "Document No."; Code[20])
         {
             DataClassification = CustomerContent;
-
         }
         field(10; "Customer No."; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = Customer."No.";
-
         }
         field(11; Description; Text[100])
         {
             DataClassification = CustomerContent;
         }
-
         field(12; "Agreement ID"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -71,7 +65,6 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
         {
             DataClassification = CustomerContent;
         }
-
         field(480; "Dimension Set ID"; Integer)
         {
             DataClassification = CustomerContent;
@@ -128,7 +121,6 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
             CaptionClass = '1,2,8';
             TableRelation = "Dimension Set Entry"."Dimension Value Code" where("Dimension Value ID" = field("Dimension Set ID"), "Global Dimension No." = const(8));
         }
-
     }
 
     keys
@@ -139,26 +131,20 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
         }
     }
 
-
-
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
     begin
-
     end;
 
     trigger OnRename()
     begin
-
     end;
 
     procedure ShowDimensions()
@@ -167,5 +153,4 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
     begin
         DimMgt.ShowDimensionSet("Dimension Set ID", StrSubstNo('%1 %2', TableCaption(), "Entry No."));
     end;
-
 }

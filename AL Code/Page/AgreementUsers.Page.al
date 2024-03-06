@@ -12,7 +12,6 @@ page 60007 "MFCC01 Agreement Users"
         {
             repeater(Control1)
             {
-
                 field("Owner First Name"; Rec."Owner First Name")
                 {
                     ApplicationArea = All;
@@ -33,8 +32,6 @@ page 60007 "MFCC01 Agreement Users"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Phone field.';
                 }
-
-
             }
         }
     }
@@ -43,9 +40,6 @@ page 60007 "MFCC01 Agreement Users"
     {
         area(Processing)
         {
-
         }
     }
-
-
 }

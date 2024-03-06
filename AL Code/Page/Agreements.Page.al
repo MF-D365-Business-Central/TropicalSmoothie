@@ -17,7 +17,6 @@ page 60004 "MFCC01 Agreements"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the No. field.';
-
                 }
                 field("Customer No."; Rec."Customer No.")
                 {
@@ -28,7 +27,6 @@ page 60004 "MFCC01 Agreements"
                 {
                     ToolTip = 'Specifies the value of the Agreement Date field.';
                 }
-
                 field("Franchise Revenue Start Date"; Rec."Franchise Revenue Start Date")
                 {
                     ApplicationArea = All;
@@ -47,13 +45,11 @@ page 60004 "MFCC01 Agreements"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Royalty Bank Account field.';
                 }
-
                 field("License Type"; Rec."License Type")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Agreement Type field.';
                 }
-
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
@@ -75,7 +71,6 @@ page 60004 "MFCC01 Agreements"
                 {
                     ToolTip = 'Specifies the value of the Franchise Bank Account field.';
                 }
-
             }
         }
         area(FactBoxes)
@@ -112,7 +107,6 @@ page 60004 "MFCC01 Agreements"
             }
             group(Entries)
             {
-
                 action(GLntries)
                 {
                     Caption = 'G/L Entries';
@@ -232,6 +226,4 @@ page 60004 "MFCC01 Agreements"
             }
         }
     }
-
-
 }

@@ -83,7 +83,11 @@ report 60007 "Import Consolidation Non GAAP"
                         CZSetup.DefRevenueCafesinOperationgaap,
                         CZSetup.DeferredRevenueDevelopmentGAPP,
                         CZSetup."Franchise Renewal Fee GAAP",
-                        CZSetup."Deferred Renewal Fee GAAP"
+                        CZSetup."Deferred Renewal Fee GAAP",
+                        CZSetup."PrePaid Commissions ST GAAP",
+                        CZSetup."Deferred Revenue ST GAAP",
+                        CZSetup."Deferred Revenue LT GAAP",
+                        CZSetup."Tansfer Fee GAPP"
                         ] then
                         CurrReport.Skip();
                     BusUnitConsolidate.InsertGLAccount("G/L Account");
@@ -168,7 +172,6 @@ report 60007 "Import Consolidation Non GAAP"
                     IF Not MapiingAccount.Get(AccountNo) then
                         CurrReport.Skip();
                     BusUnitConsolidate.InsertGLAccount(MapiingAccount);
-
                 end;
             }
             //Statistical
@@ -504,7 +507,6 @@ report 60007 "Import Consolidation Non GAAP"
         end;
     end;
 
-
     local procedure CheckStatsClosingPostings(GLAccNo: Code[20]; StartDate: Date; EndDate: Date)
     var
         StatisticalEntry: Record "Statistical Ledger Entry";
@@ -666,7 +668,16 @@ report 60007 "Import Consolidation Non GAAP"
                 Exit(CZSetup."Franchise Renewal Fee GAAP");
             CZSetup."Deferred Renewal Fee" = "Statistical Account"."No.":
                 Exit(CZSetup."Deferred Renewal Fee GAAP");
+
+            CZSetup."PrePaid Commissions ST" = "Statistical Account"."No.":
+                Exit(CZSetup."PrePaid Commissions ST GAAP");
+            CZSetup."Deferred Revenue ST" = "Statistical Account"."No.":
+                Exit(CZSetup."Deferred Revenue ST GAAP");
+            CZSetup."Deferred Revenue LT" = "Statistical Account"."No.":
+                Exit(CZSetup."Deferred Revenue LT GAAP");
+
+            CZSetup."Tansfer Fee" = "Statistical Account"."No.":
+                Exit(CZSetup."Tansfer Fee GAPP");
         END;
     end;
 }
-

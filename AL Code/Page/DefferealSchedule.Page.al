@@ -8,10 +8,8 @@ page 60001 "MFCC01 DeferralSchedule"
     {
         area(content)
         {
-
             group(General)
             {
-
                 field("Document No."; Rec."Document No.")
                 {
                     ApplicationArea = All;
@@ -27,13 +25,11 @@ page 60001 "MFCC01 DeferralSchedule"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Agreement No. field.';
                 }
-
                 field("Customer No."; Rec."Customer No.")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Customer No. field.';
                 }
-
                 field("Amount to Defer"; Rec."Amount to Defer")
                 {
                     ApplicationArea = Suite;
@@ -59,7 +55,6 @@ page 60001 "MFCC01 DeferralSchedule"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Balance field.';
                 }
-
                 field("Start Date"; Rec."Start Date")
                 {
                     ApplicationArea = Suite;
@@ -80,7 +75,6 @@ page 60001 "MFCC01 DeferralSchedule"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Remaining Periods field.';
                 }
-
                 field("Amortized Periods"; Rec."Amortized Periods")
                 {
                     ApplicationArea = All;
@@ -165,7 +159,6 @@ page 60001 "MFCC01 DeferralSchedule"
         }
     }
 
-
     var
         TotalToDeferErr: Label 'The sum of the deferred amounts must be equal to the amount in the Amount to Defer field.';
         Changed: Boolean;
@@ -173,7 +166,6 @@ page 60001 "MFCC01 DeferralSchedule"
         DisplayDocumentNo: Code[20];
 
         PostingDateErr: Label 'You cannot specify a posting date that is not equal to the start date.';
-
 
     trigger OnDeleteRecord(): Boolean
     Begin
@@ -187,14 +179,10 @@ page 60001 "MFCC01 DeferralSchedule"
         DisplayCustomerNo := DisplayCustomerNo;
     end;
 
-
-
     procedure GetParameter(): Boolean
     begin
         exit(Changed or CurrPage.DeferralSheduleSubform.PAGE.GetChanged())
     end;
-
-
 
     [IntegrationEvent(false, false)]
     local procedure OnBeforeInitForm(var DeferralHeader: Record "MFCC01 Deferral Header"; DisplayCustomerNo: Code[20]; DisplayDocumentNo: Code[20]; var IsHandled: Boolean)
@@ -211,4 +199,3 @@ page 60001 "MFCC01 DeferralSchedule"
     begin
     end;
 }
-

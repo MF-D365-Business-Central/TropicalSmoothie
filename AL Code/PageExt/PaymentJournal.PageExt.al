@@ -10,9 +10,6 @@ pageextension 60005 "MFCC01Payment Journal" extends "Payment Journal"
         // Add changes to page actions here
         addafter(ApplyEntries)
         {
-
         }
     }
-
-
 }

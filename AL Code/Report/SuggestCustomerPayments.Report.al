@@ -10,34 +10,65 @@ report 60002 "Suggest Customer Collections"
             DataItemTableView = SORTING(Blocked) WHERE(Blocked = FILTER(= " "));
             RequestFilterFields = "No.", "Payment Method Code", "Customer Posting Group";
 
-
             dataitem("Cust. Ledger Entry"; "Cust. Ledger Entry")
             {
                 DataItemLink = "Customer No." = field("No.");
-                DataItemTableView = where(Open = const(True), "Document Type" = const(Invoice), "Applies-to ID" = const(''));
+                DataItemTableView = sorting("Customer No.", "Recipient Bank Account") where(Open = const(True), "Document Type" = const(Invoice), "Applies-to ID" = const(''));
                 CalcFields = "Remaining Amount";
                 trigger OnPreDataItem()
                 begin
+                    //"Cust. Ledger Entry".SetCurrentKey("Customer No.", "Recipient Bank Account");
                     LineCreated := false;
                     // IF "Cust. Ledger Entry".GetFilter("Document Type") = '' then Begin
                     //     "Cust. Ledger Entry".SetFilter("Document Type", '%1|%2', "Cust. Ledger Entry"."Document Type"::Invoice,
                     //     "Cust. Ledger Entry"."Document Type"::"Credit Memo");
                     // End
+
+                    IF Customer.GetFilter("Preferred Bank Account Code") <> '' then
+                        "Cust. Ledger Entry".SetFilter("Recipient Bank Account", Customer.GetFilter("Preferred Bank Account Code"));
+                    PrevGroup := '';
                 end;
 
                 trigger OnAfterGetRecord()
+                Var
+                    GenJnlLine2: Record "Gen. Journal Line";
+                    BankAcc: Code[20];
                 Begin
+                    BankAcc := "Cust. Ledger Entry"."Recipient Bank Account";
+                    IF "Cust. Ledger Entry"."Recipient Bank Account" = '' then
+                        BankAcc := Customer."Preferred Bank Account Code";
 
+
+                    GenJnlLine2.Reset();
+                    GenJnlLine2.setrange("Journal Template Name", GenJnlBatch."Journal Template Name");
+                    GenJnlLine2.setrange("Journal Batch Name", GenJnlBatch.Name);
+                    GenJnlLine2.setfilter("Line No.", '>=%1', LastLine);
+                    GenJnlLine2.setrange("Account Type", GenJnlLine."Account Type"::Customer);
+                    GenJnlLine2.setrange("Account No.", "Cust. Ledger Entry"."Customer No.");
+                    GenJnlLine2.setrange("Recipient Bank Account", BankAcc);
+                    IF Not GenJnlLine2.FindFirst() then Begin
+                        LineCreated := false;
+                    End else
+                        LineCreated := true;
 
                     Case SummarizePerCust OF
-
                         True:
                             begin
-
                                 IF not LineCreated then Begin
                                     CreateJournalLine(false);
                                     LineCreated := true;
                                 End;
+
+                                GenJnlLine.Reset();
+                                GenJnlLine.setrange("Journal Template Name", GenJnlBatch."Journal Template Name");
+                                GenJnlLine.setrange("Journal Batch Name", GenJnlBatch.Name);
+                                GenJnlLine.setfilter("Line No.", '>=%1', LastLine);
+                                GenJnlLine.setrange("Account Type", GenJnlLine."Account Type"::Customer);
+                                GenJnlLine.setrange("Account No.", "Cust. Ledger Entry"."Customer No.");
+                                GenJnlLine.setrange("Recipient Bank Account", BankAcc);
+
+                                GenJnlLine.FindFirst();
+
                                 "Cust. Ledger Entry"."Amount to Apply" := "Cust. Ledger Entry"."Remaining Amount";
                                 "Cust. Ledger Entry"."Applies-to ID" := GenJnlLine."Document No.";
                                 "Cust. Ledger Entry".Modify();
@@ -61,7 +92,6 @@ report 60002 "Suggest Customer Collections"
                 //Window.Update(1, "No.");
                 // if Not IncludeCustomer(Customer, CustomerBalance) then
                 //     CurrReport.Skip();
-
             End;
         }
     }
@@ -210,8 +240,6 @@ report 60002 "Suggest Customer Collections"
         actions
         {
         }
-
-
     }
 
     labels
@@ -220,7 +248,7 @@ report 60002 "Suggest Customer Collections"
 
     trigger OnPostReport()
     Begin
-        CreateBalJournalLine();
+        //CreateBalJournalLine();
     End;
 
     var
@@ -238,9 +266,11 @@ report 60002 "Suggest Customer Collections"
         CustomerBalance: Decimal;
         LineCreated: Boolean;
         NextLine: Integer;
+        LastLine: Integer;
         Window: Dialog;
         BalancingAmt: Decimal;
         ClearingAccount: Code[20];
+        PrevGroup: Code[40];
         StartingDocumentNoErr: Label 'The value in the Starting Document No. field must have a number so that we can assign the next number in the series.';
         Text009: Label '%1 must be G/L Account or Bank Account.';
         Text010: Label '%1 must be filled only when %2 is Bank Account.';
@@ -261,7 +291,6 @@ report 60002 "Suggest Customer Collections"
             NextDocNo := NoSeriesMgt.GetNextNo(GenJnlBatch."No. Series", PostingDate, false);
             Clear(NoSeriesMgt);
         end;
-
     end;
 
     trigger OnPreReport()
@@ -322,7 +351,8 @@ report 60002 "Suggest Customer Collections"
             NextDocNo := IncStr(NextDocNo);
 
         NextLine += 10000;
-        GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
+        IF "Cust. Ledger Entry"."Recipient Bank Account" <> '' then
+            GenJnlLine."Recipient Bank Account" := "Cust. Ledger Entry"."Recipient Bank Account";
         GenJnlLine.Insert(true);
         BalancingAmt += GenJnlLine.Amount;
     end;

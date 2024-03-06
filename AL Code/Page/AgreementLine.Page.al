@@ -39,8 +39,6 @@ page 60006 "MFCC01 Agreement Lines"
                 {
                     ToolTip = 'Specifies the value of the National Fees % field.';
                 }
-
-
             }
         }
     }
@@ -49,9 +47,6 @@ page 60006 "MFCC01 Agreement Lines"
     {
         area(Processing)
         {
-
         }
     }
-
-
 }

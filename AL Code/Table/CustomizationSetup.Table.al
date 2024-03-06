@@ -9,7 +9,6 @@ table 60000 "MFCC01 Franchise Setup"
         {
             DataClassification = CustomerContent;
         }
-
         field(50; "Deferral Nos."; Code[20])
         {
             DataClassification = CustomerContent;
@@ -20,19 +19,16 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "No. Series".Code;
         }
-
         field(51; "Local Department Code"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "Dimension Value".Code Where("Global Dimension No." = const(1));
         }
-
         field(52; "National Department Code"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "Dimension Value".Code Where("Global Dimension No." = const(1));
         }
-
         field(53; "Royalty Account"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -54,7 +50,6 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-
         field(65; CommissionRecognizedGAAP; Code[20])
         {
             Caption = 'Commission Recognized';
@@ -85,14 +80,12 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-
         field(90; DeferredRevenueDevelopmentGAPP; Code[20])
         {
             Caption = 'Def Revenue Cafes in Development';
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-
         field(110; NonGapInitialRevenueRecognized; Decimal)
         {
             Caption = 'Non GAAP Initial Revenue Recognized';
@@ -128,7 +121,6 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
-
         field(140; DeferredRevenueDevelopment; Code[20])
         {
             Caption = 'Def Revenue Cafes in Development';
@@ -140,7 +132,6 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             //TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
-
 
         //renewal
         field(210; "Franchise Renewal Fee GAAP"; Code[20])
@@ -155,7 +146,6 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
-
         field(212; "Franchise Renewal Fee"; Code[20])
         {
             DataClassification = CustomerContent;
@@ -166,11 +156,59 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
-
         field(214; "Corp Department Code"; Code[20])
         {
             DataClassification = CustomerContent;
             TableRelation = "Dimension Value".Code Where("Global Dimension No." = const(1));
+        }
+        field(215; "Franchise Journal Batch"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "MFCC01 Franchise Batch".Code;
+        }
+        field(250; "PrePaid Commissions ST GAAP"; Code[20])
+        {
+            Caption = 'PrePaid Commissions ST';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(251; "Deferred Revenue ST GAAP"; Code[20])
+        {
+            Caption = 'Deferred Revenue ST';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(252; "Deferred Revenue LT GAAP"; Code[20])
+        {
+            Caption = 'Deferred Revenue LT';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
+        }
+        field(253; "PrePaid Commissions ST"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(254; "Deferred Revenue ST"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(255; "Deferred Revenue LT"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(256; "Tansfer Fee"; Code[20])
+        {
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
+        field(257; "Tansfer Fee GAPP"; Code[20])
+        {
+            Caption = 'Tansfer Fee';
+            DataClassification = CustomerContent;
+            TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
     }
 
@@ -182,26 +220,20 @@ table 60000 "MFCC01 Franchise Setup"
         }
     }
 
-
-
     trigger OnInsert()
     begin
-
     end;
 
     trigger OnModify()
     begin
-
     end;
 
     trigger OnDelete()
     begin
-
     end;
 
     trigger OnRename()
     begin
-
     end;
 
     procedure GetRecordonce()
@@ -214,5 +246,4 @@ table 60000 "MFCC01 Franchise Setup"
 
     var
         ReadRecord: Boolean;
-
 }

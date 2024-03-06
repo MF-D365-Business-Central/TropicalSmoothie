@@ -39,7 +39,6 @@ Report 60003 "MFCC01SalesExcelImport"
         Window.Open(Text006 + '@1@@@@@@@@@@@@@@@@@@@@@@@@@\');
         UploadIntoStream(UploadExcelMsg, '', '', FromFile, IStream);
 
-
         if FromFile <> '' then begin
             FileName := FileMgt.GetFileName(FromFile);
             SheetName := ExcelBuf.SelectSheetsNameStream(IStream);
@@ -85,7 +84,6 @@ Report 60003 "MFCC01SalesExcelImport"
         ExcelBuf.SetRange("Row No.", 1);
         TotalColumns := ExcelBuf.Count;
 
-
         for R := 2 to TotalRows DO Begin
             SalesImport.Init();
             SalesImport."Entry No." := EntryNo;
@@ -111,7 +109,6 @@ Report 60003 "MFCC01SalesExcelImport"
             EntryNo += 1;
             SalesImport.Insert();
         End;
-
     end;
 
     procedure LineTypeEnumConvert(TyepName: Text) SaleLineType: Enum "Sales Line Type"
@@ -138,13 +135,6 @@ Report 60003 "MFCC01SalesExcelImport"
         SaleDocType := Enum::"Sales Line Type".FromInteger(OrdinalValue);
     end;
 
-
-
-
-
-
-
-
     local procedure GetNextEntry()
     var
         SalesImport2: Record "MFCC01 Sales Import";
@@ -163,7 +153,5 @@ Report 60003 "MFCC01SalesExcelImport"
             Clear(ExcelBuf);
 
         exit(ExcelBuf."Cell Value as Text");
-
     end;
-
 }

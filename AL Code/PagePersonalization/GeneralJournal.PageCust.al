@@ -28,17 +28,14 @@
 
 //         modify("External Document No.")
 //         {
-
 //             Visible = false;
 //         }
 //         modify("Applies-to Ext. Doc. No.")
 //         {
-
 //             Visible = false;
 //         }
 //         modify(GenJnlLineApprovalStatus)
 //         {
-
 //             Visible = false;
 //         }
 //         // Add changes to page layout here

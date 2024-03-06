@@ -13,7 +13,6 @@ page 60012 "MFCC01 Purchase Import"
         {
             repeater(Control1)
             {
-
                 field("Entry No."; Rec."Entry No.")
                 {
                     ToolTip = 'Specifies the value of the Entry No. field.';
@@ -22,7 +21,6 @@ page 60012 "MFCC01 Purchase Import"
                 {
                     ToolTip = 'Specifies the value of the Document Type field.';
                 }
-
                 field("Vendor No."; Rec."Vendor No.")
                 {
                     ToolTip = 'Specifies the value of the Vendor No. field.';
@@ -31,7 +29,6 @@ page 60012 "MFCC01 Purchase Import"
                 {
                     ToolTip = 'Specifies the value of the Vendor Name field.';
                 }
-
                 field("Posting Date"; Rec."Posting Date")
                 {
                     ToolTip = 'Specifies the value of the Posting Date field.';
@@ -92,14 +89,12 @@ page 60012 "MFCC01 Purchase Import"
                 {
                     ToolTip = 'Specifies the value of the Remarks field.';
                 }
-
             }
         }
     }
 
     actions
     {
-        
         area(Navigation)
         {
             action(Document)
@@ -138,14 +133,11 @@ page 60012 "MFCC01 Purchase Import"
                                                 PageHeler.PageRun(PurchaseInvoice);
                                         End;
                                 End;
-
                             End;
                     End;
-
                 end;
             }
         }
-       
         area(Processing)
         {
             action(ImportFromExcel)
@@ -154,7 +146,6 @@ page 60012 "MFCC01 Purchase Import"
                 Image = Import;
                 Caption = 'Import';
                 RunObject = report MFCC01PurchaseExcelImport;
-
             }
 
             action(Create)
@@ -168,7 +159,6 @@ page 60012 "MFCC01 Purchase Import"
                 Begin
                     PurchaseImport.GenerateInvoice();
                 End;
-
             }
 
             action(Post)
@@ -185,6 +175,4 @@ page 60012 "MFCC01 Purchase Import"
             }
         }
     }
-
-
 }

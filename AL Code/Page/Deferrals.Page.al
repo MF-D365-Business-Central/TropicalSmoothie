@@ -22,7 +22,6 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the Type field.';
                 }
-
                 field("Agreement No."; Rec."Agreement No.")
                 {
                     ToolTip = 'Specifies the value of the Agreement No. field.';
@@ -31,7 +30,6 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the Customer No. field.';
                 }
-
                 field("Start Date"; Rec."Start Date")
                 {
                     ToolTip = 'Specifies when to start calculating deferral amounts.';
@@ -48,7 +46,6 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the Remaining Periods field.';
                 }
-
                 field("Amortized Periods"; Rec."Amortized Periods")
                 {
                     ToolTip = 'Specifies the value of the Amortized Periods field.';
@@ -58,9 +55,19 @@ page 60003 "MFCC01 Deferrals"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the amount to defer per period.';
                 }
+                field(BeginBalance; GetBeginBalance())
+                {
+                    Editable = false;
+                    Caption = 'Begining Balance';
+                }
                 field("Net Amortized"; Rec."Net Amortized")
                 {
                     ToolTip = 'Specifies the value of the Net Amortized field.';
+                }
+                field(ENdBalance; GetEndingBalance())
+                {
+                    Editable = false;
+                    Caption = 'Ending Balance';
                 }
                 field("Net Balance"; Rec."Net Balance")
                 {
@@ -74,7 +81,6 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the Balance field.';
                 }
-
                 field("Schedule Description"; Rec."Schedule Description")
                 {
                     ToolTip = 'Specifies the value of the Schedule Description field.';
@@ -86,7 +92,6 @@ page 60003 "MFCC01 Deferrals"
             }
         }
     }
-
 
     actions
     {
@@ -152,7 +157,58 @@ page 60003 "MFCC01 Deferrals"
         }
     }
 
+    var
 
+    local procedure GetBeginBalance(): Decimal
+    var
+        DefLine: Record "MFCC01 Deferral Line";
+        Cust: Record Customer;
 
+    begin
+        IF Rec.GetFilter("Date Filter") <> '' then Begin
+            Cust.Setfilter("Date Filter", Rec.GetFilter("Date Filter"));
+            Cust.FindFirst();
+            AsofDate := Cust.GetRangeMin("Date Filter");
+            DefLine.SetFilter("Posting Date", '..%1', CalcDate('<-1D>', AsofDate));
+        End;
+        DefLine.SetRange("Document No.", Rec."Document No.");
+        DefLine.SetRange(Posted, true);
+        DefLine.CalcSums(Amount);
 
+        exit(Rec."Amount to Defer" - DefLine.Amount);
+    end;
+
+    local procedure GetEndingBalance(): Decimal
+    var
+        DefLine: Record "MFCC01 Deferral Line";
+        Cust: Record Customer;
+
+    begin
+        IF Rec.GetFilter("Date Filter") <> '' then Begin
+            Cust.Setfilter("Date Filter", Rec.GetFilter("Date Filter"));
+            Cust.FindFirst();
+            AsofDate := Cust.GetRangeMax("Date Filter");
+            DefLine.SetFilter("Posting Date", '..%1', CalcDate('<-1D>', AsofDate));
+        End;
+        DefLine.SetRange("Document No.", Rec."Document No.");
+        DefLine.SetRange(Posted, true);
+        DefLine.CalcSums(Amount);
+
+        exit(Rec."Amount to Defer" - DefLine.Amount);
+    end;
+
+    local procedure OpenEntries()
+    var
+        DefLine: Record "MFCC01 Deferral Line";
+    begin
+        IF AsofDate = 0D then
+            Exit;
+        DefLine.SetFilter("Posting Date", '..%1', CalcDate('<-1D>', AsofDate));
+        DefLine.SetRange("Document No.", Rec."Document No.");
+        DefLine.SetRange(Posted, false);
+        Page.RunModal(0, DefLine);
+    end;
+
+    var
+        AsofDate: Date;
 }
