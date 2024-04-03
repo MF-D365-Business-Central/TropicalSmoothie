@@ -8,7 +8,7 @@ report 60002 "Suggest Customer Collections"
         dataitem(Customer; Customer)
         {
             DataItemTableView = SORTING(Blocked) WHERE(Blocked = FILTER(= " "));
-            RequestFilterFields = "No.", "Payment Method Code", "Customer Posting Group";
+            RequestFilterFields = "No.", "Payment Method Code", "Customer Posting Group", "Preferred Bank Account Code";
 
             dataitem("Cust. Ledger Entry"; "Cust. Ledger Entry")
             {

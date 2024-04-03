@@ -41,7 +41,9 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         IF GLEntry.FindLast() then;
         IF FranchiseJnlLine.FindSet(True) then
             repeat
-                CheckDocumentNo(FranchiseJnlLine);
+                FranchiseJnlLine.CheckDocNoBasedOnNoSeries(LastDocNo, FranchiseBatch."No. Series", NoSeriesMgt);
+                IF not FranchiseJnlLine.EmptyLine() then
+                    LastDocNo := FranchiseJnlLine."Document No.";
                 InsertFranchhiseLedgerEntry(FranchiseJnlLine);
                 Prepareposting();
             Until FranchiseJnlLine.Next() = 0;
@@ -72,31 +74,6 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
             until CheckFranchiseJnlLine.Next() = 0;
     end;
 
-    local procedure CheckDocumentNo(var FranchiseJnlLine2: Record "MFCC01 Franchise Journal")
-    begin
-
-        if not FranchiseJnlLine2.EmptyLine() then
-            if ShouldSetDocNoToLastPosted(FranchiseJnlLine2) then
-                FranchiseJnlLine2."Document No." := LastPostedDocNo
-            else begin
-                if not TempNoSeries.Get(FranchiseBatch."No. Series") then begin
-                    NoOfPostingNoSeries := NoOfPostingNoSeries + 1;
-                    if NoOfPostingNoSeries > ArrayLen(NoSeriesMgt2) then
-                        Error(
-                          Text025,
-                          ArrayLen(NoSeriesMgt2));
-                    TempNoSeries.Code := FranchiseBatch."No. Series";
-                    TempNoSeries.Description := Format(NoOfPostingNoSeries);
-                    TempNoSeries.Insert();
-                end;
-                LastDocNo := FranchiseJnlLine2."Document No.";
-                Evaluate(PostingNoSeriesNo, TempNoSeries.Description);
-                FranchiseJnlLine2."Document No." :=
-                  NoSeriesMgt2[PostingNoSeriesNo].GetNextNo(FranchiseBatch."No. Series", FranchiseJnlLine2."Posting Date", true);
-                LastPostedDocNo := FranchiseJnlLine2."Document No.";
-            end;
-        OnAfterCheckDocumentNo(FranchiseJnlLine2, LastDocNo, LastPostedDocNo);
-    end;
 
     local procedure ShouldSetDocNoToLastPosted(var FranchiseJnlLine: Record "MFCC01 Franchise Journal") Result: Boolean
     begin
@@ -113,10 +90,14 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
     end;
 
     local procedure InsertFranchhiseLedgerEntry(FranchiseJnlLine: Record "MFCC01 Franchise Journal"): Integer
+    var
+        DimMgmt: Codeunit DimensionManagement;
     begin
         GlobalFranchiseLedgerEntry.Init();
         GlobalFranchiseLedgerEntry.TransferFields(FranchiseJnlLine);
         GlobalFranchiseLedgerEntry."Entry No." := NextEntryNo;
+        DimMgmt.UpdateGlobalDimFromDimSetID(GlobalFranchiseLedgerEntry."Dimension Set ID",
+        GlobalFranchiseLedgerEntry."Shortcut Dimension 1 Code", GlobalFranchiseLedgerEntry."Shortcut Dimension 2 Code");
         GlobalFranchiseLedgerEntry.Insert(True);
 
         NextEntryNo += 1;

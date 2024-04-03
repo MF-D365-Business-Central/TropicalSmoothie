@@ -191,6 +191,13 @@ table 60001 "MFCC01 Deferral Header"
             FieldClass = FlowField;
             CalcFormula = Count("MFCC01 Deferral Line" where("Document No." = field("Document No."), Posted = const(true)));
         }
+
+        field(35; "Termination Date"; Date)
+        {
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = lookup("MFCC01 Agreement Header"."Termination Date" where("No." = field("Agreement No.")));
+        }
     }
 
     keys

@@ -189,40 +189,20 @@ Report 60001 "Gen. Journal Excel Import"
                             end;
                         until IsDim or (FindDimension.Next = 0);
 
-                        if IsDim then begin
-                            if GLSetup."Global Dimension 1 Code" = Dimension.Code then begin
-                                IsDim := false;
-                                Headers[ExcelBuf."Column No."] := 'Shortcut Dimension 1 Code';
-                            end else
-                                if GLSetup."Global Dimension 2 Code" = Dimension.Code then begin
-                                    IsDim := false;
-                                    Headers[ExcelBuf."Column No."] := 'Shortcut Dimension 2 Code';
-                                end;
-                            if not IsDim then begin   // Have to set Fields pointer correctly again
-                                FieldsRec.SetRange(FieldName);
-                                FieldsRec.SetRange("Field Caption");
-                                FieldsRec.SetRange("Field Caption", Headers[ExcelBuf."Column No."]);
-                                if not FieldsRec.FindFirst then begin
-                                    FieldsRec.SetRange("Field Caption");
-                                    FieldsRec.SetRange(FieldName, Headers[ExcelBuf."Column No."]);
-                                    FieldsRec.FindFirst;
-                                end;
-                            end;
-                        end else
+                        if Not IsDim then
                             Error(Text001, Headers[ExcelBuf."Column No."]);
                     end;
 
                     if IsDim then begin
                         if (DelChr(ExcelBuf."Cell Value as Text", '<>') <> '') then begin
                             // Don't have to create any field entry, just put it in the Dimension Table
-
+                            TempDimSetEntry.Init();
                             TempDimSetEntry."Dimension Code" := Dimension.Code;
                             TempDimSetEntry.validate("Dimension Value Code", ExcelBuf."Cell Value as Text");
                             TempDimSetEntry.Insert;
 
-                            DimgMgt.GetDimensionSetID(TempDimSetEntry);
                             GenFieldRef := GenRecRef.Field(GenJournalLine.FieldNo(GenJournalLine."Dimension Set ID"));
-                            GenFieldRef.Value(DimgMgt.GetDimensionSetID(TempDimSetEntry));
+                            GenFieldRef.Validate(DimgMgt.GetDimensionSetID(TempDimSetEntry));
                         end;
                     end else begin
                         GenFieldRef := GenRecRef.Field(FieldsRec."No.");
@@ -326,7 +306,8 @@ Report 60001 "Gen. Journal Excel Import"
                         end;
                     end;
                     RowNo := ExcelBuf."Row No.";
-                    ExcelBuf.Next;
+                    IF ExcelBuf.Next = 0 then
+                        CurField := NoFields;
                     if ExcelBuf."Column No." = 1 then // this is a new row, need to create a new Gen. Journal Line
                         CurField := NoFields;
 

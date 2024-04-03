@@ -41,6 +41,4 @@ page 60020 "MFCC01 PostedSnowflakeEntries"
         }
     }
 
-    var
-        PowerBI: Codeunit "MFCC01 PowerBI Integration";
 }

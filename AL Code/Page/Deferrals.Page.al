@@ -38,6 +38,10 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the End Date field.';
                 }
+                field("Termination Date"; Rec."Termination Date")
+                {
+                    ToolTip = 'Specifies the value of the Termination Date field.';
+                }
                 field("No. of Periods"; Rec."No. of Periods")
                 {
                     ToolTip = 'Specifies how many accounting periods the total amounts will be deferred to.';

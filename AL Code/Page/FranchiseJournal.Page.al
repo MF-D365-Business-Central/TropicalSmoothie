@@ -245,6 +245,7 @@ page 60010 "MFCC01 Franchise Journal"
         Rec.FilterGroup(2);
         Rec.Setrange("Batch Name", BatchName);
         Rec.FilterGroup(0);
+        CurrPage.Update(false);
     end;
 
     procedure SetBatchName(MyBatchName: Code[20])

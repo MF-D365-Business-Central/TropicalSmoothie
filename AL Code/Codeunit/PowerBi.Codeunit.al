@@ -167,6 +167,8 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         SnowflakeEntry: Record "MFCC01 Snowflake Entry";
         Customer: Record Customer;
         Frantach: Record "MFCC01 Franchise Batch";
+        NoSeriesMgmt: Codeunit NoSeriesManagement;
+        DocumentNo: Code[20];
         Window: Dialog;
     begin
         Window.Open('Processing Data..');
@@ -175,14 +177,15 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         BatchName := CZSetup."Franchise Journal Batch";
         Frantach.SetRange(Code, BatchName);
         Frantach.FindFirst();
-        NoSeriesCode := Frantach."No. Series";
+        DocumentNo := NoSeriesMgmt.GetNextNo(Frantach."No. Series", WorkDate(), false);
+
         InitLineno();
         SnowflakeEntry.Reset();
         SnowflakeEntry.Setrange(Status, SnowflakeEntry.Status::Validated);
         IF SnowflakeEntry.FindSet(true) then
             repeat
                 SnowflakeEntry.Remarks := '';
-                CreateFanchiseJournal(SnowflakeEntry."Customer No.", SnowflakeEntry."Document Date", SnowflakeEntry."Net Sales");
+                CreateFanchiseJournal(SnowflakeEntry."Customer No.", SnowflakeEntry."Document Date", SnowflakeEntry."Net Sales", DocumentNo);
                 SnowflakeEntry.Status := SnowflakeEntry.Status::Processed;
                 SnowflakeEntry.Modify();
             Until SnowflakeEntry.Next() = 0;
@@ -261,11 +264,11 @@ codeunit 60006 "MFCC01 PowerBI Integration"
     end;
 
 
-    local procedure CreateFanchiseJournal(CustomerNo: Code[20]; DocDate: Date; NetSales: Decimal)
+    local procedure CreateFanchiseJournal(CustomerNo: Code[20]; DocDate: Date; NetSales: Decimal; Var DocumentNo: Code[20])
     var
         FrachJnl: Record "MFCC01 Franchise Journal";
         LastFrachJnl: Record "MFCC01 Franchise Journal";
-        NoSeriesMgmt: Codeunit NoSeriesManagement;
+        DimMgmt: Codeunit DimensionManagement;
     begin
         LastFrachJnl.SetRange("Batch Name", BatchName);
         if LastFrachJnl.FindFirst() then;
@@ -273,7 +276,8 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         FrachJnl.Init();
         FrachJnl."Batch Name" := BatchName;
         //FrachJnl.SetUpNewLine(LastFrachJnl, true);
-        FrachJnl."Document No." := NoSeriesMgmt.GetNextNo(NoSeriesCode, WorkDate(), True);
+        FrachJnl."Document No." := DocumentNo;
+        DocumentNo := IncStr(DocumentNo);
         FrachJnl."Document Type" := FrachJnl."Document Type"::Invoice;
         FrachJnl."Document Date" := DocDate;
         FrachJnl."Posting Date" := CalcDate('<CW>', DocDate);
@@ -282,6 +286,8 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         FrachJnl.Insert();
         FrachJnl.Validate("Customer No.", CustomerNo);
         FrachJnl.Validate("Net Sales", NetSales);
+        DimMgmt.UpdateGlobalDimFromDimSetID(FrachJnl."Dimension Set ID",
+            FrachJnl."Shortcut Dimension 1 Code", FrachJnl."Shortcut Dimension 2 Code");
         FrachJnl.Modify(true);
     end;
 
@@ -302,6 +308,5 @@ codeunit 60006 "MFCC01 PowerBI Integration"
     var
         CZSetup: Record "MFCC01 Franchise Setup";
         BatchName: Code[20];
-        NoSeriesCode: Code[20];
         LineNo: Integer;
 }

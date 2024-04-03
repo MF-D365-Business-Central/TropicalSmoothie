@@ -1,0 +1,467 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+    </DataSource>
+  </DataSources>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <Height>2in</Height>
+        <Style />
+      </Body>
+      <Width>6.5in</Width>
+      <Page>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <Code>Public Function BlankZero(ByVal Value As Decimal)
+    if Value = 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankPos(ByVal Value As Decimal)
+    if Value &gt; 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankZeroAndPos(ByVal Value As Decimal)
+    if Value &gt;= 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankNeg(ByVal Value As Decimal)
+    if Value &lt; 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankNegAndZero(ByVal Value As Decimal)
+    if Value &lt;= 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+</Code>
+  <Language>=User!Language</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>0eeb6585-38ae-40f1-885b-8d50088d51b4</rd:ReportID>
+  <DataSets>
+    <DataSet Name="DataSet_Result">
+      <Fields>
+        <Field Name="Gen__Journal_Line_Journal_Template_Name">
+          <DataField>Gen__Journal_Line_Journal_Template_Name</DataField>
+        </Field>
+        <Field Name="Gen__Journal_Line_Journal_Batch_Name">
+          <DataField>Gen__Journal_Line_Journal_Batch_Name</DataField>
+        </Field>
+        <Field Name="Gen__Journal_Line_Line_No_">
+          <DataField>Gen__Journal_Line_Line_No_</DataField>
+        </Field>
+        <Field Name="Gen__Journal_Line_Applies_to_ID">
+          <DataField>Gen__Journal_Line_Applies_to_ID</DataField>
+        </Field>
+        <Field Name="GreetingText">
+          <DataField>GreetingText</DataField>
+        </Field>
+        <Field Name="ClosingText">
+          <DataField>ClosingText</DataField>
+        </Field>
+        <Field Name="BodyText">
+          <DataField>BodyText</DataField>
+        </Field>
+        <Field Name="CompanyAddress_1">
+          <DataField>CompanyAddress_1</DataField>
+        </Field>
+        <Field Name="CompanyAddress_2">
+          <DataField>CompanyAddress_2</DataField>
+        </Field>
+        <Field Name="CompanyAddress_3">
+          <DataField>CompanyAddress_3</DataField>
+        </Field>
+        <Field Name="CompanyAddress_4">
+          <DataField>CompanyAddress_4</DataField>
+        </Field>
+        <Field Name="CompanyAddress_5">
+          <DataField>CompanyAddress_5</DataField>
+        </Field>
+        <Field Name="CompanyAddress_6">
+          <DataField>CompanyAddress_6</DataField>
+        </Field>
+        <Field Name="CompanyAddress_7">
+          <DataField>CompanyAddress_7</DataField>
+        </Field>
+        <Field Name="CompanyAddress_8">
+          <DataField>CompanyAddress_8</DataField>
+        </Field>
+        <Field Name="CompanyLegalOffice">
+          <DataField>CompanyLegalOffice</DataField>
+        </Field>
+        <Field Name="CopyTxt">
+          <DataField>CopyTxt</DataField>
+        </Field>
+        <Field Name="PayeeAddress_1_">
+          <DataField>PayeeAddress_1_</DataField>
+        </Field>
+        <Field Name="PayeeAddress_2_">
+          <DataField>PayeeAddress_2_</DataField>
+        </Field>
+        <Field Name="PayeeAddress_3_">
+          <DataField>PayeeAddress_3_</DataField>
+        </Field>
+        <Field Name="PayeeAddress_4_">
+          <DataField>PayeeAddress_4_</DataField>
+        </Field>
+        <Field Name="PayeeAddress_5_">
+          <DataField>PayeeAddress_5_</DataField>
+        </Field>
+        <Field Name="PayeeAddress_6_">
+          <DataField>PayeeAddress_6_</DataField>
+        </Field>
+        <Field Name="PayeeAddress_7_">
+          <DataField>PayeeAddress_7_</DataField>
+        </Field>
+        <Field Name="PayeeAddress_8_">
+          <DataField>PayeeAddress_8_</DataField>
+        </Field>
+        <Field Name="PayeeType">
+          <DataField>PayeeType</DataField>
+        </Field>
+        <Field Name="PayeeNo">
+          <DataField>PayeeNo</DataField>
+        </Field>
+        <Field Name="Gen__Journal_Line___Document_No__">
+          <DataField>Gen__Journal_Line___Document_No__</DataField>
+        </Field>
+        <Field Name="SettleDate">
+          <DataField>SettleDate</DataField>
+        </Field>
+        <Field Name="PostingDate">
+          <DataField>PostingDate</DataField>
+        </Field>
+        <Field Name="ExportAmount">
+          <DataField>ExportAmount</DataField>
+        </Field>
+        <Field Name="PayeeBankTransitNo">
+          <DataField>PayeeBankTransitNo</DataField>
+        </Field>
+        <Field Name="PayeeBankAccountNo">
+          <DataField>PayeeBankAccountNo</DataField>
+        </Field>
+        <Field Name="myNumber">
+          <DataField>myNumber</DataField>
+        </Field>
+        <Field Name="myBal">
+          <DataField>myBal</DataField>
+        </Field>
+        <Field Name="mypostingdate">
+          <DataField>mypostingdate</DataField>
+        </Field>
+        <Field Name="Gen__Journal_Line___Applies_to_Doc__No__">
+          <DataField>Gen__Journal_Line___Applies_to_Doc__No__</DataField>
+        </Field>
+        <Field Name="myType">
+          <DataField>myType</DataField>
+        </Field>
+        <Field Name="AmountPaid">
+          <DataField>AmountPaid</DataField>
+        </Field>
+        <Field Name="AmountPaidFormat">
+          <DataField>AmountPaidFormat</DataField>
+        </Field>
+        <Field Name="DiscountTaken">
+          <DataField>DiscountTaken</DataField>
+        </Field>
+        <Field Name="DiscountTakenFormat">
+          <DataField>DiscountTakenFormat</DataField>
+        </Field>
+        <Field Name="VendLedgEntry__Remaining_Amt___LCY__">
+          <DataField>VendLedgEntry__Remaining_Amt___LCY__</DataField>
+        </Field>
+        <Field Name="VendLedgEntry__Remaining_Amt___LCY__Format">
+          <DataField>VendLedgEntry__Remaining_Amt___LCY__Format</DataField>
+        </Field>
+        <Field Name="VendLedgEntry__Document_Date_">
+          <DataField>VendLedgEntry__Document_Date_</DataField>
+        </Field>
+        <Field Name="VendLedgEntry__External_Document_No__">
+          <DataField>VendLedgEntry__External_Document_No__</DataField>
+        </Field>
+        <Field Name="VendLedgEntry__Document_Type_">
+          <DataField>VendLedgEntry__Document_Type_</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control57">
+          <DataField>AmountPaid_Control57</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control57Format">
+          <DataField>AmountPaid_Control57Format</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Control58">
+          <DataField>DiscountTaken_Control58</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Control58Format">
+          <DataField>DiscountTaken_Control58Format</DataField>
+        </Field>
+        <Field Name="CustLedgEntry__Remaining_Amt___LCY__">
+          <DataField>CustLedgEntry__Remaining_Amt___LCY__</DataField>
+        </Field>
+        <Field Name="CustLedgEntry__Remaining_Amt___LCY__Format">
+          <DataField>CustLedgEntry__Remaining_Amt___LCY__Format</DataField>
+        </Field>
+        <Field Name="CustLedgEntry__Document_Date_">
+          <DataField>CustLedgEntry__Document_Date_</DataField>
+        </Field>
+        <Field Name="CustLedgEntry__Document_No__">
+          <DataField>CustLedgEntry__Document_No__</DataField>
+        </Field>
+        <Field Name="CustLedgEntry__Document_Type_">
+          <DataField>CustLedgEntry__Document_Type_</DataField>
+        </Field>
+        <Field Name="PageLoop_Number">
+          <DataField>PageLoop_Number</DataField>
+        </Field>
+        <Field Name="REMITTANCE_ADVICECaption">
+          <DataField>REMITTANCE_ADVICECaption</DataField>
+        </Field>
+        <Field Name="To_Caption">
+          <DataField>To_Caption</DataField>
+        </Field>
+        <Field Name="Remittance_Advice_Number_Caption">
+          <DataField>Remittance_Advice_Number_Caption</DataField>
+        </Field>
+        <Field Name="Settlement_Date_Caption">
+          <DataField>Settlement_Date_Caption</DataField>
+        </Field>
+        <Field Name="Page_Caption">
+          <DataField>Page_Caption</DataField>
+        </Field>
+        <Field Name="ExportAmountCaption">
+          <DataField>ExportAmountCaption</DataField>
+        </Field>
+        <Field Name="PayeeBankTransitNoCaption">
+          <DataField>PayeeBankTransitNoCaption</DataField>
+        </Field>
+        <Field Name="Deposited_In_Caption">
+          <DataField>Deposited_In_Caption</DataField>
+        </Field>
+        <Field Name="PayeeBankAccountNoCaption">
+          <DataField>PayeeBankAccountNoCaption</DataField>
+        </Field>
+        <Field Name="Vendor_Ledger_Entry__Document_Type_Caption">
+          <DataField>Vendor_Ledger_Entry__Document_Type_Caption</DataField>
+        </Field>
+        <Field Name="Cust__Ledger_Entry__Document_No__Caption">
+          <DataField>Cust__Ledger_Entry__Document_No__Caption</DataField>
+        </Field>
+        <Field Name="Vendor_Ledger_Entry__Document_Date_Caption">
+          <DataField>Vendor_Ledger_Entry__Document_Date_Caption</DataField>
+        </Field>
+        <Field Name="Posting_Date_Cap">
+          <DataField>Posting_Date_Cap</DataField>
+        </Field>
+        <Field Name="Remaining_Amt___LCY___Control36Caption">
+          <DataField>Remaining_Amt___LCY___Control36Caption</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Control38Caption">
+          <DataField>DiscountTaken_Control38Caption</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control43Caption">
+          <DataField>AmountPaid_Control43Caption</DataField>
+        </Field>
+        <Field Name="CompanyPicture">
+          <DataField>CompanyPicture</DataField>
+        </Field>
+        <Field Name="CompanyAddress_1_">
+          <DataField>CompanyAddress_1_</DataField>
+        </Field>
+        <Field Name="CompanyAddress_2_">
+          <DataField>CompanyAddress_2_</DataField>
+        </Field>
+        <Field Name="CompanyAddress_3_">
+          <DataField>CompanyAddress_3_</DataField>
+        </Field>
+        <Field Name="CompanyAddress_4_">
+          <DataField>CompanyAddress_4_</DataField>
+        </Field>
+        <Field Name="CompanyAddress_5_">
+          <DataField>CompanyAddress_5_</DataField>
+        </Field>
+        <Field Name="CompanyAddress_6_">
+          <DataField>CompanyAddress_6_</DataField>
+        </Field>
+        <Field Name="CompanyAddress_7_">
+          <DataField>CompanyAddress_7_</DataField>
+        </Field>
+        <Field Name="CompanyAddress_8_">
+          <DataField>CompanyAddress_8_</DataField>
+        </Field>
+        <Field Name="Email_">
+          <DataField>Email_</DataField>
+        </Field>
+        <Field Name="Cust__Ledger_Entry__Document_Type_">
+          <DataField>Cust__Ledger_Entry__Document_Type_</DataField>
+        </Field>
+        <Field Name="Cust__Ledger_Entry__Document_No__">
+          <DataField>Cust__Ledger_Entry__Document_No__</DataField>
+        </Field>
+        <Field Name="Cust__Ledger_Entry__Document_Date_">
+          <DataField>Cust__Ledger_Entry__Document_Date_</DataField>
+        </Field>
+        <Field Name="Customer_Posting_Group_Ledger_Entry_Posting_Date">
+          <DataField>Customer_Posting_Group_Ledger_Entry_Posting_Date</DataField>
+        </Field>
+        <Field Name="Remaining_Amt___LCY__">
+          <DataField>Remaining_Amt___LCY__</DataField>
+        </Field>
+        <Field Name="Remaining_Amt___LCY__Format">
+          <DataField>Remaining_Amt___LCY__Format</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Control49">
+          <DataField>DiscountTaken_Control49</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Control49Format">
+          <DataField>DiscountTaken_Control49Format</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control50">
+          <DataField>AmountPaid_Control50</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control50Format">
+          <DataField>AmountPaid_Control50Format</DataField>
+        </Field>
+        <Field Name="Cust__Ledger_Entry_Entry_No_">
+          <DataField>Cust__Ledger_Entry_Entry_No_</DataField>
+        </Field>
+        <Field Name="Cust__Ledger_Entry_Applies_to_ID">
+          <DataField>Cust__Ledger_Entry_Applies_to_ID</DataField>
+        </Field>
+        <Field Name="Vendor_Ledger_Entry__Document_Type_">
+          <DataField>Vendor_Ledger_Entry__Document_Type_</DataField>
+        </Field>
+        <Field Name="Vendor_Ledger_Entry__External_Document_No__">
+          <DataField>Vendor_Ledger_Entry__External_Document_No__</DataField>
+        </Field>
+        <Field Name="Vendor_Ledger_Entry__Document_Date_">
+          <DataField>Vendor_Ledger_Entry__Document_Date_</DataField>
+        </Field>
+        <Field Name="Remaining_Amt___LCY___Control36">
+          <DataField>Remaining_Amt___LCY___Control36</DataField>
+        </Field>
+        <Field Name="Remaining_Amt___LCY___Control36Format">
+          <DataField>Remaining_Amt___LCY___Control36Format</DataField>
+        </Field>
+        <Field Name="Vend_Ledger_Entry_Posting_Date">
+          <DataField>Vend_Ledger_Entry_Posting_Date</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Control38">
+          <DataField>DiscountTaken_Control38</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Control38Format">
+          <DataField>DiscountTaken_Control38Format</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control43">
+          <DataField>AmountPaid_Control43</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control43Format">
+          <DataField>AmountPaid_Control43Format</DataField>
+        </Field>
+        <Field Name="Vendor_Ledger_Entry_Entry_No_">
+          <DataField>Vendor_Ledger_Entry_Entry_No_</DataField>
+        </Field>
+        <Field Name="Vendor_Ledger_Entry_Applies_to_ID">
+          <DataField>Vendor_Ledger_Entry_Applies_to_ID</DataField>
+        </Field>
+        <Field Name="AmountPaid_Customer">
+          <DataField>AmountPaid_Customer</DataField>
+        </Field>
+        <Field Name="AmountPaid_CustomerFormat">
+          <DataField>AmountPaid_CustomerFormat</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Customer">
+          <DataField>DiscountTaken_Customer</DataField>
+        </Field>
+        <Field Name="DiscountTaken_CustomerFormat">
+          <DataField>DiscountTaken_CustomerFormat</DataField>
+        </Field>
+        <Field Name="Cust_Remaining_Amt_LCY">
+          <DataField>Cust_Remaining_Amt_LCY</DataField>
+        </Field>
+        <Field Name="Cust_Remaining_Amt_LCYFormat">
+          <DataField>Cust_Remaining_Amt_LCYFormat</DataField>
+        </Field>
+        <Field Name="Cust_Posting_Date">
+          <DataField>Cust_Posting_Date</DataField>
+        </Field>
+        <Field Name="Cust_Document_Date">
+          <DataField>Cust_Document_Date</DataField>
+        </Field>
+        <Field Name="Cust_Document_No">
+          <DataField>Cust_Document_No</DataField>
+        </Field>
+        <Field Name="Cust_Document_Type">
+          <DataField>Cust_Document_Type</DataField>
+        </Field>
+        <Field Name="Vend_Remaining_Amt_LCY">
+          <DataField>Vend_Remaining_Amt_LCY</DataField>
+        </Field>
+        <Field Name="Vend_Remaining_Amt_LCYFormat">
+          <DataField>Vend_Remaining_Amt_LCYFormat</DataField>
+        </Field>
+        <Field Name="Vend_Document_Date">
+          <DataField>Vend_Document_Date</DataField>
+        </Field>
+        <Field Name="Vend_Posting_Date">
+          <DataField>Vend_Posting_Date</DataField>
+        </Field>
+        <Field Name="Vend_External_Document_No">
+          <DataField>Vend_External_Document_No</DataField>
+        </Field>
+        <Field Name="Vend_Document_Type">
+          <DataField>Vend_Document_Type</DataField>
+        </Field>
+        <Field Name="AmountPaid_Vendor">
+          <DataField>AmountPaid_Vendor</DataField>
+        </Field>
+        <Field Name="AmountPaid_VendorFormat">
+          <DataField>AmountPaid_VendorFormat</DataField>
+        </Field>
+        <Field Name="DiscountTaken_Vendor">
+          <DataField>DiscountTaken_Vendor</DataField>
+        </Field>
+        <Field Name="DiscountTaken_VendorFormat">
+          <DataField>DiscountTaken_VendorFormat</DataField>
+        </Field>
+        <Field Name="Text004">
+          <DataField>Text004</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control65">
+          <DataField>AmountPaid_Control65</DataField>
+        </Field>
+        <Field Name="AmountPaid_Control65Format">
+          <DataField>AmountPaid_Control65Format</DataField>
+        </Field>
+        <Field Name="Unapplied_Number">
+          <DataField>Unapplied_Number</DataField>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DataSource</DataSourceName>
+        <CommandText />
+      </Query>
+    </DataSet>
+  </DataSets>
+</Report>

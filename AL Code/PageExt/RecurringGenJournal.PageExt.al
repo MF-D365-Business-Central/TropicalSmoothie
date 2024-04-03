@@ -3,6 +3,17 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
     layout
     {
         // Add changes to page layout here
+        addbefore("Account Type")
+        {
+            field("Transaction Information"; Rec."Transaction Information")
+            {
+                ApplicationArea = All;
+            }
+            field("Payer Information"; Rec."Payer Information")
+            {
+                ApplicationArea = All;
+            }
+        }
     }
 
     actions

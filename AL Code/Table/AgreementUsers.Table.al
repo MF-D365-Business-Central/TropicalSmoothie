@@ -25,6 +25,7 @@ table 60005 "MFCC01 Agreement Users"
             trigger OnValidate()
             Begin
                 TestStatusOpen();
+                UpdateHeaderInfo();
             End;
         }
         field(11; "Owner Last Name"; Text[50])
@@ -33,6 +34,7 @@ table 60005 "MFCC01 Agreement Users"
             trigger OnValidate()
             Begin
                 TestStatusOpen();
+                UpdateHeaderInfo();
             End;
         }
         field(12; "E-Mail"; Text[80])
@@ -42,6 +44,7 @@ table 60005 "MFCC01 Agreement Users"
             trigger OnValidate()
             Begin
                 TestStatusOpen();
+                UpdateHeaderInfo();
             End;
         }
         field(13; Phone; Text[80])
@@ -51,6 +54,7 @@ table 60005 "MFCC01 Agreement Users"
             trigger OnValidate()
             Begin
                 TestStatusOpen();
+                UpdateHeaderInfo();
             End;
         }
         field(14; Active; Boolean)
@@ -90,4 +94,14 @@ table 60005 "MFCC01 Agreement Users"
     trigger OnRename()
     begin
     end;
+
+    procedure UpdateHeaderInfo()
+    var
+        AgreementHeader: Record "MFCC01 Agreement Header";
+    begin
+        IF AgreementHeader.Get(Rec."Agreement No.") then;
+        Rec."Customer No." := AgreementHeader."Customer No.";
+
+    end;
+
 }

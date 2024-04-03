@@ -236,11 +236,11 @@ table 60003 "MFCC01 Agreement Header"
         AgreementUsers: Record "MFCC01 Agreement Users";
     begin
         Rec.TestStatusNew(Rec);
-        AgreementLine.SetRange("Customer No.", Rec."Customer No.");
+        AgreementLine.SetRange("Agreement No.", Rec."No.");
         IF Not AgreementLine.IsEmpty() then
             AgreementLine.DeleteAll();
 
-        AgreementUsers.SetRange("Customer No.", Rec."Customer No.");
+        AgreementUsers.SetRange("Agreement No.", Rec."No.");
         IF Not AgreementUsers.IsEmpty() then
             AgreementUsers.DeleteAll();
     end;
@@ -359,18 +359,19 @@ table 60003 "MFCC01 Agreement Header"
         ConfirmTxt: Label 'Do you want to Open the Cafe.?';
         DimensionMsg: Label 'Please check and Verify Dimension Values for Cafe, Market, and FMM.';
     begin
-        Message(DimensionMsg);
-        IF not Confirm(ConfirmTxt, false, true) then
-            exit;
         CZSetup.GetRecordonce();
         CZSetup.TestField("Corp Department Code");
-        //AgreementHeader.TestField("SalesPerson Commission");
         AgreementHeader.TestField(Status, Status::Signed);
-        AgreementHeader.Status := AgreementHeader.Status::Opened;
         AgreementHeader.TestField("Franchise Revenue Start Date");
         AgreementHeader.TestField("Term Expiration Date");
-        IF AgreementHeader."License Type" = AgreementHeader."License Type"::New then
-            AgreementHeader.TestField("SalesPerson Commission");
+
+        Message(DimensionMsg);
+        IF AgreementHeader."SalesPerson Commission" = 0 then Begin
+            IF not Confirm('You are about to open a cafe that has $0 Commissions. There could be a lot of troubles because of that. Are you sure?!', false, true) then
+                exit;
+        End else IF not Confirm(ConfirmTxt, false, true) then
+                exit;
+
         CheckLinesExist(AgreementHeader, true);
         AgreementHeader.Status := AgreementHeader.Status::Opened;
         AgreementHeader.Modify();

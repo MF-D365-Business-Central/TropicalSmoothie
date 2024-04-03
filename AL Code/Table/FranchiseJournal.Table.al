@@ -125,6 +125,7 @@ table 60008 "MFCC01 Franchise Journal"
                 ValidateShortcutDimCode(2, Rec."Shortcut Dimension 2 Code");
             end;
         }
+
     }
 
     keys
@@ -340,6 +341,38 @@ table 60008 "MFCC01 Franchise Journal"
         Rec."Royalty Fee" := Round((AgreementLine."Royalty Fees %" * Rec."Net Sales") / 100, 0.01, '=');
         Rec."Local Fees" := Round((AgreementLine."Local Fees %" * Rec."Net Sales") / 100, 0.01, '=');
         Rec."National Fee" := Round((AgreementLine."National Fees %" * Rec."Net Sales") / 100, 0.01, '=');
+    end;
+
+    procedure CheckDocNoBasedOnNoSeries(LastDocNo: Code[20]; NoSeriesCode: Code[20]; var NoSeriesMgtInstance: Codeunit NoSeriesManagement)
+    var
+        NoSeries: Record "No. Series";
+        NoSeriesLine: Record "No. Series Line";
+        IsHandled: Boolean;
+        DoDocumentNoTest: Boolean;
+    begin
+        if IsHandled then
+            exit;
+
+        if (NoSeriesCode = '') then
+            exit;
+
+        if (LastDocNo = '') or ("Document No." <> LastDocNo) then begin
+            if NoSeriesMgtInstance.FindNoSeriesLine(NoSeriesLine, NoSeriesCode, "Posting Date") then
+                if not NoSeriesMgtInstance.IsCurrentNoSeriesLine(NoSeriesLine) then
+                    NoSeriesMgtInstance.SaveNoSeries();
+
+            DoDocumentNoTest := "Document No." <> NoSeriesMgtInstance.GetNextNo(NoSeriesCode, "Posting Date", false);
+            if not DoDocumentNoTest then begin
+                if NoSeries.Get(NoSeriesCode) then;
+                if (NoSeriesMgtInstance.FindNoSeriesLine(NoSeriesLine, NoSeriesCode, "Posting Date")) then
+                    DoDocumentNoTest := not NoSeries."Manual Nos." and not NoSeriesMgtInstance.IsCurrentNoSeriesLine(NoSeriesLine);
+            end;
+
+            if DoDocumentNoTest then begin
+                NoSeriesMgtInstance.TestManualWithDocumentNo(NoSeriesCode, "Document No.");  // allow use of manual document numbers.
+                NoSeriesMgtInstance.ClearNoSeriesLine();
+            end;
+        end;
     end;
 
     [IntegrationEvent(false, false)]
