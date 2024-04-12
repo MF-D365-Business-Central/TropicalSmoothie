@@ -375,6 +375,7 @@ table 60008 "MFCC01 Franchise Journal"
         end;
     end;
 
+
     [IntegrationEvent(false, false)]
     local procedure OnBeforeShowDimensions(var FranchiseJnlLine: Record "MFCC01 Franchise Journal"; xFranchiseJnlLine: Record "MFCC01 Franchise Journal"; var IsHandled: Boolean)
     begin

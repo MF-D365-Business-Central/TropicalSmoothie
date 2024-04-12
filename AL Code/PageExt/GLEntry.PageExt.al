@@ -24,5 +24,22 @@ pageextension 60004 "MFCC01General Ledger Entries" extends "General Ledger Entri
     actions
     {
         // Add changes to page actions here
+        addlast(navigation)
+        {
+            action(Export)
+            {
+                ApplicationArea = All;
+                Caption = 'Export to Excel';
+                Image = Export;
+                RunObject = xmlport "General Ledger Export";
+            }
+
+        }
+        addlast(Category_Process)
+        {
+            actionref("Export_Promoted"; Export)
+            {
+            }
+        }
     }
 }

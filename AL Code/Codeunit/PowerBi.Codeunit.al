@@ -166,7 +166,7 @@ codeunit 60006 "MFCC01 PowerBI Integration"
     var
         SnowflakeEntry: Record "MFCC01 Snowflake Entry";
         Customer: Record Customer;
-        Frantach: Record "MFCC01 Franchise Batch";
+
         NoSeriesMgmt: Codeunit NoSeriesManagement;
         DocumentNo: Code[20];
         Window: Dialog;
@@ -277,7 +277,7 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         FrachJnl."Batch Name" := BatchName;
         //FrachJnl.SetUpNewLine(LastFrachJnl, true);
         FrachJnl."Document No." := DocumentNo;
-        DocumentNo := IncStr(DocumentNo);
+        FrachJnl.IncrementDocumentNo(Frantach, DocumentNo);
         FrachJnl."Document Type" := FrachJnl."Document Type"::Invoice;
         FrachJnl."Document Date" := DocDate;
         FrachJnl."Posting Date" := CalcDate('<CW>', DocDate);
@@ -290,6 +290,7 @@ codeunit 60006 "MFCC01 PowerBI Integration"
             FrachJnl."Shortcut Dimension 1 Code", FrachJnl."Shortcut Dimension 2 Code");
         FrachJnl.Modify(true);
     end;
+
 
     local procedure SetBatchName(CurrentBatchName: Code[20])
     begin
@@ -307,6 +308,7 @@ codeunit 60006 "MFCC01 PowerBI Integration"
 
     var
         CZSetup: Record "MFCC01 Franchise Setup";
+        Frantach: Record "MFCC01 Franchise Batch";
         BatchName: Code[20];
         LineNo: Integer;
 }

@@ -632,6 +632,7 @@ report 60015 "ExportElecPayments - Word(MFC)"
                         }
                         field(ChosenOutputMethod; ChosenOutputMethod)
                         {
+                            ApplicationArea = Basic, Suite;
                             Visible = false;
                         }
                     }

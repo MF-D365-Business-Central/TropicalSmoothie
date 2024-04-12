@@ -38,6 +38,10 @@ page 60003 "MFCC01 Deferrals"
                 {
                     ToolTip = 'Specifies the value of the End Date field.';
                 }
+                field("Opening Date"; Rec."Opening Date")
+                {
+                    ToolTip = 'Specifies the value of the Opening Date field.';
+                }
                 field("Termination Date"; Rec."Termination Date")
                 {
                     ToolTip = 'Specifies the value of the Termination Date field.';

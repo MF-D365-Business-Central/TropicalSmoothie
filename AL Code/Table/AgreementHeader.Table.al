@@ -366,8 +366,8 @@ table 60003 "MFCC01 Agreement Header"
         AgreementHeader.TestField("Term Expiration Date");
 
         Message(DimensionMsg);
-        IF AgreementHeader."SalesPerson Commission" = 0 then Begin
-            IF not Confirm('You are about to open a cafe that has $0 Commissions. There could be a lot of troubles because of that. Are you sure?!', false, true) then
+        IF (AgreementHeader."SalesPerson Commission" = 0) Or (AgreementHeader."Agreement Amount" = 0) then Begin
+            IF not Confirm('You are about to open a cafe that has $0 Commissions or $0 Amount. There could be a lot of troubles because of that. Are you sure?!', false, true) then
                 exit;
         End else IF not Confirm(ConfirmTxt, false, true) then
                 exit;
@@ -394,7 +394,7 @@ table 60003 "MFCC01 Agreement Header"
         CZSetup.TestField(DeferredRevenueDevelopmentGAPP);
         CZSetup.TestField(RevenueRecognizedGAAP);
         CZSetup.TestField("Corp Department Code");
-        AgreementHeader.TestField("Agreement Amount");
+        //AgreementHeader.TestField("Agreement Amount");
         AgreementHeader.TestField(Status, AgreementHeader.Status::"Not Signed");
         AgreementHeader.Status := AgreementHeader.Status::Signed;
         AgreementHeader.Modify();

@@ -71,6 +71,42 @@ page 60004 "MFCC01 Agreements"
                 {
                     ToolTip = 'Specifies the value of the Franchise Bank Account field.';
                 }
+                field("Agreement Amount"; Rec."Agreement Amount")
+                {
+                    ToolTip = 'Specifies the value of the Agreement Amount field.';
+                }
+                field(NonGapInitialRevenueRecognized; Rec.NonGapInitialRevenueRecognized)
+                {
+                    ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognized GAAP field.';
+                }
+                field("Posted Agreement Amount"; Rec."Posted Agreement Amount")
+                {
+                    ToolTip = 'Specifies the value of the Posted Agreement Amount field.';
+                }
+                field("Posted Commission Amount"; Rec."Posted Commission Amount")
+                {
+                    ToolTip = 'Specifies the value of the Posted Commission Amount field.';
+                }
+
+                field(PostedCommissionExpenseAmount; Rec.PostedCommissionExpenseAmount)
+                {
+                    ToolTip = 'Specifies the value of the Posted Commission Expense  Amount field.';
+                }
+                field(PostedRevenueStatisticalAmount; Rec.PostedRevenueStatisticalAmount)
+                {
+                    ToolTip = 'Specifies the value of the Posted Revenue Statistical Amount field.';
+                }
+                field("SalesPerson Commission"; Rec."SalesPerson Commission")
+                {
+                    ToolTip = 'Specifies the value of the SalesPerson Commission field.';
+                }
+                field("Termination Date"; Rec."Termination Date")
+                {
+                    ToolTip = 'Specifies the value of the Termination Date field.';
+                }
+
+                //GGG
+
             }
         }
         area(FactBoxes)

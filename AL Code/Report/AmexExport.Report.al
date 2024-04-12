@@ -42,6 +42,9 @@ report 60014 "Amex Export"
         TempCSVBUffer: Record "CSV Buffer" temporary;
         RowNo: Integer;
         Vend: Record Vendor;
+        FileOutStream: OutStream;
+        CRLF: Text;
+        TempBlob: Codeunit "Temp Blob";
 
     trigger OnPreReport()
     Begin
@@ -50,11 +53,15 @@ report 60014 "Amex Export"
 
         IF "Gen. Journal Line".GetFilter("Journal Batch Name") = '' then
             Error('Journal Batch Name Must be selected.');
+
+        CRLF[1] := 13;
+        CRLF[2] := 10;
+        TempBlob.CreateOUtStream(FileOutStream);
     End;
 
     trigger OnPostReport()
     var
-        TempBlob: Codeunit "Temp Blob";
+
         FileName: Text;
         CSvIns: InStream;
         FIleMg: Codeunit "File Management";
@@ -62,7 +69,7 @@ report 60014 "Amex Export"
     Begin
         IF RowNo <> 0 then begin
 
-            TempCSVBUffer.SaveDataToBlob(TempBlob, ',');
+            //TempCSVBUffer.SaveDataToBlob(TempBlob, ',');
             TempBlob.CreateInStream(CSvIns);
             //InStream: InStream, DialogTitle: Text, ToFolder: Text, ToFilter: Text, var ToFile: Text
             FileName := 'Amex File Export ' + Format(CurrentDateTime) + '.csv';
@@ -103,28 +110,70 @@ report 60014 "Amex Export"
     begin
         Amount := -Round(VendLedger."Amount to Apply", 0.01, '=');
         RowNo += 1;
-        TempCSVBUffer.InsertEntry(RowNo, 1, '"' + Vend."No." + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 2, '"' + Vend.Name + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 3, '"' + Vend."E-Mail" + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 4, '" "');
-        TempCSVBUffer.InsertEntry(RowNo, 5, '"' + Format(Amount) + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 6, '0');
-        TempCSVBUffer.InsertEntry(RowNo, 7, '"' + Format(Amount) + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 8, '"' + "Gen. Journal Line"."Document No." + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 9, '"' + VendLedger."Document No." + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 10, '"' + Format(VendLedger."Posting Date") + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 11, '"' + Format("Gen. Journal Line"."Posting Date") + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 12, '"  "');
-        TempCSVBUffer.InsertEntry(RowNo, 13, '11111111');
-        TempCSVBUffer.InsertEntry(RowNo, 14, '"  "');
-        TempCSVBUffer.InsertEntry(RowNo, 15, '"' + Vend.Address + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 16, '"' + Vend."Address 2" + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 17, '"' + Vend.City + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 18, '"' + Vend.County + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 19, '"' + Vend."Post Code" + '"');
-        TempCSVBUffer.InsertEntry(RowNo, 20, '"  "');
+        // TempCSVBUffer.InsertEntry(RowNo, 1, '"' + Vend."No." + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 2, '"' + Vend.Name + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 3, '"' + Vend."E-Mail" + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 4, '" "');
+        // TempCSVBUffer.InsertEntry(RowNo, 5, '"' + Format(Amount) + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 6, '"0"');
+        // TempCSVBUffer.InsertEntry(RowNo, 7, '"' + Format(Amount) + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 8, '"' + "Gen. Journal Line"."Document No." + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 9, '"' + VendLedger."Document No." + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 10, '"' + Format(VendLedger."Posting Date") + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 11, '"' + Format("Gen. Journal Line"."Posting Date") + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 12, '"  "');
+        // TempCSVBUffer.InsertEntry(RowNo, 13, '"11111111"');
+        // TempCSVBUffer.InsertEntry(RowNo, 14, '"  "');
+        // TempCSVBUffer.InsertEntry(RowNo, 15, '"' + Vend.Address + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 16, '"' + Vend."Address 2" + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 17, '"' + Vend.City + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 18, '"' + Vend.County + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 19, '"' + Vend."Post Code" + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 20, '"  "');
 
 
+        // TempCSVBUffer.InsertEntry(RowNo, 1, '"' + Vend."No." + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 2, '"' + Vend.Name + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 3, '"' + Vend."E-Mail" + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 4, '" "');
+        // TempCSVBUffer.InsertEntry(RowNo, 5, '"' + Format(Amount) + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 6, '"0"');
+        // TempCSVBUffer.InsertEntry(RowNo, 7, '"' + Format(Amount) + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 8, '"' + "Gen. Journal Line"."Document No." + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 9, '"' + VendLedger."Document No." + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 10, '"' + Format(VendLedger."Posting Date") + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 11, '"' + Format("Gen. Journal Line"."Posting Date") + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 12, '"  "');
+        // TempCSVBUffer.InsertEntry(RowNo, 13, '"11111111"');
+        // TempCSVBUffer.InsertEntry(RowNo, 14, '"  "');
+        // TempCSVBUffer.InsertEntry(RowNo, 15, '"' + Vend.Address + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 16, '"' + Vend."Address 2" + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 17, '"' + Vend.City + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 18, '"' + Vend.County + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 19, '"' + Vend."Post Code" + '"');
+        // TempCSVBUffer.InsertEntry(RowNo, 20, '"  "');
+
+        FileOutStream.WriteText('"' + Vend."No." + '",'
+      + '"' + Vend.Name + '",'
+       + '"' + Vend."E-Mail" + '",'
+      + '"",'
+       + '"' + Format(Amount) + '",'
+       + '"0",'
+       + '"' + Format(Amount) + '",'
+       + '"' + "Gen. Journal Line"."Document No." + '",'
+       + '"' + VendLedger."External Document No." + '",'
+       + '"' + Format(VendLedger."Posting Date") + '",'
+       + '"' + Format("Gen. Journal Line"."Posting Date") + '",'
+       + '"",'
+       + '"11111111",'
+       + '" ",'
+       + '"' + Vend.Address + '",'
+       + '"' + Vend."Address 2" + '",'
+       + '"' + Vend.City + '",'
+       + '"' + Vend.County + '",'
+       + '"' + Vend."Post Code" + '",'
+      + '""');
+        FileOutStream.WriteText(CRLF)
     end;
 
 

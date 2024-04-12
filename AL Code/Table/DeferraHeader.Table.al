@@ -198,6 +198,12 @@ table 60001 "MFCC01 Deferral Header"
             FieldClass = FlowField;
             CalcFormula = lookup("MFCC01 Agreement Header"."Termination Date" where("No." = field("Agreement No.")));
         }
+        field(36; "Opening Date"; Date)
+        {
+            Editable = false;
+            FieldClass = FlowField;
+            CalcFormula = lookup("MFCC01 Agreement Header"."Franchise Revenue Start Date" where("No." = field("Agreement No.")));
+        }
     }
 
     keys
