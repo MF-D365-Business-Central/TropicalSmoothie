@@ -274,4 +274,12 @@ codeunit 60005 "Event handler"
     // end;
 
     #endRegion Codeunit2624
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Edit in Excel", 'OnEditInExcelWithFilters', '', false, false)]
+    internal procedure OnEditInExcelWithFilters(ServiceName: Text[240]; var EditinExcelFilters: Codeunit "Edit in Excel Filters"; SearchFilter: Text; var Handled: Boolean)
+    begin
+        //Error(ServiceName);
+        if ServiceName = 'General_Ledger_Entries_Excel' then
+            Error('You can not use Edit in Excel on the General Ledger Entries page.');
+    end;
 }

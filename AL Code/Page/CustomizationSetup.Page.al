@@ -176,6 +176,7 @@ page 60000 "MFCC01 Franchise Setup"
             {
                 field("Corp Department Code"; Rec."Corp Department Code")
                 {
+                    Caption = 'Department Code For Fee & Royalty';
                     ToolTip = 'Specifies the value of the Corp Department Code field.';
                 }
                 field("Local Department Code"; Rec."Local Department Code")
@@ -185,6 +186,12 @@ page 60000 "MFCC01 Franchise Setup"
                 field("National Department Code"; Rec."National Department Code")
                 {
                     ToolTip = 'Specifies the value of the National Department Code field.';
+                }
+                field(FRD; 'FRD - Set at GL & Stat Account')
+                {
+                    Editable = false;
+                    Caption = 'Department Code For Commission';
+                    ApplicationArea = All;
                 }
             }
         }
