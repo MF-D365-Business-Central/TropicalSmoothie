@@ -17,5 +17,9 @@ tableextension 60002 "MFCC01 G/L Entry" extends "G/L Entry"
         {
             DataClassification = CustomerContent;
         }
+        field(60004; "Description 2"; Text[100])
+        {
+            DataClassification = CustomerContent;
+        }
     }
 }

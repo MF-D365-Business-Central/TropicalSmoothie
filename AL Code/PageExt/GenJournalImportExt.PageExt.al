@@ -86,6 +86,13 @@ pageextension 60001 "MFCC01GenJournalImportExt" extends "General Journal"
         {
             Visible = true;
         }
+        addafter(Description)
+        {
+            field("Description 2"; Rec."Description 2")
+            {
+                ApplicationArea = All;
+            }
+        }
         // Add changes to page layout here
         moveafter("Posting Date"; Comment)
         moveafter(Comment; "Document No.")
@@ -93,7 +100,7 @@ pageextension 60001 "MFCC01GenJournalImportExt" extends "General Journal"
         moveafter("Account Type"; "Account No.")
         moveafter("Account No."; AccountName)
         moveafter(AccountName; Description)
-        moveafter(Description; "Debit Amount")
+        moveafter("Description 2"; "Debit Amount")
         moveafter("Debit Amount"; "Credit Amount")
         moveafter("Credit Amount"; Amount)
         moveafter(Amount; "Payer Information")

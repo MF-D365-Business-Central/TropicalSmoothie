@@ -40,6 +40,10 @@ tableextension 60001 "MFCC01 Gen. Journal Line" extends "Gen. Journal Line"
                 End;
             end;
         }
+        field(60005; "Description 2"; Text[100])
+        {
+            DataClassification = CustomerContent;
+        }
     }
 
     local procedure CopyCustomerDefaultDimensions()

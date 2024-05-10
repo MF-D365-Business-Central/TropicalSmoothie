@@ -5,6 +5,16 @@ pageextension 60004 "MFCC01General Ledger Entries" extends "General Ledger Entri
         // Add changes to page layout here
         addafter("Document No.")
         {
+            field("Description 2"; Rec."Description 2")
+            {
+                ApplicationArea = All;
+                ToolTip = 'Specifies the value of the Description 2 field.';
+            }
+            field("Document Date"; Rec."Document Date")
+            {
+                ApplicationArea = All;
+                ToolTip = 'Specifies the value of the Document Date field.';
+            }
             field("Agreement No."; Rec."Agreement No.")
             {
                 ApplicationArea = All;

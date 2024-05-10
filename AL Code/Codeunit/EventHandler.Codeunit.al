@@ -24,6 +24,8 @@ codeunit 60005 "Event handler"
     begin
         GLEntry."Agreement No." := GenJournalLine."Agreement No.";
         GLEntry."Approver ID" := GenJournalLine."Approver ID";
+        GLEntry."Description 2" := GenJournalLine."Description 2";
+
         Case GLEntry."Source Type" of
 
             GLEntry."Source Type"::"Bank Account":
@@ -282,4 +284,57 @@ codeunit 60005 "Event handler"
         if ServiceName = 'General_Ledger_Entries_Excel' then
             Error('You can not use Edit in Excel on the General Ledger Entries page.');
     end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Posting Buffer", 'OnAfterPrepareSales', '', false, false)]
+    local procedure OnAfterPrepareSales(var InvoicePostingBuffer: Record "Invoice Posting Buffer" temporary; var SalesLine: Record "Sales Line")
+    begin
+        InvoicePostingBuffer."Description 2" := SalesLine."Description 2";
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Posting Buffer", 'OnAfterPreparePurchase', '', false, false)]
+    local procedure OnAfterPreparePurchase(var PurchaseLine: Record "Purchase Line"; var InvoicePostingBuffer: Record "Invoice Posting Buffer")
+    begin
+        InvoicePostingBuffer."Description 2" := PurchaseLine."Description 2";
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Posting Buffer", 'OnAfterBuildPrimaryKey', '', false, false)]
+    local procedure OnAfterBuildPrimaryKey(var InvoicePostingBuffer: Record "Invoice Posting Buffer")
+    begin
+        if InvoicePostingBuffer."Description 2" <> '' then
+            InvoicePostingBuffer."Group ID" := CopyStr(InvoicePostingBuffer."Group ID" + Format(InvoicePostingBuffer."Description 2"), 1, MaxStrLen(InvoicePostingBuffer."Group ID"));
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Posting Buffer", 'OnAfterCopyToGenJnlLine', '', false, false)]
+    local procedure OnAfterCopyToGenJnlLine(var GenJnlLine: Record "Gen. Journal Line"; InvoicePostingBuffer: Record "Invoice Posting Buffer");
+    begin
+        GenJnlLine."Description 2" := InvoicePostingBuffer."Description 2";
+    end;
+
+
+
+    //OldPostingEngine
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Post. Buffer", 'OnAfterInvPostBufferPrepareSales', '', false, false)]
+    local procedure OnAfterPrepareSalesold(var InvoicePostBuffer: Record "Invoice Post. Buffer" temporary; var SalesLine: Record "Sales Line")
+    begin
+        InvoicePostBuffer."Description 2" := SalesLine."Description 2";
+        InvoicePostBuffer."Additional Grouping Identifier" := CopyStr(InvoicePostBuffer."Description 2", 1, 20);
+
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Post. Buffer", 'OnAfterInvPostBufferPreparePurchase', '', false, false)]
+    local procedure OnAfterPreparePurchaseold(var PurchaseLine: Record "Purchase Line"; var InvoicePostBuffer: Record "Invoice Post. Buffer" temporary)
+    begin
+        InvoicePostBuffer."Description 2" := PurchaseLine."Description 2";
+        InvoicePostBuffer."Additional Grouping Identifier" := CopyStr(InvoicePostBuffer."Description 2", 1, 20);
+    end;
+
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Post. Buffer", 'OnAfterCopyToGenJnlLine', '', false, false)]
+    local procedure OnAfterCopyToGenJnlLineold(var GenJnlLine: Record "Gen. Journal Line"; InvoicePostBuffer: Record "Invoice Post. Buffer" temporary);
+    begin
+        GenJnlLine."Description 2" := InvoicePostBuffer."Description 2";
+
+    end;
+
 }

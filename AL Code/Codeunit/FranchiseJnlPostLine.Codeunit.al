@@ -200,6 +200,7 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         GenJnlLine.Validate("Account Type", AccountType);
         GenJnlLine.Validate("Account No.", AccountNo);
         GenJnlLine.Validate(Amount, Amount);
+        GenJnlLine.Validate("VAT %");
     end;
 
     local procedure InitDefaultDimSource(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]]; Accountno: Code[20])
