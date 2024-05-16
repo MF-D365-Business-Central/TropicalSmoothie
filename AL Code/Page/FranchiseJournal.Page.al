@@ -296,5 +296,6 @@ page 60010 "MFCC01 Franchise Journal"
     [IntegrationEvent(false, false)]
     local procedure OnAfterValidateShortcutDimCode(var FranchiseJournalLine: Record "MFCC01 Franchise Journal"; var ShortcutDimCode: array[8] of Code[20]; DimIndex: Integer)
     begin
+
     end;
 }

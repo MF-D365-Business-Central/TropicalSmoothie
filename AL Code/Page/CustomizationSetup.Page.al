@@ -7,6 +7,7 @@ page 60000 "MFCC01 Franchise Setup"
     SourceTable = "MFCC01 Franchise Setup";
     DeleteAllowed = false;
     InsertAllowed = false;
+    Permissions = tabledata "Cust. Ledger Entry" = RM;
     layout
     {
         area(Content)
@@ -194,6 +195,21 @@ page 60000 "MFCC01 Franchise Setup"
                     ApplicationArea = All;
                 }
             }
+
+            group(Filter)
+            {
+                field(StartDate; StartDate)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Start Date';
+                }
+                field(EndDate; EndDate)
+                {
+                    ApplicationArea = All;
+                    Caption = 'End Date';
+                }
+            }
+
         }
     }
 
@@ -201,6 +217,15 @@ page 60000 "MFCC01 Franchise Setup"
     {
         area(Processing)
         {
+            action(UpdateSalesDate)
+            {
+                ApplicationArea = All;
+                Image = UpdateUnitCost;
+                trigger OnAction()
+                begin
+                    UpdateData();
+                end;
+            }
         }
     }
 
@@ -216,4 +241,27 @@ page 60000 "MFCC01 Franchise Setup"
             Rec.Insert();
         End;
     end;
+
+    local procedure UpdateData()
+    var
+        CustomerLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        IF (StartDate = 0D) or (EndDate = 0D) then
+            Error('Date Must Be filed in');
+        CustomerLedgerEntry.SetAutoCalcFields("Original Amt. (LCY)");
+        CustomerLedgerEntry.SetRange("Sales (LCY)", 0);
+        CustomerLedgerEntry.SetRange("Posting Date", StartDate, EndDate);
+        CustomerLedgerEntry.SetLoadFields("Entry No.", "Original Amt. (LCY)", "Sales (LCY)", "Posting Date");
+        IF CustomerLedgerEntry.FindSet(true) then
+            repeat
+                CustomerLedgerEntry.CalcFields("Original Amt. (LCY)");
+                CustomerLedgerEntry."Sales (LCY)" := CustomerLedgerEntry."Original Amt. (LCY)";
+                CustomerLedgerEntry.Modify();
+            Until CustomerLedgerEntry.Next() = 0;
+        Message('Completed.');
+    end;
+
+    var
+        StartDate: Date;
+        EndDate: Date;
 }

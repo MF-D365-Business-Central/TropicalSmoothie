@@ -5,6 +5,7 @@ codeunit 60005 "Event handler"
     end;
 
     var
+        WorkflowEventHandling: Codeunit "Workflow Event Handling";
         WorkflowManagement: Codeunit "Workflow Management";
         WorkFlowEvent: Codeunit "Workflow Event Handling";
         WorkflowResponse: Codeunit "Workflow Response Handling";
@@ -12,6 +13,14 @@ codeunit 60005 "Event handler"
         VBADocSendForApprovalEventDescTxt: Label 'Approval of a Bank for Vendor document is requested.';
         VBADocApprReqCancelledEventDescTxt: Label 'An approval request for a Bank for Vendor document is canceled.';
         VBADocReleasedEventDescTxt: Label 'A Bank for Vendor document is released.';
+        NoWorkflowEnabledErr: Label 'No approval workflow for this record type is enabled.';
+        StatJournalBatchSendForApprovalEventDescTxt: Label 'Approval of a Statistical account Journal batch is requested.';
+        StatJournalBatchApprovalRequestCancelEventDescTxt: Label 'An approval request for a Statistical account Journal batch is canceled.';
+        StatJournalLineSendForApprovalEventDescTxt: Label 'Approval of a Statistical account Journal line is requested.';
+        StatJournalLineApprovalRequestCancelEventDescTxt: Label 'An approval request for a Statistical account Journal line is canceled.';
+        StatJournalBatchBalancedEventDescTxt: Label 'A Statistical account Journal batch is balanced.';
+        StatJournalBatchNotBalancedEventDescTxt: Label 'A Statistical account Journal batch is not balanced.';
+        CheckStatJournalBatchBalanceTxt: Label 'Check if the Stat journal batch is balanced.';
 
     [EventSubscriber(ObjectType::Table, Database::"G/L Entry", OnAfterCopyGLEntryFromGenJnlLine, '', false, false)]
     local procedure OnAfterCopyGLEntryFromGenJnlLine(var GLEntry: Record "G/L Entry"; var GenJournalLine: Record "Gen. Journal Line")
@@ -95,6 +104,7 @@ codeunit 60005 "Event handler"
 
     Var
         VendorBankAcc: Record "Vendor Bank Account";
+        StatJournalLine: Record "Statistical Acc. Journal Line";
     begin
         case RecRef.Number of
             DATABASE::"Vendor Bank Account":
@@ -103,6 +113,15 @@ codeunit 60005 "Event handler"
                     ApprovalEntryArgument."Document Type" := 0;
                     ApprovalEntryArgument."Document No." := VendorBankAcc."Code";
                     IsHandled := true;
+                end;
+            DATABASE::"Statistical Acc. Journal Line", Database::"Statistical Acc. Journal Batch":
+                begin
+                    RecRef.SetTable(StatJournalLine);
+                    ApprovalEntryArgument."Document Type" := 0;
+                    ApprovalEntryArgument."Document No." := StatJournalLine."Document No.";
+                    ApprovalEntryArgument."Salespers./Purch. Code" := '';
+                    ApprovalEntryArgument.Amount := StatJournalLine.Amount;
+                    ApprovalEntryArgument."Amount (LCY)" := StatJournalLine.Amount;
                 end;
         end;
     end;
@@ -150,7 +169,10 @@ codeunit 60005 "Event handler"
     [IntegrationEvent(false, false)]
     local procedure OnBeforeIsSufficientVBAApprover(UserSetup: Record "User Setup"; var IsSufficient: Boolean; var IsHandled: Boolean)
     begin
+
     end;
+
+
     #endregion Codeunit1535
 
     #region Codeunit1520
@@ -163,6 +185,22 @@ codeunit 60005 "Event handler"
           VBADocApprReqCancelledEventDescTxt, 0, false);
         WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnAfterReleaseVBADocCode(), DATABASE::"Vendor Bank Account",
           VBADocReleasedEventDescTxt, 0, false);
+
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode(), DATABASE::"Statistical Acc. Journal Batch",
+          StatJournalBatchSendForApprovalEventDescTxt, 0, false);
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnCancelStatJournalBatchApprovalRequestCode(), DATABASE::"Statistical Acc. Journal Batch",
+          StatJournalBatchApprovalRequestCancelEventDescTxt, 0, false);
+
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnSendStatJournalLineForApprovalCode(), DATABASE::"Statistical Acc. Journal Line",
+           StatJournalLineSendForApprovalEventDescTxt, 0, false);
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnCancelStatJournalLineApprovalRequestCode(), DATABASE::"Statistical Acc. Journal Line",
+          StatJournalLineApprovalRequestCancelEventDescTxt, 0, false);
+
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode(), DATABASE::"Statistical Acc. Journal Batch",
+          StatJournalBatchBalancedEventDescTxt, 0, false);
+
+        WorkFlowEvent.AddEventToLibrary(MFCC01Approvals.RunWorkflowOnStatJournalBatchNotBalancedCode(), DATABASE::"Statistical Acc. Journal Batch",
+          StatJournalBatchNotBalancedEventDescTxt, 0, false);
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Event Handling", OnAddWorkflowEventPredecessorsToLibrary, '', false, false)]
@@ -171,21 +209,45 @@ codeunit 60005 "Event handler"
         case EventFunctionName of
             MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode():
                 WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnCancelSalesApprovalRequestCode(), WorkFlowEvent.RunWorkflowOnSendSalesDocForApprovalCode());
+            MFCC01Approvals.RunWorkflowOnCancelStatJournalBatchApprovalRequestCode():
+                WorkFlowEvent.AddEventPredecessor(MFCC01Approvals.RunWorkflowOnCancelStatJournalBatchApprovalRequestCode(),
+                  MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+            MFCC01Approvals.RunWorkflowOnCancelStatJournalLineApprovalRequestCode():
+                WorkFlowEvent.AddEventPredecessor(MFCC01Approvals.RunWorkflowOnCancelStatJournalLineApprovalRequestCode(),
+                  MFCC01Approvals.RunWorkflowOnSendStatJournalLineForApprovalCode());
+
             WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode():
                 begin
                     WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
                     WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnApproveApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalLineForApprovalCode());
                 end;
             WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode():
                 begin
                     WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
                     WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnRejectApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalLineForApprovalCode());
                 end;
             WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode():
                 begin
                     WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
                     WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode());
+                    WorkFlowEvent.AddEventPredecessor(WorkFlowEvent.RunWorkflowOnDelegateApprovalRequestCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalLineForApprovalCode());
                 end;
+            MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode():
+                WorkFlowEvent.AddEventPredecessor(MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+            MFCC01Approvals.RunWorkflowOnStatJournalBatchNotBalancedCode():
+                WorkFlowEvent.AddEventPredecessor(MFCC01Approvals.RunWorkflowOnStatJournalBatchNotBalancedCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+
+
         end;
     end;
 
@@ -199,6 +261,43 @@ codeunit 60005 "Event handler"
     procedure RunWorkflowOnCancelVBAApprovalRequest(var VBA: Record "Vendor Bank Account")
     begin
         WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode(), VBA);
+    end;
+
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnSendStatJournalBatchForApproval', '', false, false)]
+    procedure RunWorkflowOnSendStatJournalBatchForApproval(var StatJournalBatch: Record "Statistical Acc. Journal Batch")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode(), StatJournalBatch);
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnCancelStatJournalBatchApprovalRequest', '', false, false)]
+    procedure RunWorkflowOnCancelStatJournalBatchApprovalRequest(var StatJournalBatch: Record "Statistical Acc. Journal Batch")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnCancelStatJournalBatchApprovalRequestCode(), StatJournalBatch);
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnSendStatJournalLineForApproval', '', false, false)]
+    procedure RunWorkflowOnSendStatJournalLineForApproval(var StatJournalLine: Record "Statistical Acc. Journal Line")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnSendStatJournalLineForApprovalCode(), StatJournalLine);
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::MFCC01Approvals, 'OnCancelStatJournalLineApprovalRequest', '', false, false)]
+    procedure RunWorkflowOnCancelStatJournalLineApprovalRequest(var StatJournalLine: Record "Statistical Acc. Journal Line")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnCancelStatJournalLineApprovalRequestCode(), StatJournalLine);
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnStatJournalBatchBalanced', '', false, false)]
+    procedure RunWorkflowOnStatJournalBatchBalanced(var Sender: Record "Statistical Acc. Journal Batch")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode(), Sender);
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnStatJournalBatchNotBalanced', '', false, false)]
+    procedure RunWorkflowOnStatJournalBatchNotBalanced(var Sender: Record "Statistical Acc. Journal Batch")
+    begin
+        WorkflowManagement.HandleEvent(MFCC01Approvals.RunWorkflowOnStatJournalBatchNotBalancedCode(), Sender);
     end;
 
     #endregion Codeunit1520
@@ -236,6 +335,45 @@ codeunit 60005 "Event handler"
         End;
     end;
 
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAddWorkflowResponsesToLibrary', '', false, false)]
+    local procedure CU_1520_OnAddWorkflowResponsesToLibrary()
+    begin
+        WorkflowResponse.AddResponseToLibrary(MFCC01Approvals.CheckstatJournalBatchBalanceCode(), 0, CheckStatJournalBatchBalanceTxt, 'GROUP 0');
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnExecuteWorkflowResponse', '', false, false)]
+    local procedure CU_1520_OnExecuteWorkflowResponse(var ResponseExecuted: Boolean; var Variant: Variant; xVariant: Variant; ResponseWorkflowStepInstance: Record "Workflow Step Instance")
+    var
+        WorkflowResponse2: Record "Workflow Response";
+    begin
+        if WorkflowResponse2.Get(ResponseWorkflowStepInstance."Function Name") then
+            case WorkflowResponse2."Function Name" of
+                MFCC01Approvals.CheckstatJournalBatchBalanceCode():
+                    Begin
+                        CheckStatJournalBatchBalance(Variant);
+                        ResponseExecuted := True;
+                    End;
+            End;
+    end;
+
+
+
+    local procedure CheckStatJournalBatchBalance(Variant: Variant)
+    var
+        StatJournalBatch: Record "Statistical Acc. Journal Batch";
+        RecRef: RecordRef;
+    begin
+        RecRef.GetTable(Variant);
+
+        case RecRef.Number of
+            DATABASE::"Statistical Acc. Journal Batch":
+                begin
+                    StatJournalBatch := Variant;
+                    StatJournalBatch.CheckBalance();
+                end;
+        end;
+    end;
+
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAddWorkflowResponsePredecessorsToLibrary', '', false, false)]
     local procedure CU_1520_OnAddWorkflowResponsePredecessorsToLibrary(ResponseFunctionName: Code[128])
     Begin
@@ -249,23 +387,91 @@ codeunit 60005 "Event handler"
                 begin
                     WorkflowResponse.AddResponsePredecessor(
                         WorkflowResponse.CreateApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.CreateApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalLineForApprovalCode());
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.CreateApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.CreateApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode());
                 end;
             WorkflowResponse.SendApprovalRequestForApprovalCode():
                 begin
                     WorkflowResponse.AddResponsePredecessor(
                         WorkflowResponse.SendApprovalRequestForApprovalCode(), MFCC01Approvals.RunWorkflowOnSendVBADocForApprovalCode());
+                    WorkflowResponse.AddResponsePredecessor(WorkflowResponse.SendApprovalRequestForApprovalCode(), WorkflowEventHandling.RunWorkflowOnSendGeneralJournalLineForApprovalCode());
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.SendApprovalRequestForApprovalCode(), MFCC01Approvals.RunWorkflowOnSendStatJournalBatchForApprovalCode());
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.SendApprovalRequestForApprovalCode(), MFCC01Approvals.RunWorkflowOnStatJournalBatchBalancedCode());
                 end;
             WorkflowResponse.OpenDocumentCode():
                 begin
                     WorkflowResponse.AddResponsePredecessor(WorkflowResponse.OpenDocumentCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                    WorkflowResponse.AddResponsePredecessor(WorkflowResponse.OpenDocumentCode(), MFCC01Approvals.RunWorkflowOnCancelStatJournalLineApprovalRequestCode());
+                    WorkflowResponse.AddResponsePredecessor(WorkflowResponse.OpenDocumentCode(), MFCC01Approvals.RunWorkflowOnCancelStatJournalBatchApprovalRequestCode());
                 end;
             WorkflowResponse.CancelAllApprovalRequestsCode():
                 begin
                     WorkflowResponse.AddResponsePredecessor(
                         WorkflowResponse.CancelAllApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnCancelVBAApprovalRequestCode());
+                    WorkflowResponse.AddResponsePredecessor(
+                    WorkflowResponse.CancelAllApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnCancelstatJournalLineApprovalRequestCode());
+                    WorkflowResponse.AddResponsePredecessor(
+                        WorkflowResponse.CancelAllApprovalRequestsCode(), MFCC01Approvals.RunWorkflowOnCancelstatJournalBatchApprovalRequestCode());
                 end;
+            MFCC01Approvals.CheckstatJournalBatchBalanceCode():
+                WorkflowResponse.AddResponsePredecessor(
+                    MFCC01Approvals.CheckstatJournalBatchBalanceCode(),
+                    MFCC01Approvals.RunWorkflowOnSendstatJournalBatchForApprovalCode());
+
         end;
     End;
+
+    local procedure CheckGeneralJournalBatchBalance(Variant: Variant)
+    var
+        StatJnlBatch: Record "Statistical Acc. Journal Batch";
+        RecRef: RecordRef;
+    begin
+        RecRef.GetTable(Variant);
+
+        case RecRef.Number of
+            DATABASE::"Gen. Journal Batch":
+                begin
+                    StatJnlBatch := Variant;
+                    //RGU StatJnlBatch.CheckBalance();
+                end;
+        end;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAfterAllowRecordUsage', '', false, false)]
+    local procedure CU_1521OnAfterAllowRecordUsage(Variant: Variant; var RecRef: RecordRef)
+    var
+        StatJnlBatch: Record "Statistical Acc. Journal Batch";
+
+    begin
+        case RecRef.Number of
+            DATABASE::"Statistical Acc. Journal Batch":
+                begin
+                    RecRef.SetTable(StatJnlBatch);
+                    AllowGenJournalBatchUsage(StatJnlBatch);
+                end;
+        End;
+    end;
+
+    procedure AllowGenJournalBatchUsage(StatJnlBatch: Record "Statistical Acc. Journal Batch")
+    var
+        StatJournalLine: Record "Statistical Acc. Journal Line";
+        RecordRestrictionMgt: Codeunit "Record Restriction Mgt.";
+    begin
+        RecordRestrictionMgt.AllowRecordUsage(StatJnlBatch);
+
+        StatJournalLine.SetRange("Journal Template Name", StatJnlBatch."Journal Template Name");
+        StatJournalLine.SetRange("Journal Batch Name", StatJnlBatch.Name);
+        if StatJournalLine.FindSet() then
+            repeat
+                RecordRestrictionMgt.AllowRecordUsage(StatJournalLine);
+            until StatJournalLine.Next() = 0;
+    end;
     #endregion Codeunit1521
 
     #Region Codeunit2624

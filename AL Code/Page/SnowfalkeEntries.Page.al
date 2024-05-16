@@ -70,7 +70,11 @@ page 60013 "MFCC01 Snowflake Entries"
                 Caption = 'Validate Data';
                 Image = CheckList;
                 trigger OnAction()
+                var
+                    ConfirmTxt: Label 'Do you want to Validate Snowflake data.?';
                 begin
+                    IF not Confirm(ConfirmTxt, false, true) then
+                        exit;
                     PowerBI.Validatedata();
                 end;
             }
@@ -81,7 +85,11 @@ page 60013 "MFCC01 Snowflake Entries"
                 Caption = 'Process Data';
                 Image = Process;
                 trigger OnAction()
+                var
+                    ConfirmTxt: Label 'Do you want to Create franchise Journals Entries.?';
                 begin
+                    IF not Confirm(ConfirmTxt, false, true) then
+                        exit;
                     PowerBI.Processdata();
                 end;
             }

@@ -140,7 +140,10 @@ page 60008 "MFCC01 Sales Import"
                 trigger OnAction()
                 var
                     SalesImport: Codeunit "MFCC01 Sales Import";
-                Begin
+                    ConfirmTxt: Label 'Do you want to Create Invoice.?';
+                begin
+                    IF not Confirm(ConfirmTxt, false, true) then
+                        exit;
                     SalesImport.GenerateInvoice();
                 End;
             }
@@ -153,7 +156,10 @@ page 60008 "MFCC01 Sales Import"
                 trigger OnAction()
                 var
                     SalesImport: Codeunit "MFCC01 Sales Import";
-                Begin
+                    ConfirmTxt: Label 'Do you want to Post Invoice.?';
+                begin
+                    IF not Confirm(ConfirmTxt, false, true) then
+                        exit;
                     SalesImport.PostDocuments();
                 End;
             }

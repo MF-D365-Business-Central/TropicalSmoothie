@@ -77,7 +77,7 @@ report 60012 "MFCC01 Depreciation"
 
         //Value: Variant, IsFormula: Boolean, CommentText: Text, IsBold: Boolean, IsItalics: Boolean, IsUnderline: Boolean, NumFormat: Text[30], CellType: Option
         ExcelBuffer.AddColumn('No.', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        //ExcelBuffer.AddColumn('Category', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
+        ExcelBuffer.AddColumn('Category', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
         ExcelBuffer.AddColumn('Description', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
         ExcelBuffer.AddColumn('Useful Life In Months', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
         ExcelBuffer.AddColumn('Method/Conv', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
@@ -105,7 +105,7 @@ report 60012 "MFCC01 Depreciation"
     begin
         ExcelBuffer.NewRow();
         ExcelBuffer.AddColumn("Fixed Asset"."No.", false, '', false, false, false, '', ExcelBuffer."Cell Type"::Text);
-        //ExcelBuffer.AddColumn("Fixed Asset".Description, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Text);
+        ExcelBuffer.AddColumn("Fixed Asset"."FA Subclass Code", false, '', false, false, false, '', ExcelBuffer."Cell Type"::Text);
         ExcelBuffer.AddColumn("Fixed Asset".Description, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Text);
         ExcelBuffer.AddColumn(FADepBook."No. of Depreciation Months", false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
         ExcelBuffer.AddColumn(FADepBook."Depreciation Method", false, '', false, false, false, '', ExcelBuffer."Cell Type"::Text);

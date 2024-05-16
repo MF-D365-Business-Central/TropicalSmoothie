@@ -156,7 +156,10 @@ page 60012 "MFCC01 Purchase Import"
                 trigger OnAction()
                 var
                     PurchaseImport: Codeunit "MFCC01 Purchase Import";
-                Begin
+                    ConfirmTxt: Label 'Do you want to Create Invoice.?';
+                begin
+                    IF not Confirm(ConfirmTxt, false, true) then
+                        exit;
                     PurchaseImport.GenerateInvoice();
                 End;
             }
@@ -169,7 +172,10 @@ page 60012 "MFCC01 Purchase Import"
                 trigger OnAction()
                 var
                     PurchaseImport: Codeunit "MFCC01 Purchase Import";
-                Begin
+                    ConfirmTxt: Label 'Do you want to Post Invoice.?';
+                begin
+                    IF not Confirm(ConfirmTxt, false, true) then
+                        exit;
                     PurchaseImport.PostDocuments();
                 End;
             }
