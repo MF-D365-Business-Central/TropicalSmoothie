@@ -237,14 +237,21 @@ codeunit 60007 MFCC01Approvals
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnAfterIsSufficientApprover', '', false, false)]
     local procedure OnAfterIsSufficientApprover(UserSetup: Record "User Setup"; ApprovalEntryArgument: Record "Approval Entry"; var IsSufficient: Boolean; var IsHandled: Boolean)
+    var
+        ApporvalChainIsUnsupportedMsg: Label 'Only Direct Approver is supported as Approver Limit Type option for %1. The approval request will be approved automatically.', Comment = 'Only Direct Approver is supported as Approver Limit Type option for Stat. Journal Batch DEFAULT, CASH. The approval request will be approved automatically.';
+
     begin
         case ApprovalEntryArgument."Table ID" of
-            DATABASE::"Statistical Acc. Journal Line", Database::"Statistical Acc. Journal Batch":
+            DATABASE::"Statistical Acc. Journal Line":
                 Begin
                     IsSufficient := IsSufficientGLAccountApprover(UserSetup, ApprovalEntryArgument."Amount (LCY)");
                     IsHandled := true;
                 End;
         end;
+        if not IsHandled then
+            if ApprovalEntryArgument."Table ID" = Database::"Statistical Acc. Journal Batch" then
+                Message(ApporvalChainIsUnsupportedMsg, Format(ApprovalEntryArgument."Record ID to Approve"));
+
     end;
 
     local procedure IsSufficientGLAccountApprover(UserSetup: Record "User Setup"; ApprovalAmountLCY: Decimal): Boolean

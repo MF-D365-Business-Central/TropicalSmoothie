@@ -189,6 +189,37 @@ table 60003 "MFCC01 Agreement Header"
             Editable = false;
             DataClassification = CustomerContent;
         }
+        field(63; "Fanchise Amt Closed"; Decimal)
+        {
+            DataClassification = CustomerContent;
+            Editable = false;
+        }
+        field(65; "Commission Amt Closed"; Decimal)
+        {
+            DataClassification = CustomerContent;
+            Editable = false;
+        }
+        field(66; "Cancled Agreement Amount"; Decimal)
+        {
+            Caption = 'Cancel Agreement Amount';
+            Editable = false;
+        }
+        field(67; "Cancled Commission Amount"; Decimal)
+        {
+            Caption = 'Cancel Commission Amount';
+            Editable = false;
+        }
+
+        field(68; CancelRevenueStatisticalAmount; Decimal)
+        {
+            Caption = 'Cancel Revenue Statistical Amount';
+            Editable = false;
+        }
+        field(69; CancelCommissionExpenseAmount; Decimal)
+        {
+            Caption = 'Cancel Commission Expense  Amount';
+            Editable = false;
+        }
     }
 
     keys
@@ -403,6 +434,7 @@ table 60003 "MFCC01 Agreement Header"
 
     procedure SetStatusTerminate(Var AgreementHeader: Record "MFCC01 Agreement Header")
     var
+        AgreementMgmt: Codeunit "MFCC01 Agreement Management";
         DefHeader: Record "MFCC01 Deferral Header";
         ConfirmTxt: Label 'Do you want to Terminate the Cafe.?';
     begin
@@ -411,10 +443,38 @@ table 60003 "MFCC01 Agreement Header"
         //CheckLinesExist(AgreementHeader, true);
         AgreementHeader.TestField("Termination Date");
         IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
-            AgreementHeader.Status := AgreementHeader.Status::Terminated;
-            AgreementHeader.Modify();
+
+
+            IF AgreementHeader.Status = AgreementHeader.Status::Opened then
+                AgreementMgmt.ProcessRetunOnOpen(AgreementHeader);
+            IF AgreementHeader.Status = AgreementHeader.Status::Signed then
+                AgreementMgmt.ProcessReturnOnSign(AgreementHeader);
+
             DefHeader.SetRange("Agreement No.", Rec."No.");
             DefHeader.ModifyAll(Status, DefHeader.Status::Terminated);
+
+            AgreementHeader.Status := AgreementHeader.Status::Terminated;
+            AgreementHeader.Modify();
+            AgreementMgmt.CreateNewAgreement(AgreementHeader, true)
+        end;
+    end;
+
+    procedure SetStatusCancel(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    var
+        AgreementMgmt: Codeunit "MFCC01 Agreement Management";
+        DefHeader: Record "MFCC01 Deferral Header";
+        ConfirmTxt: Label 'Do you want to Cancel the Cafe.?';
+    begin
+        IF not Confirm(ConfirmTxt, false, true) then
+            exit;
+        //CheckLinesExist(AgreementHeader, true);
+
+        IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
+
+            AgreementMgmt.ProcessCancel(AgreementHeader);
+            AgreementHeader.Status := AgreementHeader.Status::Canceled;
+            AgreementHeader.Modify();
+            AgreementMgmt.CreateNewAgreement(AgreementHeader, true)
         end;
     end;
 

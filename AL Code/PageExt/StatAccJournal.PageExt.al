@@ -70,7 +70,7 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
                         Enabled = NOT OpenApprovalEntriesOnBatchOrCurrJnlLineExist AND CanRequestFlowApprovalForBatchAndCurrentLine AND EnabledStatJnlLineWorkflowsExist;
                         Image = SendApprovalRequest;
                         ToolTip = 'Send selected journal lines for approval.';
-
+                        Visible = false;
                         trigger OnAction()
                         var
                             [SecurityFiltering(SecurityFilter::Filtered)]
@@ -110,7 +110,7 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
                         Enabled = CanCancelApprovalForJnlLine OR CanCancelFlowApprovalForLine;
                         Image = CancelApprovalRequest;
                         ToolTip = 'Cancel sending selected journal lines for approval.';
-
+                        Visible = false;
                         trigger OnAction()
                         var
                             [SecurityFiltering(SecurityFilter::Filtered)]

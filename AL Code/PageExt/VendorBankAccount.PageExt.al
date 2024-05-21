@@ -143,10 +143,17 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
 
                     trigger OnAction()
                     var
+                        ApprovalsMgmt: Codeunit "Approvals Mgmt.";
                         MFCC01Approvals: Codeunit MFCC01Approvals;
+                        Vendor: Record Vendor;
                     begin
-                        if MFCC01Approvals.CheckVBAApprovalPossible(Rec) then
+                        if MFCC01Approvals.CheckVBAApprovalPossible(Rec) then Begin
                             MFCC01Approvals.OnSendVBADocForApproval(Rec);
+                            IF Rec."First Time Approval" then
+                                if ApprovalsMgmt.CheckVendorApprovalsWorkflowEnabled(Vendor) then
+                                    ApprovalsMgmt.OnSendVendorForApproval(Vendor);
+                        End;
+
                     end;
                 }
                 action(CancelApprovalRequest)
@@ -159,10 +166,17 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
 
                     trigger OnAction()
                     var
+                        ApprovalsMgmt: Codeunit "Approvals Mgmt.";
                         MFCC01Approvals: Codeunit MFCC01Approvals;
-                        WorkflowWebhookMgt: Codeunit "Workflow Webhook Management";
+                        Vendor: Record Vendor;
                     begin
-                        MFCC01Approvals.OnCancelVBAApprovalRequest(Rec);
+                        if MFCC01Approvals.CheckVBAApprovalPossible(Rec) then Begin
+                            MFCC01Approvals.OnCancelVBAApprovalRequest(Rec);
+                            IF Rec."First Time Approval" then
+                                if ApprovalsMgmt.CheckVendorApprovalsWorkflowEnabled(Vendor) then
+                                    ApprovalsMgmt.OnCancelVendorApprovalRequest(Vendor);
+                        End;
+
                     end;
                 }
             }

@@ -83,6 +83,11 @@ table 60002 "MFCC01 Deferral Line"
             Caption = 'Posted';
             Editable = false;
         }
+        field(13; Canceled; Boolean)
+        {
+            Caption = 'Canceled';
+            Editable = false;
+        }
     }
 
     keys

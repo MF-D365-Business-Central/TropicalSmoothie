@@ -99,12 +99,13 @@ codeunit 60005 "Event handler"
 
     #region Codeunit1535
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnAfterPopulateApprovalEntryArgument', '', false, false)]
-    local procedure CU_1535_OnAfterPopulateApprovalEntryArgument(WorkflowStepInstance: Record "Workflow Step Instance"; var ApprovalEntryArgument: Record "Approval Entry"; var IsHandled: Boolean; var RecRef: RecordRef)
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnPopulateApprovalEntryArgument', '', false, false)]
+    local procedure CU_1535_OnPopulateApprovalEntryArgument(var RecRef: RecordRef; var ApprovalEntryArgument: Record "Approval Entry"; WorkflowStepInstance: Record "Workflow Step Instance")
 
     Var
         VendorBankAcc: Record "Vendor Bank Account";
         StatJournalLine: Record "Statistical Acc. Journal Line";
+        StatJournalBatch: Record "Statistical Acc. Journal Batch";
     begin
         case RecRef.Number of
             DATABASE::"Vendor Bank Account":
@@ -112,9 +113,10 @@ codeunit 60005 "Event handler"
                     RecRef.SetTable(VEndorBankAcc);
                     ApprovalEntryArgument."Document Type" := 0;
                     ApprovalEntryArgument."Document No." := VendorBankAcc."Code";
-                    IsHandled := true;
                 end;
-            DATABASE::"Statistical Acc. Journal Line", Database::"Statistical Acc. Journal Batch":
+            Database::"Statistical Acc. Journal Batch":
+                RecRef.SetTable(StatJournalBatch);
+            DATABASE::"Statistical Acc. Journal Line":
                 begin
                     RecRef.SetTable(StatJournalLine);
                     ApprovalEntryArgument."Document Type" := 0;
@@ -313,6 +315,7 @@ codeunit 60005 "Event handler"
                 begin
                     RecRef.SetTable(VBA);
                     VBA.Validate(Status, VBA.Status::Released);
+                    VBA."First Time Approval" := false;
                     VBA.Modify();
                     Handled := true;
                 end;

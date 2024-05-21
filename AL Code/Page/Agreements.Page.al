@@ -239,7 +239,7 @@ page 60004 "MFCC01 Agreements"
                 var
                     DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
                 begin
-                    DeferralUtility.CreatedeferralScheduleFromAgreement(Rec);
+                    DeferralUtility.CreatedeferralScheduleFromAgreement(Rec, false);
                 end;
             }
             action(ProcessCommission)

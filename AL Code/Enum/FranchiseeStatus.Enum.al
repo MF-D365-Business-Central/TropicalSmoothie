@@ -11,4 +11,7 @@ enum 60002 MFCC01FrnachiseeStatus
     value(2; Transfer)
     {
     }
+    value(3; Canceled)
+    {
+    }
 }

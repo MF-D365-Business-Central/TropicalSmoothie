@@ -228,6 +228,17 @@ page 60005 "MFCC01 Agreement"
                     Rec.SetStatusTerminate(Rec);
                 end;
             }
+            action(Cancel)
+            {
+                ApplicationArea = All;
+                Image = Cancel;
+                Promoted = true;
+                PromotedCategory = Process;
+                trigger OnAction()
+                begin
+                    Rec.SetStatusCancel(Rec);
+                end;
+            }
             action(CreateSchedule)
             {
                 Caption = 'Create Schedule';
@@ -240,7 +251,7 @@ page 60005 "MFCC01 Agreement"
                 var
                     DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
                 begin
-                    DeferralUtility.CreatedeferralScheduleFromAgreement(Rec);
+                    DeferralUtility.CreatedeferralScheduleFromAgreement(Rec, false);
                 end;
             }
 

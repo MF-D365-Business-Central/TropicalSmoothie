@@ -20,4 +20,7 @@ enum 60000 "MFCC01 Deferral Status"
     value(20; Terminated)
     {
     }
+    value(25; Canceled)
+    {
+    }
 }

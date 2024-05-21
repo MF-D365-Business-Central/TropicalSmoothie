@@ -13,4 +13,8 @@ enum 60003 "MFCC01 Agreement Status"
     value(3; Terminated)
     {
     }
+
+    value(4; Canceled)
+    {
+    }
 }
