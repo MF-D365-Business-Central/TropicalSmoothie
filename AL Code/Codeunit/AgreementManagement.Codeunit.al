@@ -94,8 +94,8 @@ codeunit 60002 "MFCC01 Agreement Management"
         BalAccountType: Enum "Gen. Journal Account Type";
         ConfirmTxt: Label 'Do you want to Process commission.?';
     begin
-        IF not Confirm(ConfirmTxt, false, true) then
-            exit;
+        // IF not Confirm(ConfirmTxt, false, true) then
+        //     exit;
         //AgreementHeader.TestField(Status, AgreementHeader.status::Opened);
         SetPostingDate(AgreementHeader."Agreement Date");
         AgreementHeader.TestField(Status, AgreementHeader.Status::Signed);

@@ -407,8 +407,8 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         Type: Enum "MFCC01 Deferral Type";
         ConfirmTxt: Label 'Do you Want to Created Schedules.?';
     begin
-        IF not Confirm(ConfirmTxt, false, true) then
-            exit;
+        // IF not Confirm(ConfirmTxt, false, true) then
+        //     exit;
         Agreementheader.TestField(Status, Agreementheader.Status::Opened);
         CZSetup.GetRecordonce();
         IF (Agreementheader."FranchiseFeescheduleNo." = '') And (Agreementheader."Agreement Amount" <> 0) then Begin
