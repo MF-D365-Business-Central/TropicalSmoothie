@@ -298,8 +298,8 @@ table 60001 "MFCC01 Deferral Header"
         DeferralDescription: Text[100];
         ConfirmTxt: Label 'Do you want to Create Schedules.?';
     begin
-        IF not confirm(ConfirmTxt, false, true) then
-            exit;
+        // IF not confirm(ConfirmTxt, false, true) then
+        //     exit;
         OnBeforeCalculateSchedule(Rec);
 
         Rec.TestField("Amount to Defer");
@@ -320,8 +320,8 @@ table 60001 "MFCC01 Deferral Header"
     var
         ConfirmTxt: Label 'Do you want set status to open.?';
     begin
-        IF not confirm(ConfirmTxt, false, true) then
-            exit;
+        // IF not confirm(ConfirmTxt, false, true) then
+        //     exit;
         DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
 
         DeferralHeader.Status := DeferralHeader.Status::" ";
@@ -340,8 +340,8 @@ table 60001 "MFCC01 Deferral Header"
     var
         ConfirmTxt: Label 'Do you want set status to Certified.?';
     begin
-        IF not confirm(ConfirmTxt, false, true) then
-            exit;
+        // IF not confirm(ConfirmTxt, false, true) then
+        //     exit;
         DeferralHeader.TestField(Status, DeferralHeader.Status::"Schedule Created");
 
         DeferralHeader.Status := DeferralHeader.Status::Open;
