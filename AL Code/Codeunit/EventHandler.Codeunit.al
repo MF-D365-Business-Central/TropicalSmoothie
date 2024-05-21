@@ -22,6 +22,13 @@ codeunit 60005 "Event handler"
         StatJournalBatchNotBalancedEventDescTxt: Label 'A Statistical account Journal batch is not balanced.';
         CheckStatJournalBatchBalanceTxt: Label 'Check if the Stat journal batch is balanced.';
 
+
+    [EventSubscriber(ObjectType::Table, Database::"Cust. Ledger Entry", 'OnAfterCopyCustLedgerEntryFromGenJnlLine', '', false, false)]
+    local procedure OnAfterCopyCustLedgerEntryFromGenJnlLine(var CustLedgerEntry: Record "Cust. Ledger Entry"; GenJournalLine: Record "Gen. Journal Line")
+    begin
+        CustLedgerEntry."Agreement No." := GenJournalLine."Agreement No.";
+    end;
+
     [EventSubscriber(ObjectType::Table, Database::"G/L Entry", OnAfterCopyGLEntryFromGenJnlLine, '', false, false)]
     local procedure OnAfterCopyGLEntryFromGenJnlLine(var GLEntry: Record "G/L Entry"; var GenJournalLine: Record "Gen. Journal Line")
     var

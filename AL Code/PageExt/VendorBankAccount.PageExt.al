@@ -147,6 +147,7 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
                         MFCC01Approvals: Codeunit MFCC01Approvals;
                         Vendor: Record Vendor;
                     begin
+                        Vendor.Get(Rec."Vendor No.");
                         if MFCC01Approvals.CheckVBAApprovalPossible(Rec) then Begin
                             MFCC01Approvals.OnSendVBADocForApproval(Rec);
                             IF Rec."First Time Approval" then
@@ -170,13 +171,11 @@ pageextension 60007 "MFCC01VendorBankAccountCard" extends "Vendor Bank Account C
                         MFCC01Approvals: Codeunit MFCC01Approvals;
                         Vendor: Record Vendor;
                     begin
-                        if MFCC01Approvals.CheckVBAApprovalPossible(Rec) then Begin
-                            MFCC01Approvals.OnCancelVBAApprovalRequest(Rec);
-                            IF Rec."First Time Approval" then
-                                if ApprovalsMgmt.CheckVendorApprovalsWorkflowEnabled(Vendor) then
-                                    ApprovalsMgmt.OnCancelVendorApprovalRequest(Vendor);
-                        End;
-
+                        Vendor.Get(Rec."Vendor No.");
+                        MFCC01Approvals.OnCancelVBAApprovalRequest(Rec);
+                        IF Rec."First Time Approval" then
+                            if ApprovalsMgmt.CheckVendorApprovalsWorkflowEnabled(Vendor) then
+                                ApprovalsMgmt.OnCancelVendorApprovalRequest(Vendor);
                     end;
                 }
             }

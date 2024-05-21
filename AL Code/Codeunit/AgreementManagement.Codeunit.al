@@ -286,7 +286,7 @@ codeunit 60002 "MFCC01 Agreement Management"
 
 
     #Region Phase2Transfer
-    procedure ProcessReturnOnSign(Var AgreementHeader: Record "MFCC01 Agreement Header"): Boolean
+    procedure ProcessTerminateOnSign(Var AgreementHeader: Record "MFCC01 Agreement Header"): Boolean
     var
         Customer: Record Customer;
         DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
@@ -297,7 +297,7 @@ codeunit 60002 "MFCC01 Agreement Management"
     begin
         CZSetup.GetRecordonce();
         Customer.Get(AgreementHeader."Customer No.");
-        SetPostingDate(AgreementHeader."Agreement Date");
+        SetPostingDate(WorkDate());
         GLEntry.LockTable();
         GetBalance(AgreementHeader, AgreementAmt, CommissionAmt);
         AgreementHeader."Fanchise Amt Closed" := AgreementAmt;
@@ -317,7 +317,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         Exit(True);
     end;
 
-    procedure ProcessRetunOnOpen(Var AgreementHeader: Record "MFCC01 Agreement Header"): Boolean
+    procedure ProcessTerminateOnOpen(Var AgreementHeader: Record "MFCC01 Agreement Header"): Boolean
     var
         Customer: Record Customer;
         DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
@@ -326,7 +326,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         AgreementAmt: Decimal;
         CommissionAmt: Decimal;
     begin
-        SetPostingDate(AgreementHeader."Franchise Revenue Start Date");
+        SetPostingDate(WorkDate());
         CZSetup.GetRecordonce();
         Customer.Get(AgreementHeader."Customer No.");
         GLEntry.LockTable();
@@ -430,7 +430,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         AccountType: Enum "Gen. Journal Account Type";
         BalAccountType: Enum "Gen. Journal Account Type";
     begin
-        SetPostingDate(AgreementHeader."Franchise Revenue Start Date");
+        SetPostingDate(WorkDate());
         CZSetup.GetRecordonce();
         Customer.Get(AgreementHeader."Customer No.");
         //IF Customer."Franchisee Status" <> Customer."Franchisee Status"::Operational then Begin

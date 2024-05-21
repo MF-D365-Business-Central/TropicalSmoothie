@@ -446,9 +446,9 @@ table 60003 "MFCC01 Agreement Header"
 
 
             IF AgreementHeader.Status = AgreementHeader.Status::Opened then
-                AgreementMgmt.ProcessRetunOnOpen(AgreementHeader);
+                AgreementMgmt.ProcessTerminateOnOpen(AgreementHeader);
             IF AgreementHeader.Status = AgreementHeader.Status::Signed then
-                AgreementMgmt.ProcessReturnOnSign(AgreementHeader);
+                AgreementMgmt.ProcessTerminateOnSign(AgreementHeader);
 
             DefHeader.SetRange("Agreement No.", Rec."No.");
             DefHeader.ModifyAll(Status, DefHeader.Status::Terminated);
@@ -474,7 +474,6 @@ table 60003 "MFCC01 Agreement Header"
             AgreementMgmt.ProcessCancel(AgreementHeader);
             AgreementHeader.Status := AgreementHeader.Status::Canceled;
             AgreementHeader.Modify();
-            AgreementMgmt.CreateNewAgreement(AgreementHeader, true)
         end;
     end;
 
