@@ -15,6 +15,18 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
 
     actions
     {
+        modify(Register)
+        {
+            trigger OnBeforeAction()
+            Var
+                EventHandelr: Codeunit "Event handler";
+                StatJournalBatch: Record "Statistical Acc. Journal Batch";
+            BEgin
+                StatJournalBatch.Get(Rec."Journal Template Name", Rec."Journal Batch Name");
+                EventHandelr.CheckStatJournalBatchHasUsageRestrictions(StatJournalBatch);
+            End;
+        }
+
         // Add changes to page actions here
         addlast(navigation)
         {
@@ -39,6 +51,7 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
         }
         addlast(Process)
         {
+
             group("Request Approval")
             {
                 Caption = 'Request Approval';

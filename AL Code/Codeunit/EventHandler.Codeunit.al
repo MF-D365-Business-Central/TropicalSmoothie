@@ -21,6 +21,9 @@ codeunit 60005 "Event handler"
         StatJournalBatchBalancedEventDescTxt: Label 'A Statistical account Journal batch is balanced.';
         StatJournalBatchNotBalancedEventDescTxt: Label 'A Statistical account Journal batch is not balanced.';
         CheckStatJournalBatchBalanceTxt: Label 'Check if the Stat journal batch is balanced.';
+        RecordRestrictedTxt: Label 'You cannot use %1 for this action.', Comment = 'You cannot use Customer 10000 for this action.';
+        RestrictLineUsageDetailsTxt: Label 'The restriction was imposed because the line requires approval.';
+        RestrictBatchUsageDetailsTxt: Label 'The restriction was imposed because the journal batch requires approval.';
 
 
     [EventSubscriber(ObjectType::Table, Database::"Cust. Ledger Entry", 'OnAfterCopyCustLedgerEntryFromGenJnlLine', '', false, false)]
@@ -72,6 +75,41 @@ codeunit 60005 "Event handler"
         End;
     end;
 
+
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Page Management", 'OnConditionalCardPageIDNotFound', '', false, false)]
+    local procedure OnConditionalCardPageIDNotFound(RecordRef: RecordRef; var CardPageID: Integer)
+    begin
+        case RecordRef.Number of
+            Database::"Statistical Acc. Journal Line":
+                CardPageID := (PAGE::"Statistical Accounts Journal");
+            Database::"Statistical Acc. Journal Batch":
+                CardPageID := GetStatJournalBatchPageID(RecordRef);
+        end;
+
+
+    end;
+
+
+    local procedure GetStatJournalBatchPageID(RecRef: RecordRef): Integer
+    var
+        StatJournalBatch: Record "Statistical Acc. Journal Batch";
+        StatJournalLine: Record "Statistical Acc. Journal Line";
+    begin
+        RecRef.SetTable(StatJournalBatch);
+
+        StatJournalLine.SetRange("Journal Template Name", StatJournalBatch."Journal Template Name");
+        StatJournalLine.SetRange("Journal Batch Name", StatJournalBatch.Name);
+        if not StatJournalLine.FindFirst() then begin
+            StatJournalLine."Journal Template Name" := StatJournalBatch."Journal Template Name";
+            StatJournalLine."Journal Batch Name" := StatJournalBatch.Name;
+            RecRef.GetTable(StatJournalLine);
+            exit(PAGE::"General Journal");
+        end;
+
+        RecRef.GetTable(StatJournalLine);
+        exit(Page::"Statistical Accounts Journal");
+    end;
     // [EventSubscriber(ObjectType::Table, Database::"Gen. Journal Line", 'OnAfterValidateShortcutDimCode', '', false, false)]
     // local procedure TBL_81_OnAfterValidateShortcutDimCode(var GenJournalLine: Record "Gen. Journal Line"; var xGenJournalLine: Record "Gen. Journal Line"; FieldNumber: Integer; var ShortcutDimCode: Code[20]; CallingFieldNo: Integer)
     // var
@@ -329,6 +367,52 @@ codeunit 60005 "Event handler"
         End;
     end;
 
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAfterAllowRecordUsage', '', false, false)]
+    local procedure OnAfterAllowRecordUsage(Variant: Variant; var RecRef: RecordRef)
+    var
+        StatAccJournalBatch: Record "Statistical Acc. Journal Batch";
+        GenJournalBatch: Record "Gen. Journal Batch";
+        GenJounralLine: Record "Gen. Journal Line";
+    begin
+        case RecRef.Number of
+            DATABASE::"Gen. Journal Batch":
+                begin
+                    RecRef.SetTable(GenJournalBatch);
+                    GenJounralLine.SetRange("Journal Batch Name", GenJournalBatch.Name);
+                    GenJounralLine.SetRange("Journal Template Name", GenJournalBatch."Journal Template Name");
+                    GenJounralLine.ModifyAll("Approver ID", UserId);
+                end;
+            DATABASE::"Gen. Journal Line":
+                begin
+                    RecRef.SetTable(GenJounralLine);
+                    GenJounralLine."Approver ID" := UserId;
+                    GenJounralLine.Modify();
+                end;
+
+            DATABASE::"Statistical Acc. Journal Batch":
+                begin
+                    RecRef.SetTable(StatAccJournalBatch);
+                    AllowStatJournalBatchUsage(StatAccJournalBatch);
+                end;
+        end;
+    end;
+
+
+    procedure AllowStatJournalBatchUsage(StatAccJournalBatch: Record "Statistical Acc. Journal Batch")
+    var
+        RecRes: Codeunit "Record Restriction Mgt.";
+        StatAccJournalLine: Record "Statistical Acc. Journal Line";
+    begin
+        RecRes.AllowRecordUsage(StatAccJournalBatch);
+
+        StatAccJournalLine.SetRange("Journal Template Name", StatAccJournalBatch."Journal Template Name");
+        StatAccJournalLine.SetRange("Journal Batch Name", StatAccJournalBatch.Name);
+        if StatAccJournalLine.FindSet() then
+            repeat
+                RecRes.AllowRecordUsage(StatAccJournalLine);
+            until StatAccJournalLine.Next() = 0;
+    end;
+
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnOpenDocument', '', false, false)]
     local procedure CU_1520_OnOpenDocument(RecRef: RecordRef; var Handled: Boolean)
     var
@@ -365,7 +449,56 @@ codeunit 60005 "Event handler"
                     End;
             End;
     end;
+    // StatJournalLine: Record "Statistical Acc. Journal Line";
+    //         RecordRestrictionMgt: Codeunit "Record Restriction Mgt.";
+    //         StatJnlBatch: Record "Statistical Acc. Journal Batch"
 
+    [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Line", 'OnAfterInsertEvent', '', false, false)]
+    procedure RestrictStatJournalLineAfterInsert(var Rec: Record "Statistical Acc. Journal Line"; RunTrigger: Boolean)
+    begin
+        RestrictStatJournalLine(Rec);
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Line", 'OnAfterModifyEvent', '', false, false)]
+    procedure RestrictStatJournalLineAfterModify(var Rec: Record "Statistical Acc. Journal Line"; var xRec: Record "Statistical Acc. Journal Line"; RunTrigger: Boolean)
+    begin
+        if Format(Rec) = Format(xRec) then
+            exit;
+        RestrictStatJournalLine(Rec);
+    end;
+
+
+
+    local procedure RestrictStatJournalLine(var StatJournalLine: Record "Statistical Acc. Journal Line")
+    var
+        StatJnlBatch: Record "Statistical Acc. Journal Batch";
+        ApprovalsMgmt: Codeunit MFCC01Approvals;
+        RecRes: Codeunit "Record Restriction Mgt.";
+    begin
+
+
+        if ApprovalsMgmt.IsStatJournalLineApprovalsWorkflowEnabled(StatJournalLine) then
+            RecRes.RestrictRecordUsage(StatJournalLine, RestrictLineUsageDetailsTxt);
+
+        if StatJnlBatch.Get(StatJournalLine."Journal Template Name", StatJournalLine."Journal Batch Name") then
+            if ApprovalsMgmt.IsStatJournalBatchApprovalsWorkflowEnabled(StatJnlBatch) then
+                RecRes.RestrictRecordUsage(StatJournalLine, RestrictBatchUsageDetailsTxt);
+    end;
+
+    procedure CheckStatJournalBatchHasUsageRestrictions(StatJnlBatch: Record "Statistical Acc. Journal Batch")
+    var
+        StatJournalLine: Record "Statistical Acc. Journal Line";
+        RecRes: Codeunit "Record Restriction Mgt.";
+    begin
+        RecRes.CheckRecordHasUsageRestrictions(StatJnlBatch);
+
+        StatJournalLine.SetRange("Journal Template Name", StatJnlBatch."Journal Template Name");
+        StatJournalLine.SetRange("Journal Batch Name", StatJnlBatch.Name);
+        if StatJournalLine.FindSet() then
+            repeat
+                RecRes.CheckRecordHasUsageRestrictions(StatJournalLine);
+            until StatJournalLine.Next() = 0;
+    end;
 
 
     local procedure CheckStatJournalBatchBalance(Variant: Variant)
@@ -437,21 +570,7 @@ codeunit 60005 "Event handler"
         end;
     End;
 
-    local procedure CheckGeneralJournalBatchBalance(Variant: Variant)
-    var
-        StatJnlBatch: Record "Statistical Acc. Journal Batch";
-        RecRef: RecordRef;
-    begin
-        RecRef.GetTable(Variant);
 
-        case RecRef.Number of
-            DATABASE::"Gen. Journal Batch":
-                begin
-                    StatJnlBatch := Variant;
-                    //RGU StatJnlBatch.CheckBalance();
-                end;
-        end;
-    end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Workflow Response Handling", 'OnAfterAllowRecordUsage', '', false, false)]
     local procedure CU_1521OnAfterAllowRecordUsage(Variant: Variant; var RecRef: RecordRef)

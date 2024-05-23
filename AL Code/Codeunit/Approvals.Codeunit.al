@@ -267,6 +267,25 @@ codeunit 60007 MFCC01Approvals
         exit(false);
     end;
 
+    procedure IsStatJournalBatchApprovalsWorkflowEnabled(var StatJournalBatch: Record "Statistical Acc. Journal Batch") Result: Boolean
+    var
+        IsHandled: Boolean;
+    begin
+        IsHandled := false;
+        OnBeforeIsStatJournalBatchApprovalsWorkflowEnabled(StatJournalBatch, Result, IsHandled);
+        if IsHandled then
+            exit(Result);
+
+        exit(WorkflowManagement.CanExecuteWorkflow(StatJournalBatch,
+            RunWorkflowOnSendStatJournalBatchForApprovalCode()));
+    end;
+
+
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeIsStatJournalBatchApprovalsWorkflowEnabled(var StatJournalBatch: Record "Statistical Acc. Journal Batch"; var Result: Boolean; var IsHandled: Boolean)
+    begin
+    end;
+
     procedure IsStatJournalLineApprovalsWorkflowEnabled(var StatJournalLine: Record "Statistical Acc. Journal Line") Result: Boolean
     var
         IsHandled: Boolean;
@@ -292,29 +311,30 @@ codeunit 60007 MFCC01Approvals
     end;
 
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
-    procedure PostApprovalEntriesMoveStatJournalLine(var StatisticalAccJournalLine: Record "Statistical Acc. Journal Line"; var StatisticalLedgerEntry: Record "Statistical Ledger Entry")
-    begin
-        ApprovalMgmt.PostApprovalEntries(StatisticalAccJournalLine.RecordId, StatisticalLedgerEntry.RecordId, StatisticalAccJournalLine."Document No.");
-    end;
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
+    // procedure PostApprovalEntriesMoveStatJournalLine(var StatisticalAccJournalLine: Record "Statistical Acc. Journal Line"; var StatisticalLedgerEntry: Record "Statistical Ledger Entry")
+    // begin
+    //     ApprovalMgmt.PostApprovalEntries(StatisticalAccJournalLine.RecordId, StatisticalLedgerEntry.RecordId, StatisticalAccJournalLine."Document No.");
+    // end;
 
     [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Line", 'OnAfterDeleteEvent', '', false, false)]
     procedure DeleteApprovalEntriesAfterDeleteStatJournalLine(var Rec: Record "Statistical Acc. Journal Line"; RunTrigger: Boolean)
     begin
-        if not Rec.IsTemporary then
-            ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
+        ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
     end;
 
-    // [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnMoveStatJournalBatch', '', false, false)]
-    // procedure PostApprovalEntriesMoveStatJournalBatch(var Sender: Record "Statistical Acc. Journal Batch"; ToRecordID: RecordID)
-    // var
-    //     RecordRestrictionMgt: Codeunit "Record Restriction Mgt.";
-    // begin
-    //     if ApprovalMgmt.PostApprovalEntries(Sender.RecordId, ToRecordID, '') then begin
-    //         RecordRestrictionMgt.AllowRecordUsage(Sender);
-    //         ApprovalMgmt.DeleteApprovalEntries(Sender.RecordId);
-    //     end;
-    // end; RGU
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
+    procedure PostApprovalEntriesMoveStatJournalBatch(var StatisticalAccJournalLine: Record "Statistical Acc. Journal Line"; var StatisticalLedgerEntry: Record "Statistical Ledger Entry")
+    var
+        RecordRestrictionMgt: Codeunit "Record Restriction Mgt.";
+        StatAccJournalBatch: Record "Statistical Acc. Journal Batch";
+    begin
+        StatAccJournalBatch.Get(StatisticalAccJournalLine."Journal Template Name", StatisticalAccJournalLine."Journal Batch Name");
+        if ApprovalMgmt.PostApprovalEntries(StatAccJournalBatch.RecordId, StatisticalLedgerEntry.RecordId, '') then begin
+            RecordRestrictionMgt.AllowRecordUsage(StatAccJournalBatch);
+            ApprovalMgmt.DeleteApprovalEntries(StatAccJournalBatch.RecordId);
+        end;
+    end;
 
     [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnAfterDeleteEvent', '', false, false)]
     procedure DeleteApprovalEntriesAfterDeleteStatJournalBatch(var Rec: Record "Statistical Acc. Journal Batch"; RunTrigger: Boolean)

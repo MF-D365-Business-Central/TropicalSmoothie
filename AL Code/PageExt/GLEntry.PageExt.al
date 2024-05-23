@@ -20,6 +20,11 @@ pageextension 60004 "MFCC01General Ledger Entries" extends "General Ledger Entri
                 ApplicationArea = All;
                 ToolTip = 'Specifies the value of the Agreement No. field.';
             }
+            field("Approver ID"; Rec."Approver ID")
+            {
+                ApplicationArea = All;
+                ToolTip = 'Specifies the value of the Approver ID field.', Comment = '%';
+            }
         }
         addafter("Source No.")
         {

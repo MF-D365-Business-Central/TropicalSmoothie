@@ -2,6 +2,13 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
 {
     layout
     {
+        addlast(Control1)
+        {
+            field("Approver ID"; Rec."Approver ID")
+            {
+                ApplicationArea = All;
+            }
+        }
         // Add changes to page layout here
         addbefore("Account Type")
         {

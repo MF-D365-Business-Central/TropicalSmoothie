@@ -123,7 +123,7 @@ page 60001 "MFCC01 DeferralSchedule"
                     Visible = false;
                     trigger OnAction()
                     begin
-                        Changed := Rec.CalculateSchedule();
+                        Changed := Rec.CalculateSchedule(false);
                     end;
                 }
                 action(ReOpen)

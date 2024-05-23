@@ -129,7 +129,7 @@ page 60003 "MFCC01 Deferrals"
                     Visible = false;
                     trigger OnAction()
                     begin
-                        Rec.CalculateSchedule();
+                        Rec.CalculateSchedule(false);
                     end;
                 }
                 action(ReOpen)

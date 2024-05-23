@@ -293,13 +293,14 @@ table 60001 "MFCC01 Deferral Header"
         end;
     end;
 
-    procedure CalculateSchedule(): Boolean
+    procedure CalculateSchedule(SilentMode: Boolean): Boolean
     var
         DeferralDescription: Text[100];
         ConfirmTxt: Label 'Do you want to Create Schedules.?';
     begin
-        IF not confirm(ConfirmTxt, false, true) then
-            exit;
+        IF Not SilentMode then
+            IF not confirm(ConfirmTxt, false, true) then
+                exit;
         OnBeforeCalculateSchedule(Rec);
 
         Rec.TestField("Amount to Defer");

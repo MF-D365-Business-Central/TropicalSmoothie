@@ -455,7 +455,7 @@ table 60003 "MFCC01 Agreement Header"
 
             AgreementHeader.Status := AgreementHeader.Status::Terminated;
             AgreementHeader.Modify();
-            AgreementMgmt.CreateNewAgreement(AgreementHeader, true)
+            //AgreementMgmt.CreateNewAgreement(AgreementHeader, true)
         end;
     end;
 
@@ -472,8 +472,9 @@ table 60003 "MFCC01 Agreement Header"
         IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
 
             AgreementMgmt.ProcessCancel(AgreementHeader);
-            AgreementHeader.Status := AgreementHeader.Status::Canceled;
+            AgreementHeader.Status := AgreementHeader.Status::Corrected;
             AgreementHeader.Modify();
+
         end;
     end;
 

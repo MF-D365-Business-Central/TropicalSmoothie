@@ -2,6 +2,7 @@ pageextension 60001 "MFCC01GenJournalImportExt" extends "General Journal"
 {
     layout
     {
+
         modify("Document Type")
         {
             Visible = false;

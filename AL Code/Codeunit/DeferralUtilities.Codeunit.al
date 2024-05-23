@@ -417,7 +417,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
             IF Agreementheader."License Type" = Agreementheader."License Type"::Transferred then
                 Type := Type::Transferred;
             CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, Type);
-            DeferralHeader.CalculateSchedule();
+            DeferralHeader.CalculateSchedule(true);
             DeferralHeader.Status := DeferralHeader.Status::Open;
             DeferralHeader.Modify();
             Agreementheader."FranchiseFeescheduleNo." := DeferralHeader."Document No.";
@@ -426,7 +426,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         IF (Agreementheader."CommissionScheduleNo." = '') and (Agreementheader."SalesPerson Commission" <> 0) then Begin
             Type := Type::Commission;
             CreateDeferralHeader(DeferralHeader, Agreementheader, CZSetup, Type);
-            DeferralHeader.CalculateSchedule();
+            DeferralHeader.CalculateSchedule(true);
             DeferralHeader.Status := DeferralHeader.Status::Open;
             DeferralHeader.Modify();
             Agreementheader."CommissionScheduleNo." := DeferralHeader."Document No.";
@@ -446,7 +446,7 @@ codeunit 60000 "MFCC01 Deferral Utilities"
         IF (Renewal."RenewalscheduleNo." = '') And (Renewal."Renewal Fees" <> 0) then Begin
             AgreementHeader.Get(Renewal."Agreement No.");
             CreateDeferralHeader(DeferralHeader, Renewal, CZSetup, AgreementHeader);
-            DeferralHeader.CalculateSchedule();
+            DeferralHeader.CalculateSchedule(true);
             DeferralHeader.Status := DeferralHeader.Status::Open;
             DeferralHeader.Modify();
             Renewal."RenewalscheduleNo." := DeferralHeader."Document No.";
