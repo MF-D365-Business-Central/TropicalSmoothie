@@ -177,7 +177,7 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         BatchName := CZSetup."Franchise Journal Batch";
         Frantach.SetRange(Code, BatchName);
         Frantach.FindFirst();
-        DocumentNo := NoSeriesMgmt.GetNextNo(Frantach."No. Series", WorkDate(), false);
+        //DocumentNo := NoSeriesMgmt.GetNextNo(Frantach."No. Series", WorkDate(), false);
 
         InitLineno();
         SnowflakeEntry.Reset();
@@ -185,7 +185,7 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         IF SnowflakeEntry.FindSet(true) then
             repeat
                 SnowflakeEntry.Remarks := '';
-                CreateFanchiseJournal(SnowflakeEntry."Customer No.", SnowflakeEntry."Document Date", SnowflakeEntry."Net Sales", DocumentNo);
+                CreateFanchiseJournal(SnowflakeEntry."Customer No.", SnowflakeEntry."Document Date", SnowflakeEntry."Net Sales");
                 SnowflakeEntry.Status := SnowflakeEntry.Status::Processed;
                 SnowflakeEntry.Modify();
             Until SnowflakeEntry.Next() = 0;
@@ -264,7 +264,7 @@ codeunit 60006 "MFCC01 PowerBI Integration"
     end;
 
 
-    local procedure CreateFanchiseJournal(CustomerNo: Code[20]; DocDate: Date; NetSales: Decimal; Var DocumentNo: Code[20])
+    local procedure CreateFanchiseJournal(CustomerNo: Code[20]; DocDate: Date; NetSales: Decimal)
     var
         FrachJnl: Record "MFCC01 Franchise Journal";
         LastFrachJnl: Record "MFCC01 Franchise Journal";
@@ -276,8 +276,8 @@ codeunit 60006 "MFCC01 PowerBI Integration"
         FrachJnl.Init();
         FrachJnl."Batch Name" := BatchName;
         //FrachJnl.SetUpNewLine(LastFrachJnl, true);
-        FrachJnl."Document No." := DocumentNo;
-        FrachJnl.IncrementDocumentNo(Frantach, DocumentNo);
+        //FrachJnl."Document No." := DocumentNo;
+        //FrachJnl.IncrementDocumentNo(Frantach, DocumentNo);
         FrachJnl."Document Type" := FrachJnl."Document Type"::Invoice;
         FrachJnl."Document Date" := DocDate;
         FrachJnl."Posting Date" := CalcDate('<CW>', DocDate);

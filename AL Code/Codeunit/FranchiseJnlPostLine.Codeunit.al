@@ -34,23 +34,33 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         Text001: Label 'is not within your range of allowed posting dates';
 
     local procedure Code(Var FranchiseJnlLine: Record "MFCC01 Franchise Journal")
+    var
+        NoSeriesLineResult: Record "No. Series Line";
     begin
         CheckLines(FranchiseJnlLine);
         FindNextEntries();
         GLEntry.LockTable();
         IF GLEntry.FindLast() then;
+        NoSeriesMgt.FindNoSeriesLine(NoSeriesLineResult, FranchiseBatch."No. Series", WorkDate());
+        NoSeriesLineResult.FindFirst();
+        LastDocNo := NoSeriesMgt.GetNextNo(FranchiseBatch."No. Series", WorkDate(), false);
         IF FranchiseJnlLine.FindSet(True) then
             repeat
-                FranchiseJnlLine.CheckDocNoBasedOnNoSeries(LastDocNo, FranchiseBatch."No. Series", NoSeriesMgt);
-                IF not FranchiseJnlLine.EmptyLine() then
-                    LastDocNo := FranchiseJnlLine."Document No.";
+                //FranchiseJnlLine.CheckDocNoBasedOnNoSeries(LastDocNo, FranchiseBatch."No. Series", NoSeriesMgt);
+                //IF not FranchiseJnlLine.EmptyLine() then
+                //LastDocNo := FranchiseJnlLine."Document No.";
+                FranchiseJnlLine."Document No." := LastDocNo;
+                NoSeriesLineResult."Last No. Used" := LastDocNo;
                 InsertFranchhiseLedgerEntry(FranchiseJnlLine);
+                LastDocNo := IncStr(LastDocNo);
                 Prepareposting();
             Until FranchiseJnlLine.Next() = 0;
-
+        NoSeriesLineResult."Last Date Used" := WorkDate();
+        NoSeriesLineResult.Validate("Last No. Used");
+        NoSeriesLineResult.Modify();
         FranchiseJnlLine.DeleteAll();
-        if FranchiseBatch."No. Series" <> '' then
-            NoSeriesMgt.SaveNoSeries();
+
+
     end;
 
     local procedure CheckLines(Var FranchiseJnlLine: Record "MFCC01 Franchise Journal")

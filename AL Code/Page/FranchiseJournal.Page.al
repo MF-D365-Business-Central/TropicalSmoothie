@@ -38,10 +38,7 @@ page 60010 "MFCC01 Franchise Journal"
                 {
                     ToolTip = 'Specifies the value of the Document Type field.';
                 }
-                field("Document No."; Rec."Document No.")
-                {
-                    ToolTip = 'Specifies the value of the Document No. field.';
-                }
+
                 field("Customer No."; Rec."Customer No.")
                 {
                     ToolTip = 'Specifies the value of the Customer No. field.';
