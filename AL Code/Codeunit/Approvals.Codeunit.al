@@ -319,8 +319,13 @@ codeunit 60007 MFCC01Approvals
 
     [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Line", 'OnAfterDeleteEvent', '', false, false)]
     procedure DeleteApprovalEntriesAfterDeleteStatJournalLine(var Rec: Record "Statistical Acc. Journal Line"; RunTrigger: Boolean)
+    var
+        StatAccJnlBatch: Record "Statistical Acc. Journal Batch";
     begin
-        ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
+        if Rec.IsTemporary then
+            exit;
+        IF StatAccJnlBatch.Get(Rec."Journal Template Name", Rec."Journal Batch Name") then
+            ApprovalMgmt.DeleteApprovalEntries(StatAccJnlBatch.RecordId);
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
@@ -329,24 +334,19 @@ codeunit 60007 MFCC01Approvals
         RecordRestrictionMgt: Codeunit "Record Restriction Mgt.";
         StatAccJournalBatch: Record "Statistical Acc. Journal Batch";
     begin
-        StatAccJournalBatch.Get(StatisticalAccJournalLine."Journal Template Name", StatisticalAccJournalLine."Journal Batch Name");
-        if ApprovalMgmt.PostApprovalEntries(StatAccJournalBatch.RecordId, StatisticalLedgerEntry.RecordId, '') then begin
-            RecordRestrictionMgt.AllowRecordUsage(StatAccJournalBatch);
-            ApprovalMgmt.DeleteApprovalEntries(StatAccJournalBatch.RecordId);
-        end;
+        IF StatAccJournalBatch.Get(StatisticalAccJournalLine."Journal Template Name", StatisticalAccJournalLine."Journal Batch Name") then
+            if ApprovalMgmt.PostApprovalEntries(StatAccJournalBatch.RecordId, StatisticalLedgerEntry.RecordId, '') then begin
+                RecordRestrictionMgt.AllowRecordUsage(StatAccJournalBatch);
+                ApprovalMgmt.DeleteApprovalEntries(StatAccJournalBatch.RecordId);
+            end;
     end;
 
     [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnAfterDeleteEvent', '', false, false)]
     procedure DeleteApprovalEntriesAfterDeleteStatJournalBatch(var Rec: Record "Statistical Acc. Journal Batch"; RunTrigger: Boolean)
-    var
-        GenJnlTemplate: Record "Gen. Journal Template";
     begin
         if Rec.IsTemporary then
             exit;
-
-        if GenJnlTemplate.Get(Rec."Journal Template Name") then
-            if not GenJnlTemplate."Increment Batch Name" then
-                ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
+        ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
     end;
 
     procedure HasAnyOpenJournalLineApprovalEntries(JournalTemplateName: Code[20]; JournalBatchName: Code[20]): Boolean

@@ -87,7 +87,6 @@ codeunit 60005 "Event handler"
                 CardPageID := GetStatJournalBatchPageID(RecordRef);
         end;
 
-
     end;
 
 

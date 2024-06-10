@@ -16,7 +16,7 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
 
     var
         CZSetup: Record "MFCC01 Franchise Setup";
-        GlobalFranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry";
+        NoSeriesLineResult: Record "No. Series Line";
         GenJnlLine: Record "Gen. Journal Line";
         FranchiseBatch: Record "MFCC01 Franchise Batch";
         TempNoSeries: Record "No. Series" temporary;
@@ -35,31 +35,51 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
 
     local procedure Code(Var FranchiseJnlLine: Record "MFCC01 Franchise Journal")
     var
-        NoSeriesLineResult: Record "No. Series Line";
+
+        FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry";
     begin
         CheckLines(FranchiseJnlLine);
         FindNextEntries();
         GLEntry.LockTable();
         IF GLEntry.FindLast() then;
-        NoSeriesMgt.FindNoSeriesLine(NoSeriesLineResult, FranchiseBatch."No. Series", WorkDate());
-        NoSeriesLineResult.FindFirst();
-        LastDocNo := NoSeriesMgt.GetNextNo(FranchiseBatch."No. Series", WorkDate(), false);
+        GetNoseriesLine();
         IF FranchiseJnlLine.FindSet(True) then
             repeat
                 //FranchiseJnlLine.CheckDocNoBasedOnNoSeries(LastDocNo, FranchiseBatch."No. Series", NoSeriesMgt);
                 //IF not FranchiseJnlLine.EmptyLine() then
                 //LastDocNo := FranchiseJnlLine."Document No.";
+                NoSeriesLineResult."Last No. Used" := LastDocNo;
                 LastDocNo := IncStr(LastDocNo);
                 FranchiseJnlLine."Document No." := LastDocNo;
-                InsertFranchhiseLedgerEntry(FranchiseJnlLine);
-                Prepareposting();
+                InsertFranchhiseLedgerEntry(FranchiseJnlLine, FranchiseLedgerEntry);
+                Prepareposting(FranchiseLedgerEntry, false);
             Until FranchiseJnlLine.Next() = 0;
-        NoSeriesLineResult."Last Date Used" := WorkDate();
-        NoSeriesLineResult."Last No. Used" := LastDocNo;
-        NoSeriesLineResult.Modify();
+        UpdateLastnoused();
         FranchiseJnlLine.DeleteAll();
 
+    end;
 
+
+    procedure GetNoseriesLine()
+    begin
+        CZSetup.GetRecordonce();
+        IF FranchiseBatch.Code = '' then
+            FranchiseBatch.Get('DEFAULT');
+        NoSeriesMgt.FindNoSeriesLine(NoSeriesLineResult, FranchiseBatch."No. Series", WorkDate());
+        NoSeriesLineResult.FindFirst();
+        LastDocNo := NoSeriesMgt.GetNextNo(FranchiseBatch."No. Series", WorkDate(), false);
+    end;
+
+    procedure UpdateLastnoused()
+    begin
+        NoSeriesLineResult."Last Date Used" := WorkDate();
+        NoSeriesLineResult.Validate("Last No. Used");
+        NoSeriesLineResult.Modify();
+    end;
+
+    procedure UpdateCurrentNo()
+    begin
+        NoSeriesLineResult."Last No. Used" := LastDocNo;
     end;
 
     local procedure CheckLines(Var FranchiseJnlLine: Record "MFCC01 Franchise Journal")
@@ -90,7 +110,7 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         OnAfterShouldSetDocNoToLastPosted(FranchiseJnlLine, LastDocNo, Result);
     end;
 
-    local procedure FindNextEntries()
+    procedure FindNextEntries()
     var
         FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry";
     begin
@@ -98,22 +118,54 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
         NextEntryNo := FranchiseLedgerEntry."Entry No." + 1;
     end;
 
-    local procedure InsertFranchhiseLedgerEntry(FranchiseJnlLine: Record "MFCC01 Franchise Journal"): Integer
+    local procedure InsertFranchhiseLedgerEntry(FranchiseJnlLine: Record "MFCC01 Franchise Journal"; Var FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry"): Integer
     var
         DimMgmt: Codeunit DimensionManagement;
     begin
-        GlobalFranchiseLedgerEntry.Init();
-        GlobalFranchiseLedgerEntry.TransferFields(FranchiseJnlLine);
-        GlobalFranchiseLedgerEntry."Entry No." := NextEntryNo;
-        DimMgmt.UpdateGlobalDimFromDimSetID(GlobalFranchiseLedgerEntry."Dimension Set ID",
-        GlobalFranchiseLedgerEntry."Shortcut Dimension 1 Code", GlobalFranchiseLedgerEntry."Shortcut Dimension 2 Code");
-        GlobalFranchiseLedgerEntry.Insert(True);
+        FranchiseLedgerEntry.Init();
+        FranchiseLedgerEntry.TransferFields(FranchiseJnlLine);
+        FranchiseLedgerEntry."Entry No." := NextEntryNo;
+        DimMgmt.UpdateGlobalDimFromDimSetID(FranchiseLedgerEntry."Dimension Set ID",
+        FranchiseLedgerEntry."Shortcut Dimension 1 Code", FranchiseLedgerEntry."Shortcut Dimension 2 Code");
+        FranchiseLedgerEntry.Insert(True);
 
         NextEntryNo += 1;
-        exit(GlobalFranchiseLedgerEntry."Entry No.");
+        exit(FranchiseLedgerEntry."Entry No.");
     end;
 
-    local procedure Prepareposting()
+
+    procedure InsertCancelFranchhiseLedgerEntry(var FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry"; Var NewFranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry"): Integer
+    var
+        DimMgmt: Codeunit DimensionManagement;
+    begin
+        NewFranchiseLedgerEntry.Init();
+        NewFranchiseLedgerEntry.TransferFields(FranchiseLedgerEntry);
+        NewFranchiseLedgerEntry."Entry No." := NextEntryNo;
+
+        IF FranchiseLedgerEntry."Document Type" = FranchiseLedgerEntry."Document Type"::Invoice then
+            NewFranchiseLedgerEntry."Document Type" := NewFranchiseLedgerEntry."Document Type"::"Credit Memo";
+
+        IF FranchiseLedgerEntry."Document Type" = FranchiseLedgerEntry."Document Type"::"Credit Memo" then
+            NewFranchiseLedgerEntry."Document Type" := NewFranchiseLedgerEntry."Document Type"::Invoice;
+
+
+        NewFranchiseLedgerEntry."Document No." := LastDocNo;
+        NewFranchiseLedgerEntry."Posting Date" := WorkDate();
+        NewFranchiseLedgerEntry."Applies Document No." := FranchiseLedgerEntry."Document No.";
+        NoSeriesLineResult."Last No. Used" := LastDocNo;
+        LastDocNo := IncStr(LastDocNo);
+
+        NewFranchiseLedgerEntry.Canceled := true;
+        NewFranchiseLedgerEntry.Insert(True);
+
+        FranchiseLedgerEntry.Canceled := true;
+        FranchiseLedgerEntry.Modify();
+
+        NextEntryNo += 1;
+        exit(FranchiseLedgerEntry."Entry No.");
+    end;
+
+    procedure Prepareposting(FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry"; Cancel: Boolean)
     var
         AgreementHeader: Record "MFCC01 Agreement Header";
         AccountType: Enum "Gen. Journal Account Type";
@@ -123,89 +175,116 @@ codeunit 60001 "MFCC01 Franchise Jnl. Post"
 
     begin
         Clear(DefaultDimSource);
-        AgreementHeader.Get(GlobalFranchiseLedgerEntry."Agreement ID");
+        AgreementHeader.Get(FranchiseLedgerEntry."Agreement ID");
         Customer.Get(AgreementHeader."Customer No.");
-        IF GlobalFranchiseLedgerEntry."Royalty Fee" <> 0 then Begin
-            InitJpurnalLine(
-            AccountType::"G/L Account", CZSetup."Royalty Account", Sign() * GlobalFranchiseLedgerEntry."Royalty Fee");
-            GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
-            InitDefaultDimSource(DefaultDimSource, GlobalFranchiseLedgerEntry."Customer No.");
+        IF FranchiseLedgerEntry."Royalty Fee" <> 0 then Begin
+            InitJpurnalLine(FranchiseLedgerEntry,
+            AccountType::"G/L Account", CZSetup."Royalty Account", Sign(FranchiseLedgerEntry) * FranchiseLedgerEntry."Royalty Fee");
+            GenJnlLine."Dimension Set ID" := FranchiseLedgerEntry."Dimension Set ID";
+            InitDefaultDimSource(DefaultDimSource, FranchiseLedgerEntry."Customer No.");
             InitDefaultDimSourceGL(DefaultDimSource, CZSetup."Royalty Account");
             GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
             GenJnlLine."Dimension Set ID", 0);
             GenJnlLine.Validate("Shortcut Dimension 2 Code", Customer."Global Dimension 2 Code");
-            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
-            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
+            GenJnlLine."Agreement No." := FranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := FranchiseLedgerEntry.Description;
             PostJournal();
-            BalanceAmount := Sign() * GlobalFranchiseLedgerEntry."Royalty Fee";
+            BalanceAmount := Sign(FranchiseLedgerEntry) * FranchiseLedgerEntry."Royalty Fee";
         End;
         Clear(DefaultDimSource);
-        IF GlobalFranchiseLedgerEntry."Local Fee" <> 0 then Begin
-            InitJpurnalLine(
-            AccountType::"G/L Account", CZSetup."Local Account", Sign() * GlobalFranchiseLedgerEntry."Local Fee");
-            GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
-            InitDefaultDimSource(DefaultDimSource, GlobalFranchiseLedgerEntry."Customer No.");
+        IF FranchiseLedgerEntry."Local Fee" <> 0 then Begin
+            InitJpurnalLine(FranchiseLedgerEntry,
+            AccountType::"G/L Account", CZSetup."Local Account", Sign(FranchiseLedgerEntry) * FranchiseLedgerEntry."Local Fee");
+            GenJnlLine."Dimension Set ID" := FranchiseLedgerEntry."Dimension Set ID";
+            InitDefaultDimSource(DefaultDimSource, FranchiseLedgerEntry."Customer No.");
             InitDefaultDimSourceGL(DefaultDimSource, CZSetup."Local Account");
             GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
                 GenJnlLine."Dimension Set ID", 0);
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Local Department Code");
             GenJnlLine.Validate("Shortcut Dimension 2 Code", Customer."Global Dimension 2 Code");
-            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
-            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
+            GenJnlLine."Agreement No." := FranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := FranchiseLedgerEntry.Description;
             PostJournal();
-            BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."Local Fee";
+            BalanceAmount += Sign(FranchiseLedgerEntry) * FranchiseLedgerEntry."Local Fee";
         End;
         Clear(DefaultDimSource);
-        IF GlobalFranchiseLedgerEntry."National Fee" <> 0 then Begin
-            InitJpurnalLine(
-            AccountType::"G/L Account", CZSetup."National Account", Sign() * GlobalFranchiseLedgerEntry."National Fee");
-            GenJnlLine."Dimension Set ID" := GlobalFranchiseLedgerEntry."Dimension Set ID";
-            InitDefaultDimSource(DefaultDimSource, GlobalFranchiseLedgerEntry."Customer No.");
+        IF FranchiseLedgerEntry."National Fee" <> 0 then Begin
+            InitJpurnalLine(FranchiseLedgerEntry,
+            AccountType::"G/L Account", CZSetup."National Account", Sign(FranchiseLedgerEntry) * FranchiseLedgerEntry."National Fee");
+            GenJnlLine."Dimension Set ID" := FranchiseLedgerEntry."Dimension Set ID";
+            InitDefaultDimSource(DefaultDimSource, FranchiseLedgerEntry."Customer No.");
             InitDefaultDimSourceGL(DefaultDimSource, CZSetup."National Account");
             GenJnlLine."Dimension Set ID" := DimMgt.GetDefaultDimID(DefaultDimSource, '', GenJnlLine."Shortcut Dimension 1 Code", GenJnlLine."Shortcut Dimension 2 Code",
                 GenJnlLine."Dimension Set ID", 0);
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."National Department Code");
             GenJnlLine.Validate("Shortcut Dimension 2 Code", Customer."Global Dimension 2 Code");
-            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
-            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
+            GenJnlLine."Agreement No." := FranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := FranchiseLedgerEntry.Description;
             PostJournal();
-            BalanceAmount += Sign() * GlobalFranchiseLedgerEntry."National Fee";
+            BalanceAmount += Sign(FranchiseLedgerEntry) * FranchiseLedgerEntry."National Fee";
         End;
 
         IF BalanceAmount <> 0 then Begin
-            InitJpurnalLine(AccountType::Customer, GlobalFranchiseLedgerEntry."Customer No.",
-              Sign() * BalanceAmount);
+            IF Not Cancel then
+                InitJpurnalLine(FranchiseLedgerEntry, AccountType::Customer, FranchiseLedgerEntry."Customer No.",
+                  Sign(FranchiseLedgerEntry) * BalanceAmount)
+            else
+                InitJpurnalLine(FranchiseLedgerEntry, AccountType::Customer, FranchiseLedgerEntry."Customer No.",
+                     CancelSign(FranchiseLedgerEntry) * BalanceAmount);
+
             GenJnlLine."Recipient Bank Account" := AgreementHeader."Royalty Bank Account";
-            GenJnlLine."Agreement No." := GlobalFranchiseLedgerEntry."Agreement ID";
-            GenJnlLine.Description := GlobalFranchiseLedgerEntry.Description;
+            GenJnlLine."Agreement No." := FranchiseLedgerEntry."Agreement ID";
+            GenJnlLine.Description := FranchiseLedgerEntry.Description;
+            IF Cancel then Begin
+                IF FranchiseLedgerEntry."Document Type" = FranchiseLedgerEntry."Document Type"::Invoice then
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::"Credit Memo";
+                IF FranchiseLedgerEntry."Document Type" = FranchiseLedgerEntry."Document Type"::"Credit Memo" then
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Invoice;
+                GenJnlLine."Applies-to Doc. No." := FranchiseLedgerEntry."Applies Document No.";
+                //GenJnlLine.Modify();
+            End;
             PostJournal();
         End;
     end;
 
-    local procedure Sign(): Integer
+    local procedure Sign(FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry"): Integer
     begin
-        Case GlobalFranchiseLedgerEntry."Document Type" of
-            GlobalFranchiseLedgerEntry."Document Type"::Invoice:
+        Case FranchiseLedgerEntry."Document Type" of
+            FranchiseLedgerEntry."Document Type"::Invoice:
                 Exit(-1);
-            GlobalFranchiseLedgerEntry."Document Type"::"Credit Memo":
+            FranchiseLedgerEntry."Document Type"::"Credit Memo":
                 Exit(1);
         End;
+
+
     end;
 
-    local procedure InitJpurnalLine(AccountType: Enum "Gen. Journal Account Type"; AccountNo: Code[20];
+    local procedure CancelSign(FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry"): Integer
+    begin
+        Case FranchiseLedgerEntry."Document Type" of
+            FranchiseLedgerEntry."Document Type"::Invoice:
+                Exit(1);
+            FranchiseLedgerEntry."Document Type"::"Credit Memo":
+                Exit(-1);
+        End;
+
+
+    end;
+
+    local procedure InitJpurnalLine(FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry"; AccountType: Enum "Gen. Journal Account Type"; AccountNo: Code[20];
       Amount: Decimal
      )
     begin
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := GlobalFranchiseLedgerEntry."Posting Date";
-        GenJnlLine."Document Date" := GlobalFranchiseLedgerEntry."Document Date";
-        Case GlobalFranchiseLedgerEntry."Document Type" of
-            GlobalFranchiseLedgerEntry."Document Type"::Invoice:
+        GenJnlLine."Posting Date" := FranchiseLedgerEntry."Posting Date";
+        GenJnlLine."Document Date" := FranchiseLedgerEntry."Document Date";
+        Case FranchiseLedgerEntry."Document Type" of
+            FranchiseLedgerEntry."Document Type"::Invoice:
                 GenJnlLine."Document Type" := GenJnlLine."Document Type"::Invoice;
-            GlobalFranchiseLedgerEntry."Document Type"::"Credit Memo":
+            FranchiseLedgerEntry."Document Type"::"Credit Memo":
                 GenJnlLine."Document Type" := GenJnlLine."Document Type"::"Credit Memo";
         End;
-        GenJnlLine."Document No." := GlobalFranchiseLedgerEntry."Document No.";
+        GenJnlLine."Document No." := FranchiseLedgerEntry."Document No.";
         GenJnlLine.Validate("Account Type", AccountType);
         GenJnlLine.Validate("Account No.", AccountNo);
         GenJnlLine.Validate(Amount, Amount);

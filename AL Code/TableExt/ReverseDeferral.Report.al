@@ -69,7 +69,7 @@ report 60016 "MFCC01 Reverse Deferral"
         GenJnlLine."Agreement No." := DeferralHeader."Agreement No.";
         DeferralLine.Posted := GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0;
         DeferralLine.Modify();
-        Commit();
+        //Commit();
     end;
 
     local procedure InitDefaultDimSource(var DefaultDimSource: List of [Dictionary of [Integer, Code[20]]]; DeferralHeader: Record "MFCC01 Deferral Header")

@@ -210,6 +210,13 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "G/L Account"."No." where(Blocked = const(false));
         }
+
+        field(258; DeferredRevenueTransfer; Code[20])
+        {
+            Caption = 'Def Revenue Transfer';
+            DataClassification = CustomerContent;
+            TableRelation = "Statistical Account"."No." where(Blocked = const(false));
+        }
     }
 
     keys

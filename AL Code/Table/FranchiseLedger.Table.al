@@ -176,6 +176,16 @@ table 60009 "MFCC01 FranchiseLedgerEntry"
             CalcFormula = lookup("Dimension Set Entry"."Dimension Value Code" where("Dimension Set ID" = field("Dimension Set ID"),
                                                                                     "Global Dimension No." = const(8)));
         }
+
+        field(40; "Applies Document No."; Code[20])
+        {
+            DataClassification = CustomerContent;
+        }
+
+        field(41; Canceled; Boolean)
+        {
+            DataClassification = CustomerContent;
+        }
     }
 
     keys

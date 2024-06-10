@@ -33,25 +33,50 @@ codeunit 60002 "MFCC01 Agreement Management"
         Customer.Get(AgreementHeader."Customer No.");
         SetPostingDate(AgreementHeader."Agreement Date");
         GLEntry.LockTable();
-        IF AgreementHeader."Posted Agreement Amount" = 0 then
-            IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AgreementHeader."Agreement Amount", true, AgreementHeader."Franchise Bank Account", 0, false) then Begin
-                AgreementHeader."Posted Agreement Amount" := AgreementHeader."Agreement Amount";
-            End;
-        IF AgreementHeader."Posted Commission Amount" = 0 then
-            IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, BalAccountType::"G/L Account", CZSetup."Accrued Fran Bonus GAAP", AgreementHeader."SalesPerson Commission", false, '', 0, true) then Begin
-                AgreementHeader."Posted Commission Amount" := AgreementHeader."SalesPerson Commission";
-            End;
+        Case UseNormalStatAccounts(AgreementHeader) of
+            True:
+                Begin
+                    IF AgreementHeader."Posted Agreement Amount" = 0 then
+                        IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AgreementHeader."Agreement Amount", true, AgreementHeader."Franchise Bank Account", 0, false) then Begin
+                            AgreementHeader."Posted Agreement Amount" := AgreementHeader."Agreement Amount";
+                        End;
+                    IF AgreementHeader."Posted Commission Amount" = 0 then
+                        IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, BalAccountType::"G/L Account", CZSetup."Accrued Fran Bonus GAAP", AgreementHeader."SalesPerson Commission", false, '', 0, true) then Begin
+                            AgreementHeader."Posted Commission Amount" := AgreementHeader."SalesPerson Commission";
+                        End;
 
-        IF AgreementHeader.PostedRevenueStatisticalAmount = 0 then
-            IF PostStatsAmounts(AgreementHeader, CZSetup.RevenueRecognized, '', -AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
-                IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, '', -AgreementHeader."Agreement Amount" + AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then Begin
-                    AgreementHeader.PostedRevenueStatisticalAmount := AgreementHeader.NonGapInitialRevenueRecognized;
-                End;
-        IF AgreementHeader.PostedCommissionExpenseAmount = 0 then
-            IF PostStatsAmounts(AgreementHeader, CZSetup.PrepaidCommisionLT, '', AgreementHeader."SalesPerson Commission", 0, true) then Begin
-                AgreementHeader.PostedCommissionExpenseAmount := AgreementHeader."SalesPerson Commission";
-            End;
+                    IF AgreementHeader.PostedRevenueStatisticalAmount = 0 then
+                        IF PostStatsAmounts(AgreementHeader, CZSetup.RevenueRecognized, '', -AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
+                            IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, '', -AgreementHeader."Agreement Amount" + AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then Begin
+                                AgreementHeader.PostedRevenueStatisticalAmount := AgreementHeader.NonGapInitialRevenueRecognized;
+                            End;
+                    IF AgreementHeader.PostedCommissionExpenseAmount = 0 then
+                        IF PostStatsAmounts(AgreementHeader, CZSetup.PrepaidCommisionLT, '', AgreementHeader."SalesPerson Commission", 0, true) then Begin
+                            AgreementHeader.PostedCommissionExpenseAmount := AgreementHeader."SalesPerson Commission";
+                        End;
+                end;
+            false:
+                Begin
+                    IF AgreementHeader."Posted Agreement Amount" = 0 then
+                        IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AgreementHeader."Agreement Amount", true, AgreementHeader."Franchise Bank Account", 0, false) then Begin
+                            AgreementHeader."Posted Agreement Amount" := AgreementHeader."Agreement Amount";
+                        End;
+                    IF AgreementHeader."Posted Commission Amount" = 0 then
+                        IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, BalAccountType::"G/L Account", CZSetup."Accrued Fran Bonus GAAP", AgreementHeader."SalesPerson Commission", false, '', 0, true) then Begin
+                            AgreementHeader."Posted Commission Amount" := AgreementHeader."SalesPerson Commission";
+                        End;
 
+                    IF AgreementHeader.PostedRevenueStatisticalAmount = 0 then
+                        IF PostStatsAmounts(AgreementHeader, CZSetup.RevenueRecognized, '', -AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
+                            IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueTransfer, '', -AgreementHeader."Agreement Amount" + AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then Begin
+                                AgreementHeader.PostedRevenueStatisticalAmount := AgreementHeader.NonGapInitialRevenueRecognized;
+                            End;
+                    IF AgreementHeader.PostedCommissionExpenseAmount = 0 then
+                        IF PostStatsAmounts(AgreementHeader, CZSetup.PrepaidCommisionLT, '', AgreementHeader."SalesPerson Commission", 0, true) then Begin
+                            AgreementHeader.PostedCommissionExpenseAmount := AgreementHeader."SalesPerson Commission";
+                        End;
+                end;
+        end;
         AgreementHeader.Modify(true);
     end;
 
@@ -61,6 +86,8 @@ codeunit 60002 "MFCC01 Agreement Management"
         DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
         AccountType: Enum "Gen. Journal Account Type";
         BalAccountType: Enum "Gen. Journal Account Type";
+        StatDebitAcc: Code[20];
+        StatCreditAcc: Code[20];
     begin
         SetPostingDate(AgreementHeader."Franchise Revenue Start Date");
         CZSetup.GetRecordonce();
@@ -68,20 +95,43 @@ codeunit 60002 "MFCC01 Agreement Management"
         //IF Customer."Franchisee Status" <> Customer."Franchisee Status"::Operational then Begin
 
         GLEntry.LockTable();
+        Case UseNormalStatAccounts(AgreementHeader) of
+            True:
+                Begin
+                    IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AgreementHeader."Agreement Amount", false, '', 0, false) then
+                        IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, BalAccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, AgreementHeader."SalesPerson Commission", false, '', 0, true) then
+                            IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, CZSetup.DefRevenueCafesinOperation, AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
+                                IF PostStatsAmounts(AgreementHeader, CZSetup.DefRevenueCafesinOperation, CZSetup.RevenueRecognized, AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
+                                    IF PostStatsAmounts(AgreementHeader, CZSetup.DefCommisionsinOperations, CZSetup.PrepaidCommisionLT, AgreementHeader."SalesPerson Commission", 0, true) then
+                                        IF PostStatsAmounts(AgreementHeader, CZSetup.CommissionRecognized, CZSetup.DefCommisionsinOperations, AgreementHeader."SalesPerson Commission", 0, true) then Begin
 
-        IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AgreementHeader."Agreement Amount", false, '', 0, false) then
-            IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, BalAccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, AgreementHeader."SalesPerson Commission", false, '', 0, true) then
-                IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, CZSetup.DefRevenueCafesinOperation, AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
-                    IF PostStatsAmounts(AgreementHeader, CZSetup.DefRevenueCafesinOperation, CZSetup.RevenueRecognized, AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
-                        IF PostStatsAmounts(AgreementHeader, CZSetup.DefCommisionsinOperations, CZSetup.PrepaidCommisionLT, AgreementHeader."SalesPerson Commission", 0, true) then
-                            IF PostStatsAmounts(AgreementHeader, CZSetup.CommissionRecognized, CZSetup.DefCommisionsinOperations, AgreementHeader."SalesPerson Commission", 0, true) then Begin
+                                            Customer."Franchisee Status" := Customer."Franchisee Status"::Operational;
+                                            Customer."Franchisee Type" := Customer."Franchisee Type"::Active;
+                                            IF Customer."Opening Date" = 0D then
+                                                Customer."Opening Date" := AgreementHeader."Agreement Date";
+                                            Customer.Modify();
+                                        End;
+                End;
 
-                                Customer."Franchisee Status" := Customer."Franchisee Status"::Operational;
-                                Customer."Franchisee Type" := Customer."Franchisee Type"::Active;
-                                IF Customer."Opening Date" = 0D then
-                                    Customer."Opening Date" := AgreementHeader."Agreement Date";
-                                Customer.Modify();
-                            End;
+            false:
+                Begin
+                    IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AgreementHeader."Agreement Amount", false, '', 0, false) then
+                        IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, BalAccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, AgreementHeader."SalesPerson Commission", false, '', 0, true) then
+                            IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueTransfer, CZSetup."Tansfer Fee", AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
+                                //IF PostStatsAmounts(AgreementHeader, CZSetup.DefRevenueCafesinOperation, CZSetup.RevenueRecognized, AgreementHeader."Agreement Amount" - AgreementHeader.NonGapInitialRevenueRecognized, 0, false) then
+                                    IF PostStatsAmounts(AgreementHeader, CZSetup.DefCommisionsinOperations, CZSetup.PrepaidCommisionLT, AgreementHeader."SalesPerson Commission", 0, true) then
+                                    IF PostStatsAmounts(AgreementHeader, CZSetup.CommissionRecognized, CZSetup.DefCommisionsinOperations, AgreementHeader."SalesPerson Commission", 0, true) then Begin
+
+                                        Customer."Franchisee Status" := Customer."Franchisee Status"::Operational;
+                                        Customer."Franchisee Type" := Customer."Franchisee Type"::Active;
+                                        IF Customer."Opening Date" = 0D then
+                                            Customer."Opening Date" := AgreementHeader."Agreement Date";
+                                        Customer.Modify();
+                                    End;
+                End;
+
+        End;
+
 
         DeferralUtility.CreatedeferralScheduleFromAgreement(AgreementHeader, true);
         //end;
@@ -195,6 +245,12 @@ codeunit 60002 "MFCC01 Agreement Management"
         GenJnlLine."Dimension Set ID", 0);
         IF Not Commission then
             GenJnlLine.Validate("Shortcut Dimension 1 Code", CZSetup."Corp Department Code");
+
+        IF not Invoice and (BalAccountType = BalAccountType::Customer) then begin
+            GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Invoice;
+            GenJnlLine."Applies-to Doc. No." := AgreementHeader."No.";
+        end;
+
         GenJnlLine."Agreement No." := AgreementHeader."No.";
         Exit(GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0);
     end;
@@ -300,6 +356,8 @@ codeunit 60002 "MFCC01 Agreement Management"
         SetPostingDate(WorkDate());
         GLEntry.LockTable();
         GetBalance(AgreementHeader, AgreementAmt, CommissionAmt);
+        AgreementAmt := AgreementHeader."Agreement Amount";
+        CommissionAmt := AgreementHeader."SalesPerson Commission";
         AgreementHeader."Fanchise Amt Closed" := AgreementAmt;
         AgreementHeader."Commission Amt Closed" := CommissionAmt;
         IF CommissionAmt <> 0 then
@@ -312,7 +370,8 @@ codeunit 60002 "MFCC01 Agreement Management"
         IF CommissionAmt <> 0 then
             IF PostStatsAmounts(AgreementHeader, CZSetup.CommissionRecognized, CZSetup.PrepaidCommisionLT, CommissionAmt, 0, true) then;
         IF AgreementAmt <> 0 then
-            IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, CZSetup.RevenueRecognized, AgreementAmt, 0, true) then;
+            IF PostStatsAmounts(AgreementHeader, CZSetup.DeferredRevenueDevelopment, CZSetup.RevenueRecognized, AgreementAmt - AgreementHeader.NonGapInitialRevenueRecognized
+            , 0, true) then;
 
         Exit(True);
     end;
@@ -385,7 +444,17 @@ codeunit 60002 "MFCC01 Agreement Management"
             Message(NewCafeTxt, NewAgreementHeader."No.");
     end;
 
-
+    local procedure UseNormalStatAccounts(AgreementHeader: Record "MFCC01 Agreement Header"): Boolean
+    var
+        OldAgreementHeader: Record "MFCC01 Agreement Header";
+    begin
+        OldAgreementHeader.SetRange("Customer No.", AgreementHeader."Customer No.");
+        OldAgreementHeader.SetFilter("No.", '<>%1', AgreementHeader."No.");
+        IF OldAgreementHeader.FindLast() and (OldAgreementHeader.Status = OldAgreementHeader.Status::Terminated) then
+            Exit(false)
+        else
+            Exit(true);
+    end;
     #EndRegion Phase2Transfer
 
     #Region Phase2Cancel
@@ -394,16 +463,19 @@ codeunit 60002 "MFCC01 Agreement Management"
     procedure ProcessOnSignCancel(Var AgreementHeader: Record "MFCC01 Agreement Header")
     var
         Customer: Record Customer;
-        DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
-        AccountType: Enum "Gen. Journal Account Type";
-        BalAccountType: Enum "Gen. Journal Account Type";
+        DeferralUtility:
+                    Codeunit "MFCC01 Deferral Utilities";
+        AccountType:
+                    Enum "Gen. Journal Account Type";
+        BalAccountType:
+                    Enum "Gen. Journal Account Type";
     begin
         CZSetup.GetRecordonce();
         Customer.Get(AgreementHeader."Customer No.");
         SetPostingDate(WorkDate());
         GLEntry.LockTable();
         IF AgreementHeader."Posted Agreement Amount" <> 0 then
-            IF PostAgreementAmounts(AgreementHeader, BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AccountType::Customer, AgreementHeader."Customer No.", AgreementHeader."Agreement Amount", true, AgreementHeader."Franchise Bank Account", 0, false) then Begin
+            IF PostAgreementAmounts(AgreementHeader, BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AccountType::Customer, AgreementHeader."Customer No.", AgreementHeader."Agreement Amount", false, AgreementHeader."Franchise Bank Account", 0, false) then Begin
                 AgreementHeader."Cancled Agreement Amount" := AgreementHeader."Agreement Amount";
             End;
         IF AgreementHeader."Posted Commission Amount" <> 0 then
@@ -454,21 +526,24 @@ codeunit 60002 "MFCC01 Agreement Management"
         //end;
     end;
 
-
+    [CommitBehavior(CommitBehavior::Error)]
     procedure ProcessCancel(Var AgreementHeader: Record "MFCC01 Agreement Header")
     var
         SalesInvHeader: Record "Sales Invoice Header";
         Customer: Record Customer;
         SalesHeader: Record "Sales Header";
         CorrectPostedSalesInvoice: Codeunit "Correct Posted Sales Invoice";
+        FranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry";
+        NewFranchiseLedgerEntry: Record "MFCC01 FranchiseLedgerEntry";
+
         DocumentType: Enum "Sales Document Type";
         GenjnlcheckLine: Codeunit "Gen. Jnl.-Check Line";
         RevertDate: Date;
         CopyDoc: Codeunit "Copy Document Mgt.";
         CLE: Record "Cust. Ledger Entry";
         TaxExNo: Text[30];
-        GLEntries: Record "G/L Entry";
         ReverseDeff: Report "MFCC01 Reverse Deferral";
+        FranJournalPostline: Codeunit "MFCC01 Franchise Jnl. Post";
     begin
         CZSetup.GetRecordonce();
         CZSetup.TestField(CommissionRecognizedGAAP);
@@ -476,22 +551,35 @@ codeunit 60002 "MFCC01 Agreement Management"
         CZSetup.TestField(DefCommisionsinOperationsGAAP);
         CZSetup.TestField(DefRevenueCafesinOperationGAAP);
 
+        FranJournalPostline.FindNextEntries();
+        FranJournalPostline.GetNoseriesLine();
+
         //Remove Payment application
-        GLEntries.Reset();
-        GLEntries.SetRange("Agreement No.", AgreementHeader."No.");
-        IF GLEntries.FindSet() then
+        FranchiseLedgerEntry.Reset();
+        FranchiseLedgerEntry.SetRange("Agreement ID", AgreementHeader."No.");
+        FranchiseLedgerEntry.SetRange("Applies Document No.", '');
+        FranchiseLedgerEntry.SetRange("Document Type", FranchiseLedgerEntry."Document Type"::Invoice);
+        FranchiseLedgerEntry.SetRange(Canceled, false);
+        IF FranchiseLedgerEntry.FindSet() then
             repeat
                 CLE.Reset();
-                CLE.SetRange("Transaction No.", GLEntry."Transaction No.");
-                CLE.SetRange("Document No.", GLEntries."Document No.");
-                CLE.SetRange("Posting Date", GLEntries."Posting Date");
-                CLE.SetRange("Customer No.", GLEntries."Source No.");
+                CLE.SetRange("Document No.", FranchiseLedgerEntry."Document No.");
+                CLE.SetRange("Posting Date", FranchiseLedgerEntry."Posting Date");
+                CLE.SetRange("Customer No.", FranchiseLedgerEntry."Customer No.");
                 IF CLE.FindFirst() then
                     repeat
+                        CLE.CalcFields("Original Amount", "Remaining Amount");
                         IF CLE."Original Amount" <> CLE."Remaining Amount" then
                             Unapplypayment(CLE);
+
+                        FranJournalPostline.InsertCancelFranchhiseLedgerEntry(FranchiseLedgerEntry, NewFranchiseLedgerEntry);
+                        FranJournalPostline.Prepareposting(NewFranchiseLedgerEntry, true);
                     Until CLE.Next() = 0;
-            Until GLEntries.Next() = 0;
+
+            Until FranchiseLedgerEntry.Next() = 0;
+
+
+        FranJournalPostline.UpdateLastnoused();
 
         Case AgreementHeader.Status of
 
@@ -502,6 +590,7 @@ codeunit 60002 "MFCC01 Agreement Management"
             AgreementHeader.Status::Opened:
                 Begin
                     ProcessOnOpencancel(AgreementHeader);
+                    ProcessOnSignCancel(AgreementHeader);
                     ReverseDeff.ReverseDifferalLines(AgreementHeader);
                 End;
         End;
@@ -520,7 +609,7 @@ codeunit 60002 "MFCC01 Agreement Management"
         CheckCustLedgEntryToUnapply(CLEntryNo."Entry No.", DtldCustLedgEntry2);
         ApplyUnapplyParameters."Document No." := CLEntryNo."Document No.";
         ApplyUnapplyParameters."Posting Date" := WorkDate();
-        CustEntryApplyPostedEntries.PostUnApplyCustomer(DtldCustLedgEntry2, ApplyUnapplyParameters);
+        CustEntryApplyPostedEntries.PostUnApplyCustomerCommit(DtldCustLedgEntry2, ApplyUnapplyParameters, false);
     end;
 
     procedure CheckCustLedgEntryToUnapply(CustLedgEntryNo: Integer; var DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry")
