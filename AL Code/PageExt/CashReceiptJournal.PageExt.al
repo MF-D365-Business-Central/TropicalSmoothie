@@ -41,6 +41,14 @@ pageextension 60002 "MFCC01 Cash Receipt Journal" extends "Cash Receipt Journal"
                               "Journal Line No." = field("Line No.");
             }
         }
+        modify(Control1900383207)
+        {
+            Visible = True;
+        }
+        modify(Control1905767507)
+        {
+            Visible = true;
+        }
     }
 
     actions

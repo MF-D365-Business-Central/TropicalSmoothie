@@ -6,6 +6,8 @@ page 60021 GeneralLedgerTSC
     InsertAllowed = false;
     DeleteAllowed = false;
     ModifyAllowed = false;
+    ApplicationArea = All;
+    UsageCategory = History;
     layout
     {
         area(Content)
@@ -141,13 +143,33 @@ page 60021 GeneralLedgerTSC
                 ApplicationArea = All;
 
                 trigger OnAction()
+                var
+                    CSV: Codeunit CSVBuffer;
                 begin
-
+                    Message(CSV.GetGLTSC());
                 end;
             }
         }
     }
 
+    trigger OnOpenPage()
+    Begin
+        GetDate();
+    End;
+
+
+    local procedure GetDate()
     var
-        myInt: Integer;
+        CurrPeriod: Date;
+        AccPeriod: Record "Accounting Period";
+    begin
+        AccPeriod.SetFilter("Starting Date", '<=%1', Today());
+        IF AccPeriod.FindLast() then
+            CurrPeriod := AccPeriod."Starting Date";
+
+        AccPeriod.SetFilter("Starting Date", '<%1', CurrPeriod);
+        IF AccPeriod.FindLast() then;
+
+        Rec.SetFilter("Posting Date", '>=%1', AccPeriod."Starting Date");
+    end;
 }

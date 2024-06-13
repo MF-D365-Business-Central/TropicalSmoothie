@@ -77,5 +77,24 @@ page 60023 StatisticalLedger
         }
     }
 
+    trigger OnOpenPage()
+    Begin
+        GetDate();
+    End;
 
+
+    local procedure GetDate()
+    var
+        CurrPeriod: Date;
+        AccPeriod: Record "Accounting Period";
+    begin
+        AccPeriod.SetFilter("Starting Date", '<=%1', Today());
+        IF AccPeriod.FindLast() then
+            CurrPeriod := AccPeriod."Starting Date";
+
+        AccPeriod.SetFilter("Starting Date", '<%1', CurrPeriod);
+        IF AccPeriod.FindLast() then;
+
+        Rec.SetFilter("Posting Date", '>=%1', AccPeriod."Starting Date");
+    end;
 }

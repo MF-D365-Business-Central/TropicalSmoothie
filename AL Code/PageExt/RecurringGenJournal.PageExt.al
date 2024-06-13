@@ -2,6 +2,14 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
 {
     layout
     {
+        modify(Control1900383207)
+        {
+            Visible = True;
+        }
+        modify(Control1905767507)
+        {
+            Visible = true;
+        }
         addlast(Control1)
         {
             field("Approver ID"; Rec."Approver ID")
@@ -41,6 +49,7 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
                 ShowFilter = false;
                 Visible = ShowWorkflowStatusOnLine;
             }
+
         }
     }
 

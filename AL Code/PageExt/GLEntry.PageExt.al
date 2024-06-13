@@ -2,6 +2,14 @@ pageextension 60004 "MFCC01General Ledger Entries" extends "General Ledger Entri
 {
     layout
     {
+        modify(Control1900383207)
+        {
+            Visible = True;
+        }
+        modify(Control1905767507)
+        {
+            Visible = true;
+        }
         // Add changes to page layout here
         addafter("Document No.")
         {

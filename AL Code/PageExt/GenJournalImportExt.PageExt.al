@@ -138,6 +138,14 @@ pageextension 60001 "MFCC01GenJournalImportExt" extends "General Journal"
                 ToolTip = 'Specifies the value of the Approver ID field.';
             }
         }
+        modify(Control1900383207)
+        {
+            Visible = True;
+        }
+        modify(Control1905767507)
+        {
+            Visible = true;
+        }
     }
     actions
     {
