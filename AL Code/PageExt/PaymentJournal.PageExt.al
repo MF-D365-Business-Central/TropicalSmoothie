@@ -3,6 +3,14 @@ pageextension 60005 "MFCC01Payment Journal" extends "Payment Journal"
     layout
     {
         // Add changes to page layout here
+        modify(Control1900383207)
+        {
+            Visible = True;
+        }
+        modify(Control1905767507)
+        {
+            Visible = true;
+        }
     }
 
     actions
