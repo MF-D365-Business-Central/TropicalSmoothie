@@ -172,6 +172,9 @@ codeunit 60002 "MFCC01 Agreement Management"
             GenJnlLine.Description := 'Franchise Fee';
         IF counter <> 0 then
             GenJnlLine.Description := 'Renewal Franchise Fee';
+
+        IF GenJnlLine."Account Type" = GenJnlLine."Account Type"::Customer then
+            GenJnlLine."Sales/Purch. (LCY)" := GenJnlLine."Amount (LCY)";
         GenJnlPostLine.RunWithCheck(GenJnlLine);
 
         GenJnlLine.Init();
