@@ -2,10 +2,75 @@ codeunit 60020 "CSVBuffer"
 {
     trigger OnRun()
     begin
-
+        GetDate();
     end;
 
-    procedure GetGLTSC() Response: Text
+
+    procedure GetGLTSC(id: Integer) Response: Text
+    var
+        FromDate: Date;
+        ToDate: Date;
+        TempBlob: Codeunit "Temp Blob";
+        FileIns: InStream;
+        FileOut: OutStream;
+        HttpContent: HttpContent;
+        FileName: Text;
+        CsvXml: XmlPort "General Ledger TSC";
+    begin
+        GetDate(id, FromDate, ToDate);
+        TempBlob.CreateOutStream(FileOut);
+        CsvXml.SetDate(FromDate, ToDate, id <> 1);
+        CsvXml.SetDestination(FileOut);
+        CsvXml.Export();
+        TempBlob.CreateInStream(FileIns);
+        HttpContent.WriteFrom(FileIns);
+        HttpContent.ReadAs(Response);
+    end;
+
+    procedure GetGLGA17(id: Integer) Response: Text
+    var
+        FromDate: Date;
+        ToDate: Date;
+        TempBlob: Codeunit "Temp Blob";
+        FileIns: InStream;
+        FileOut: OutStream;
+        HttpContent: HttpContent;
+        FileName: Text;
+        CsvXml: XmlPort "General Ledger GA17";
+    begin
+        GetDate(id, FromDate, ToDate);
+        TempBlob.CreateOutStream(FileOut);
+        CsvXml.SetDate(FromDate, ToDate, id <> 1);
+        CsvXml.SetDestination(FileOut);
+        CsvXml.Export();
+        TempBlob.CreateInStream(FileIns);
+        HttpContent.WriteFrom(FileIns);
+        HttpContent.ReadAs(Response);
+    end;
+
+    procedure GetSTATTSC(id: Integer) Response: Text
+    var
+        FromDate: Date;
+        ToDate: Date;
+        TempBlob: Codeunit "Temp Blob";
+        FileIns: InStream;
+        FileOut: OutStream;
+        HttpContent: HttpContent;
+        FileName: Text;
+        CsvXml: XmlPort "Stat Ledger TSC";
+    begin
+        GetDate(id, FromDate, ToDate);
+        TempBlob.CreateOutStream(FileOut);
+        CsvXml.SetDate(FromDate, ToDate, id <> 1);
+        CsvXml.SetDestination(FileOut);
+        CsvXml.Export();
+        TempBlob.CreateInStream(FileIns);
+        HttpContent.WriteFrom(FileIns);
+        HttpContent.ReadAs(Response);
+    end;
+
+
+    procedure GetGLTSC5() Response: Text
     var
         CSVBuffer: Record "CSV Buffer" temporary;
         GLEntry: Record "G/L Entry";
@@ -88,7 +153,11 @@ codeunit 60020 "CSVBuffer"
 
     local procedure GetDate(): Date
     var
+        TotalCounter: Integer;
+        i: Integer;
         CurrPeriod: Date;
+        FromDate: Date;
+        ToDate: Date;
         AccPeriod: Record "Accounting Period";
     begin
         AccPeriod.SetFilter("Starting Date", '<=%1', Today());
@@ -99,7 +168,42 @@ codeunit 60020 "CSVBuffer"
         IF AccPeriod.FindLast() then;
 
 
-        exit(AccPeriod."Starting Date");
+
+        i := Today - AccPeriod."Starting Date";
+
+        TotalCounter := 5;
+
+
+        for i := 1 to TotalCounter DO Begin
+            ToDate := CalcDate(StrSubstNo('<+%1D>', i * 15), AccPeriod."Starting Date");
+            IF i = 1 then
+                FromDate := AccPeriod."Starting Date"
+            else
+                FromDate := CalcDate('<-14D>', ToDate);
+            Message('%1 -- %2', FromDate, ToDate);
+        End;
+
+    end;
+
+
+    procedure GetDate(Counter: Integer; Var FromDate: Date; Var ToDate: Date): Date
+    var
+        TotalCounter: Integer;
+        CurrPeriod: Date;
+        AccPeriod: Record "Accounting Period";
+    begin
+        AccPeriod.SetFilter("Starting Date", '<=%1', Today());
+        IF AccPeriod.FindLast() then
+            CurrPeriod := AccPeriod."Starting Date";
+
+        AccPeriod.SetFilter("Starting Date", '<%1', CurrPeriod);
+        IF AccPeriod.FindLast() then;
+
+        ToDate := CalcDate(StrSubstNo('<+%1D>', Counter * 15), AccPeriod."Starting Date");
+        IF Counter = 1 then
+            FromDate := AccPeriod."Starting Date"
+        else
+            FromDate := CalcDate('<-14D>', ToDate);
 
     end;
 }

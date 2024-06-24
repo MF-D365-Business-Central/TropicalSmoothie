@@ -146,7 +146,7 @@ page 60021 GeneralLedgerTSC
                 var
                     CSV: Codeunit CSVBuffer;
                 begin
-                    Message(CSV.GetGLTSC());
+                    CSV.Run();
                 end;
             }
         }
