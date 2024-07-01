@@ -2,8 +2,10 @@ xmlport 60004 "Stat Ledger TSC"
 {
     Direction = Export;
     Format = VariableText;
-    FileName = 'Stat Ledger TSC.csv';
+    FileName = 'Stat Ledger TSC.psv';
     TableSeparator = '<NewLine>';
+    FieldSeparator = '|';
+    FieldDelimiter = '';
     schema
     {
         textelement(NodeName1)
@@ -130,6 +132,7 @@ xmlport 60004 "Stat Ledger TSC"
                 trigger OnPreXmlItem()
                 Begin
                     StatEntry.SetRange("Posting Date", NewFromDate, NewToDate);
+                    //currXMLport.TextEncoding(TextEncoding::UTF8);
                 End;
             }
         }

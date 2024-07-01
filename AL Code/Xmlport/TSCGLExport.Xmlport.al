@@ -2,8 +2,10 @@ xmlport 60002 "General Ledger TSC"
 {
     Direction = Export;
     Format = VariableText;
-    FileName = 'General Ledger TSC.csv';
+    FileName = 'General Ledger TSC.psv';
     TableSeparator = '<NewLine>';
+    FieldSeparator = '|';
+    FieldDelimiter = '';
     schema
     {
         textelement(NodeName1)
@@ -199,6 +201,9 @@ xmlport 60002 "General Ledger TSC"
                 fieldelement(DocumentNo; GLEntry."Document No.")
                 {
                 }
+                fieldelement(DocumentDate; GLEntry."Document Date")
+                {
+                }
                 fieldelement(Description2; GLEntry."Description 2")
                 {
                 }
@@ -259,6 +264,7 @@ xmlport 60002 "General Ledger TSC"
                 trigger OnPreXmlItem()
                 Begin
                     GLEntry.SetRange("Posting Date", NewFromDate, NewToDate);
+                    //currXMLport.TextEncoding(TextEncoding::UTF8);
                 End;
             }
         }

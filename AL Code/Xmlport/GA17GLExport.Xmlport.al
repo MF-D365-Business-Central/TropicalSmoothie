@@ -2,8 +2,10 @@ xmlport 60003 "General Ledger GA17"
 {
     Direction = Export;
     Format = VariableText;
-    FileName = 'General Ledger GA17.csv';
+    FileName = 'General Ledger GA17.psv';
     TableSeparator = '<NewLine>';
+    FieldSeparator = '|';
+    FieldDelimiter = '';
     schema
     {
         textelement(NodeName1)
@@ -187,6 +189,9 @@ xmlport 60003 "General Ledger GA17"
                 {
                 }
                 fieldelement(Description2; GLEntry."Description 2")
+                {
+                }
+                fieldelement(DocumentDate; GLEntry."Document Date")
                 {
                 }
                 fieldelement(GLAccountNo; GLEntry."G/L Account No.")
