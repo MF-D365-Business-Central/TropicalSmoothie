@@ -2,6 +2,18 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
 {
     layout
     {
+        addlast(Control120)
+        {
+            field(GenJnlBatchApprovalStatus; StatJnlBatchApprovalStatus)
+            {
+                ApplicationArea = All;
+                Caption = 'Approval Status';
+                Editable = false;
+                Visible = EnabledStatJnlBatchWorkflowsExist;
+                ToolTip = 'Specifies the approval status for Statistical journal batch.';
+            }
+        }
+
         // Add changes to page layout here
         addafter("Document No.")
         {
@@ -230,6 +242,14 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
         JournalErrorsMgt: Codeunit "Journal Errors Mgt.";
         BackgroundErrorHandlingMgt: Codeunit "Background Error Handling Mgt.";
         CanRequestFlowApprovalForBatch: Boolean;
+        StatJnlBatchApprovalStatus: Text[20];
+        JournalBatchName: Code[10];
+
+    trigger OnOpenPage()
+    Begin
+        SelectJournal();
+        SetControlAppearanceFromBatch();
+    End;
 
     trigger OnAfterGetRecord()
     Begin
@@ -244,14 +264,17 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
     local procedure SetControlAppearanceFromBatch()
     var
         StatJournalBatch: Record "Statistical Acc. Journal Batch";
+        MFCApproval: Codeunit MFCC01Approvals;
     begin
         if ClientTypeManagement.GetCurrentClientType() = CLIENTTYPE::ODataV4 then
             exit;
 
-        if not StatJournalBatch.Get(Rec."Journal Template Name", Rec."Journal Batch Name") then
+        if not StatJournalBatch.Get(Rec."Journal Template Name", JournalBatchName) then
             exit;
 
         SetApprovalStateForBatch(StatJournalBatch, Rec, OpenApprovalEntriesExistForCurrUser, OpenApprovalEntriesOnJnlBatchExist, OpenApprovalEntriesOnBatchOrAnyJnlLineExist, CanCancelApprovalForJnlBatch, CanRequestFlowApprovalForBatch, CanCancelFlowApprovalForBatch, CanRequestFlowApprovalForBatchAndAllLines, ApprovalEntriesExistSentByCurrentUser, EnabledStatJnlBatchWorkflowsExist, EnabledStatJnlLineWorkflowsExist);
+        MFCApproval.GetStatJnlBatchApprovalStatus(Rec, StatJnlBatchApprovalStatus, EnabledStatJnlBatchWorkflowsExist);
+
     end;
 
 
@@ -313,4 +336,14 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
         CanRequestLineApprovals := true;
     end;
 
+    internal procedure SelectJournal()
+    var
+        DefaultStatisticalAccJournalBatch: Record "Statistical Acc. Journal Batch";
+    begin
+
+
+        if not DefaultStatisticalAccJournalBatch.FindFirst() then;
+
+        JournalBatchName := DefaultStatisticalAccJournalBatch.Name;
+    end;
 }

@@ -26,6 +26,13 @@ codeunit 60005 "Event handler"
         RestrictBatchUsageDetailsTxt: Label 'The restriction was imposed because the journal batch requires approval.';
 
 
+    [EventSubscriber(ObjectType::Table, Database::"Excel Buffer", 'OnBeforeOpenUsingDocumentService', '', false, false)]
+    local procedure OnBeforeOpenUsingDocumentService(FileNameServer: Text; FileName: Text; var Result: Boolean; var IsHandled: Boolean)
+    begin
+        IsHandled := true;
+        Result := false;
+    end;
+
     [EventSubscriber(ObjectType::Table, Database::"Cust. Ledger Entry", 'OnAfterCopyCustLedgerEntryFromGenJnlLine', '', false, false)]
     local procedure OnAfterCopyCustLedgerEntryFromGenJnlLine(var CustLedgerEntry: Record "Cust. Ledger Entry"; GenJournalLine: Record "Gen. Journal Line")
     begin

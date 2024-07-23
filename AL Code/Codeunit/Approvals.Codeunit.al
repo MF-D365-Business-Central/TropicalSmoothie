@@ -499,6 +499,104 @@ codeunit 60007 MFCC01Approvals
     end;
 
 
+    procedure GetStatJnlBatchApprovalStatus(StatJournalLine: Record "Statistical Acc. Journal Line"; var GenJnlBatchApprovalStatus: Text[20]; EnabledstatJnlBatchWorkflowsExist: Boolean)
+    var
+        ApprovalEntry: Record "Approval Entry";
+        StatJournalBatch: Record "Statistical Acc. Journal Batch";
+    begin
+        Clear(GenJnlBatchApprovalStatus);
+        if not EnabledstatJnlBatchWorkflowsExist then
+            exit;
+        if not StatJournalBatch.Get(StatJournalLine."Journal Template Name", StatJournalLine."Journal Batch Name") then
+            exit;
+
+        if ApprovalMgmt.FindApprovalEntryByRecordId(ApprovalEntry, StatJournalBatch.RecordId) then
+            GenJnlBatchApprovalStatus := GetApprovalStatusFromApprovalEntry(ApprovalEntry, StatJournalBatch);
+    end;
+
+    procedure GetGenJnlLineApprovalStatus(StaJournalLine: Record "Statistical Acc. Journal Line"; var StatJnlLineApprovalStatus: Text[20]; EnabledGenJnlLineWorkflowsExist: Boolean)
+    var
+        ApprovalEntry: Record "Approval Entry";
+    begin
+        Clear(StatJnlLineApprovalStatus);
+        if not EnabledGenJnlLineWorkflowsExist then
+            exit;
+
+        if ApprovalMgmt.FindApprovalEntryByRecordId(ApprovalEntry, StaJournalLine.RecordId) then
+            StatJnlLineApprovalStatus := GetApprovalStatusFromApprovalEntry(ApprovalEntry, StaJournalLine);
+    end;
+
+    local procedure GetApprovalStatusFromApprovalEntry(var ApprovalEntry: Record "Approval Entry"; StatJournalBatch: Record "Statistical Acc. Journal Batch"): Text[20]
+    var
+        RestrictedRecord: Record "Restricted Record";
+        StatJournalLine: Record "Statistical Acc. Journal Line";
+        FieldRef: FieldRef;
+        ApprovalStatusName: Text;
+    begin
+        GetApprovalEntryStatusFieldRef(FieldRef, ApprovalEntry);
+        ApprovalStatusName := GetApprovalEntryStatusValueName(FieldRef, ApprovalEntry);
+        if ApprovalStatusName = 'Open' then
+            exit(CopyStr(PendingApprovalLbl, 1, 20));
+        if ApprovalStatusName = 'Approved' then begin
+            RestrictedRecord.SetRange(Details, RestrictBatchUsageDetailsLbl);
+            if not RestrictedRecord.IsEmpty() then begin
+                RestrictedRecord.Reset();
+                StatJournalLine.ReadIsolation(IsolationLevel::ReadUncommitted);
+                StatJournalLine.SetLoadFields("Journal Template Name", "Journal Batch Name", "Line No.");
+                StatJournalLine.SetRange("Journal Template Name", StatJournalBatch."Journal Template Name");
+                StatJournalLine.SetRange("Journal Batch Name", StatJournalBatch.Name);
+                if StatJournalLine.FindSet() then
+                    repeat
+                        RestrictedRecord.SetRange("Record ID", StatJournalLine.RecordId);
+                        if not RestrictedRecord.IsEmpty() then
+                            exit(CopyStr(ImposedRestrictionLbl, 1, 20));
+                    until StatJournalLine.Next() = 0;
+            end;
+        end;
+        exit(CopyStr(GetApprovalEntryStatusValueCaption(FieldRef, ApprovalEntry), 1, 20));
+    end;
+
+    var
+        PendingApprovalLbl: Label 'Pending Approval';
+        RestrictBatchUsageDetailsLbl: Label 'The restriction was imposed because the journal batch requires approval.';
+        ImposedRestrictionLbl: Label 'Imposed restriction';
+
+    local procedure GetApprovalStatusFromApprovalEntry(var ApprovalEntry: Record "Approval Entry"; StatJournalLine: Record "Statistical Acc. Journal Line"): Text[20]
+    var
+        RestrictedRecord: Record "Restricted Record";
+        FieldRef: FieldRef;
+        ApprovalStatusName: Text;
+    begin
+        GetApprovalEntryStatusFieldRef(FieldRef, ApprovalEntry);
+        ApprovalStatusName := GetApprovalEntryStatusValueName(FieldRef, ApprovalEntry);
+        if ApprovalStatusName = 'Open' then
+            exit(CopyStr(PendingApprovalLbl, 1, 20));
+        if ApprovalStatusName = 'Approved' then begin
+            RestrictedRecord.SetRange("Record ID", StatJournalLine.RecordId);
+            if not RestrictedRecord.IsEmpty() then
+                exit(CopyStr(ImposedRestrictionLbl, 1, 20));
+        end;
+        exit(CopyStr(GetApprovalEntryStatusValueCaption(FieldRef, ApprovalEntry), 1, 20));
+    end;
+
+    local procedure GetApprovalEntryStatusFieldRef(var FieldRef: FieldRef; var ApprovalEntry: Record "Approval Entry")
+    var
+        RecordRef: RecordRef;
+    begin
+        RecordRef.GetTable(ApprovalEntry);
+        FieldRef := RecordRef.Field(ApprovalEntry.FieldNo(Status));
+    end;
+
+    local procedure GetApprovalEntryStatusValueName(var FieldRef: FieldRef; ApprovalEntry: Record "Approval Entry"): Text
+    begin
+        exit(FieldRef.GetEnumValueName(ApprovalEntry.Status.AsInteger() + 1));
+    end;
+
+    local procedure GetApprovalEntryStatusValueCaption(var FieldRef: FieldRef; ApprovalEntry: Record "Approval Entry"): Text
+    begin
+        exit(FieldRef.GetEnumValueCaption(ApprovalEntry.Status.AsInteger() + 1));
+    end;
+
     [IntegrationEvent(false, false)]
     local procedure OnHasAnyOpenJournalLineApprovalEntriesOnAfterApprovalEntrySetFilters(var ApprovalEntry: Record "Approval Entry")
     begin

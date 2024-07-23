@@ -555,28 +555,28 @@ codeunit 60002 "MFCC01 Agreement Management"
         FranJournalPostline.GetNoseriesLine();
 
         //Remove Payment application
-        FranchiseLedgerEntry.Reset();
-        FranchiseLedgerEntry.SetRange("Agreement ID", AgreementHeader."No.");
-        FranchiseLedgerEntry.SetRange("Applies Document No.", '');
-        FranchiseLedgerEntry.SetRange("Document Type", FranchiseLedgerEntry."Document Type"::Invoice);
-        FranchiseLedgerEntry.SetRange(Canceled, false);
-        IF FranchiseLedgerEntry.FindSet() then
-            repeat
-                CLE.Reset();
-                CLE.SetRange("Document No.", FranchiseLedgerEntry."Document No.");
-                CLE.SetRange("Posting Date", FranchiseLedgerEntry."Posting Date");
-                CLE.SetRange("Customer No.", FranchiseLedgerEntry."Customer No.");
-                IF CLE.FindFirst() then
-                    repeat
-                        CLE.CalcFields("Original Amount", "Remaining Amount");
-                        IF CLE."Original Amount" <> CLE."Remaining Amount" then
-                            Unapplypayment(CLE);
+        // FranchiseLedgerEntry.Reset();
+        // FranchiseLedgerEntry.SetRange("Agreement ID", AgreementHeader."No.");
+        // FranchiseLedgerEntry.SetRange("Applies Document No.", '');
+        // FranchiseLedgerEntry.SetRange("Document Type", FranchiseLedgerEntry."Document Type"::Invoice);
+        // FranchiseLedgerEntry.SetRange(Canceled, false);
+        // IF FranchiseLedgerEntry.FindSet() then
+        //     repeat
+        //         CLE.Reset();
+        //         CLE.SetRange("Document No.", FranchiseLedgerEntry."Document No.");
+        //         CLE.SetRange("Posting Date", FranchiseLedgerEntry."Posting Date");
+        //         CLE.SetRange("Customer No.", FranchiseLedgerEntry."Customer No.");
+        //         IF CLE.FindFirst() then
+        //             repeat
+        //                 CLE.CalcFields("Original Amount", "Remaining Amount");
+        //                 IF CLE."Original Amount" <> CLE."Remaining Amount" then
+        //                     Unapplypayment(CLE);
 
-                        FranJournalPostline.InsertCancelFranchhiseLedgerEntry(FranchiseLedgerEntry, NewFranchiseLedgerEntry);
-                        FranJournalPostline.Prepareposting(NewFranchiseLedgerEntry, true);
-                    Until CLE.Next() = 0;
+        //                 FranJournalPostline.InsertCancelFranchhiseLedgerEntry(FranchiseLedgerEntry, NewFranchiseLedgerEntry);
+        //                 FranJournalPostline.Prepareposting(NewFranchiseLedgerEntry, true);
+        //             Until CLE.Next() = 0;
 
-            Until FranchiseLedgerEntry.Next() = 0;
+        //     Until FranchiseLedgerEntry.Next() = 0;
 
 
         FranJournalPostline.UpdateLastnoused();

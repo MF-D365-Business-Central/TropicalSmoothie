@@ -2,6 +2,17 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
 {
     layout
     {
+        addafter(CurrentJnlBatchName)
+        {
+            field(GenJnlBatchApprovalStatus; GenJnlBatchApprovalStatus)
+            {
+                ApplicationArea = Basic, Suite;
+                Caption = 'Approval Status';
+                Editable = false;
+                Visible = EnabledGenJnlBatchWorkflowsExist;
+                ToolTip = 'Specifies the approval status for general journal batch.';
+            }
+        }
         modify(Control1900383207)
         {
             Visible = True;
@@ -241,6 +252,10 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
         }
 
     }
+    trigger OnOpenPage()
+    Begin
+        SetControlAppearanceFromBatch();
+    End;
 
     trigger OnAfterGetCurrRecord()
     var
@@ -299,6 +314,8 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
 
         ShowWorkflowStatusOnBatch := CurrPage.WorkflowStatusBatch.PAGE.SetFilterOnWorkflowRecord(GenJournalBatch.RecordId);
         SetApprovalStateForBatch(GenJournalBatch, Rec, OpenApprovalEntriesExistForCurrUser, OpenApprovalEntriesOnJnlBatchExist, OpenApprovalEntriesOnBatchOrAnyJnlLineExist, CanCancelApprovalForJnlBatch, CanRequestFlowApprovalForBatch, CanCancelFlowApprovalForBatch, CanRequestFlowApprovalForBatchAndAllLines, ApprovalEntriesExistSentByCurrentUser, EnabledGenJnlBatchWorkflowsExist, EnabledGenJnlLineWorkflowsExist);
+        ApprovalMgmt.GetGenJnlBatchApprovalStatus(Rec, GenJnlBatchApprovalStatus, EnabledGenJnlBatchWorkflowsExist);
+
     end;
 
     internal procedure SetApprovalStateForBatch(GenJournalBatch: Record "Gen. Journal Batch"; GenJournalLine: Record "Gen. Journal Line"; var OpenApprovalEntriesExistForCurrentUser: Boolean; var OpenApprovalEntriesOnJournalBatchExist: Boolean; var OpenApprovalEntriesOnBatchOrAnyJournalLineExist: Boolean; var CanCancelApprovalForJournalBatch: Boolean; var LocalCanRequestFlowApprovalForBatch: Boolean; var LocalCanCancelFlowApprovalForBatch: Boolean; var LocalCanRequestFlowApprovalForBatchAndAllLines: Boolean; var LocalApprovalEntriesExistSentByCurrentUser: Boolean; var EnabledGeneralJournalBatchWorkflowsExist: Boolean; var EnabledGeneralJournalLineWorkflowsExist: Boolean)
@@ -322,6 +339,7 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
     end;
 
     var
+        ApprovalMgmt: Codeunit "Approvals Mgmt.";
         ClientTypeManagement: Codeunit "Client Type Management";
         EnabledGenJnlLineWorkflowsExist: Boolean;
         ApprovalEntriesExistSentByCurrentUser: Boolean;
@@ -340,4 +358,5 @@ pageextension 60009 "MFCCI01RecurringGeneralJournal" extends "Recurring General 
         CanCancelFlowApprovalForLine: Boolean;
         EnabledGenJnlBatchWorkflowsExist: Boolean;
         ShowWorkflowStatusOnLine: Boolean;
+        GenJnlBatchApprovalStatus: Text[20];
 }
