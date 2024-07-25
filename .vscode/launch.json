@@ -8,14 +8,14 @@
             "tenant": "19c1a10d-6a49-4541-892b-7c45efdeca3a",
             "environmentType": "Sandbox",
             //"environmentName": "Sandbox_MAR07",//Sandbox_12Oct23",
-            "environmentName": "SandboxMay21",
+            "environmentName": "Sandbox24Jun",
             "startupObjectId": 22,
             "startupObjectType": "Page",
             "breakOnError": "All",
             "launchBrowser": true,
             "enableLongRunningSqlStatements": true,
             "enableSqlInformationDebugger": true,
-            "schemaUpdateMode": "ForceSync"
+            "schemaUpdateMode": "Synchronize"
             
         }
     ]
