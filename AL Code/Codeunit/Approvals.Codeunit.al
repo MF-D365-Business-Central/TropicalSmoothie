@@ -237,14 +237,21 @@ codeunit 60007 MFCC01Approvals
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Approvals Mgmt.", 'OnAfterIsSufficientApprover', '', false, false)]
     local procedure OnAfterIsSufficientApprover(UserSetup: Record "User Setup"; ApprovalEntryArgument: Record "Approval Entry"; var IsSufficient: Boolean; var IsHandled: Boolean)
+    var
+        ApporvalChainIsUnsupportedMsg: Label 'Only Direct Approver is supported as Approver Limit Type option for %1. The approval request will be approved automatically.', Comment = 'Only Direct Approver is supported as Approver Limit Type option for Stat. Journal Batch DEFAULT, CASH. The approval request will be approved automatically.';
+
     begin
         case ApprovalEntryArgument."Table ID" of
-            DATABASE::"Statistical Acc. Journal Line", Database::"Statistical Acc. Journal Batch":
+            DATABASE::"Statistical Acc. Journal Line":
                 Begin
                     IsSufficient := IsSufficientGLAccountApprover(UserSetup, ApprovalEntryArgument."Amount (LCY)");
                     IsHandled := true;
                 End;
         end;
+        if not IsHandled then
+            if ApprovalEntryArgument."Table ID" = Database::"Statistical Acc. Journal Batch" then
+                Message(ApporvalChainIsUnsupportedMsg, Format(ApprovalEntryArgument."Record ID to Approve"));
+
     end;
 
     local procedure IsSufficientGLAccountApprover(UserSetup: Record "User Setup"; ApprovalAmountLCY: Decimal): Boolean
@@ -258,6 +265,25 @@ codeunit 60007 MFCC01Approvals
             exit(true);
 
         exit(false);
+    end;
+
+    procedure IsStatJournalBatchApprovalsWorkflowEnabled(var StatJournalBatch: Record "Statistical Acc. Journal Batch") Result: Boolean
+    var
+        IsHandled: Boolean;
+    begin
+        IsHandled := false;
+        OnBeforeIsStatJournalBatchApprovalsWorkflowEnabled(StatJournalBatch, Result, IsHandled);
+        if IsHandled then
+            exit(Result);
+
+        exit(WorkflowManagement.CanExecuteWorkflow(StatJournalBatch,
+            RunWorkflowOnSendStatJournalBatchForApprovalCode()));
+    end;
+
+
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeIsStatJournalBatchApprovalsWorkflowEnabled(var StatJournalBatch: Record "Statistical Acc. Journal Batch"; var Result: Boolean; var IsHandled: Boolean)
+    begin
     end;
 
     procedure IsStatJournalLineApprovalsWorkflowEnabled(var StatJournalLine: Record "Statistical Acc. Journal Line") Result: Boolean
@@ -285,41 +311,42 @@ codeunit 60007 MFCC01Approvals
     end;
 
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
-    procedure PostApprovalEntriesMoveStatJournalLine(var StatisticalAccJournalLine: Record "Statistical Acc. Journal Line"; var StatisticalLedgerEntry: Record "Statistical Ledger Entry")
-    begin
-        ApprovalMgmt.PostApprovalEntries(StatisticalAccJournalLine.RecordId, StatisticalLedgerEntry.RecordId, StatisticalAccJournalLine."Document No.");
-    end;
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
+    // procedure PostApprovalEntriesMoveStatJournalLine(var StatisticalAccJournalLine: Record "Statistical Acc. Journal Line"; var StatisticalLedgerEntry: Record "Statistical Ledger Entry")
+    // begin
+    //     ApprovalMgmt.PostApprovalEntries(StatisticalAccJournalLine.RecordId, StatisticalLedgerEntry.RecordId, StatisticalAccJournalLine."Document No.");
+    // end;
 
     [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Line", 'OnAfterDeleteEvent', '', false, false)]
     procedure DeleteApprovalEntriesAfterDeleteStatJournalLine(var Rec: Record "Statistical Acc. Journal Line"; RunTrigger: Boolean)
-    begin
-        if not Rec.IsTemporary then
-            ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
-    end;
-
-    // [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnMoveStatJournalBatch', '', false, false)]
-    // procedure PostApprovalEntriesMoveStatJournalBatch(var Sender: Record "Statistical Acc. Journal Batch"; ToRecordID: RecordID)
-    // var
-    //     RecordRestrictionMgt: Codeunit "Record Restriction Mgt.";
-    // begin
-    //     if ApprovalMgmt.PostApprovalEntries(Sender.RecordId, ToRecordID, '') then begin
-    //         RecordRestrictionMgt.AllowRecordUsage(Sender);
-    //         ApprovalMgmt.DeleteApprovalEntries(Sender.RecordId);
-    //     end;
-    // end; RGU
-
-    [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnAfterDeleteEvent', '', false, false)]
-    procedure DeleteApprovalEntriesAfterDeleteStatJournalBatch(var Rec: Record "Statistical Acc. Journal Batch"; RunTrigger: Boolean)
     var
-        GenJnlTemplate: Record "Gen. Journal Template";
+        StatAccJnlBatch: Record "Statistical Acc. Journal Batch";
     begin
         if Rec.IsTemporary then
             exit;
+        IF StatAccJnlBatch.Get(Rec."Journal Template Name", Rec."Journal Batch Name") then
+            ApprovalMgmt.DeleteApprovalEntries(StatAccJnlBatch.RecordId);
+    end;
 
-        if GenJnlTemplate.Get(Rec."Journal Template Name") then
-            if not GenJnlTemplate."Increment Batch Name" then
-                ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Stat. Acc. Jnl. Line Post", 'OnBeforeInsertStatisticalLedgerEntry', '', false, false)]
+    procedure PostApprovalEntriesMoveStatJournalBatch(var StatisticalAccJournalLine: Record "Statistical Acc. Journal Line"; var StatisticalLedgerEntry: Record "Statistical Ledger Entry")
+    var
+        RecordRestrictionMgt: Codeunit "Record Restriction Mgt.";
+        StatAccJournalBatch: Record "Statistical Acc. Journal Batch";
+    begin
+        IF StatAccJournalBatch.Get(StatisticalAccJournalLine."Journal Template Name", StatisticalAccJournalLine."Journal Batch Name") then
+            if ApprovalMgmt.PostApprovalEntries(StatAccJournalBatch.RecordId, StatisticalLedgerEntry.RecordId, '') then begin
+                RecordRestrictionMgt.AllowRecordUsage(StatAccJournalBatch);
+                ApprovalMgmt.DeleteApprovalEntries(StatAccJournalBatch.RecordId);
+            end;
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Statistical Acc. Journal Batch", 'OnAfterDeleteEvent', '', false, false)]
+    procedure DeleteApprovalEntriesAfterDeleteStatJournalBatch(var Rec: Record "Statistical Acc. Journal Batch"; RunTrigger: Boolean)
+    begin
+        if Rec.IsTemporary then
+            exit;
+        ApprovalMgmt.DeleteApprovalEntries(Rec.RecordId);
     end;
 
     procedure HasAnyOpenJournalLineApprovalEntries(JournalTemplateName: Code[20]; JournalBatchName: Code[20]): Boolean
@@ -471,6 +498,104 @@ codeunit 60007 MFCC01Approvals
         BatchProcessingMgt.BatchProcess(StatJournalLine, Codeunit::"Approvals Journal Line Request", Enum::"Error Handling Options"::"Show Error", NoOfSelected, NoOfSkipped);
     end;
 
+
+    procedure GetStatJnlBatchApprovalStatus(StatJournalLine: Record "Statistical Acc. Journal Line"; var GenJnlBatchApprovalStatus: Text[20]; EnabledstatJnlBatchWorkflowsExist: Boolean)
+    var
+        ApprovalEntry: Record "Approval Entry";
+        StatJournalBatch: Record "Statistical Acc. Journal Batch";
+    begin
+        Clear(GenJnlBatchApprovalStatus);
+        if not EnabledstatJnlBatchWorkflowsExist then
+            exit;
+        if not StatJournalBatch.Get(StatJournalLine."Journal Template Name", StatJournalLine."Journal Batch Name") then
+            exit;
+
+        if ApprovalMgmt.FindApprovalEntryByRecordId(ApprovalEntry, StatJournalBatch.RecordId) then
+            GenJnlBatchApprovalStatus := GetApprovalStatusFromApprovalEntry(ApprovalEntry, StatJournalBatch);
+    end;
+
+    procedure GetGenJnlLineApprovalStatus(StaJournalLine: Record "Statistical Acc. Journal Line"; var StatJnlLineApprovalStatus: Text[20]; EnabledGenJnlLineWorkflowsExist: Boolean)
+    var
+        ApprovalEntry: Record "Approval Entry";
+    begin
+        Clear(StatJnlLineApprovalStatus);
+        if not EnabledGenJnlLineWorkflowsExist then
+            exit;
+
+        if ApprovalMgmt.FindApprovalEntryByRecordId(ApprovalEntry, StaJournalLine.RecordId) then
+            StatJnlLineApprovalStatus := GetApprovalStatusFromApprovalEntry(ApprovalEntry, StaJournalLine);
+    end;
+
+    local procedure GetApprovalStatusFromApprovalEntry(var ApprovalEntry: Record "Approval Entry"; StatJournalBatch: Record "Statistical Acc. Journal Batch"): Text[20]
+    var
+        RestrictedRecord: Record "Restricted Record";
+        StatJournalLine: Record "Statistical Acc. Journal Line";
+        FieldRef: FieldRef;
+        ApprovalStatusName: Text;
+    begin
+        GetApprovalEntryStatusFieldRef(FieldRef, ApprovalEntry);
+        ApprovalStatusName := GetApprovalEntryStatusValueName(FieldRef, ApprovalEntry);
+        if ApprovalStatusName = 'Open' then
+            exit(CopyStr(PendingApprovalLbl, 1, 20));
+        if ApprovalStatusName = 'Approved' then begin
+            RestrictedRecord.SetRange(Details, RestrictBatchUsageDetailsLbl);
+            if not RestrictedRecord.IsEmpty() then begin
+                RestrictedRecord.Reset();
+                StatJournalLine.ReadIsolation(IsolationLevel::ReadUncommitted);
+                StatJournalLine.SetLoadFields("Journal Template Name", "Journal Batch Name", "Line No.");
+                StatJournalLine.SetRange("Journal Template Name", StatJournalBatch."Journal Template Name");
+                StatJournalLine.SetRange("Journal Batch Name", StatJournalBatch.Name);
+                if StatJournalLine.FindSet() then
+                    repeat
+                        RestrictedRecord.SetRange("Record ID", StatJournalLine.RecordId);
+                        if not RestrictedRecord.IsEmpty() then
+                            exit(CopyStr(ImposedRestrictionLbl, 1, 20));
+                    until StatJournalLine.Next() = 0;
+            end;
+        end;
+        exit(CopyStr(GetApprovalEntryStatusValueCaption(FieldRef, ApprovalEntry), 1, 20));
+    end;
+
+    var
+        PendingApprovalLbl: Label 'Pending Approval';
+        RestrictBatchUsageDetailsLbl: Label 'The restriction was imposed because the journal batch requires approval.';
+        ImposedRestrictionLbl: Label 'Imposed restriction';
+
+    local procedure GetApprovalStatusFromApprovalEntry(var ApprovalEntry: Record "Approval Entry"; StatJournalLine: Record "Statistical Acc. Journal Line"): Text[20]
+    var
+        RestrictedRecord: Record "Restricted Record";
+        FieldRef: FieldRef;
+        ApprovalStatusName: Text;
+    begin
+        GetApprovalEntryStatusFieldRef(FieldRef, ApprovalEntry);
+        ApprovalStatusName := GetApprovalEntryStatusValueName(FieldRef, ApprovalEntry);
+        if ApprovalStatusName = 'Open' then
+            exit(CopyStr(PendingApprovalLbl, 1, 20));
+        if ApprovalStatusName = 'Approved' then begin
+            RestrictedRecord.SetRange("Record ID", StatJournalLine.RecordId);
+            if not RestrictedRecord.IsEmpty() then
+                exit(CopyStr(ImposedRestrictionLbl, 1, 20));
+        end;
+        exit(CopyStr(GetApprovalEntryStatusValueCaption(FieldRef, ApprovalEntry), 1, 20));
+    end;
+
+    local procedure GetApprovalEntryStatusFieldRef(var FieldRef: FieldRef; var ApprovalEntry: Record "Approval Entry")
+    var
+        RecordRef: RecordRef;
+    begin
+        RecordRef.GetTable(ApprovalEntry);
+        FieldRef := RecordRef.Field(ApprovalEntry.FieldNo(Status));
+    end;
+
+    local procedure GetApprovalEntryStatusValueName(var FieldRef: FieldRef; ApprovalEntry: Record "Approval Entry"): Text
+    begin
+        exit(FieldRef.GetEnumValueName(ApprovalEntry.Status.AsInteger() + 1));
+    end;
+
+    local procedure GetApprovalEntryStatusValueCaption(var FieldRef: FieldRef; ApprovalEntry: Record "Approval Entry"): Text
+    begin
+        exit(FieldRef.GetEnumValueCaption(ApprovalEntry.Status.AsInteger() + 1));
+    end;
 
     [IntegrationEvent(false, false)]
     local procedure OnHasAnyOpenJournalLineApprovalEntriesOnAfterApprovalEntrySetFilters(var ApprovalEntry: Record "Approval Entry")

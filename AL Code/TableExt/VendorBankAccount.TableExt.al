@@ -8,6 +8,10 @@ tableextension 60003 "MFCC01 Vendor Bank Account" extends "Vendor Bank Account"
             Editable = false;
             DataClassification = CustomerContent;
         }
+        field(60001; "First Time Approval"; Boolean)
+        {
+            DataClassification = CustomerContent;
+        }
     }
 
     keys
@@ -19,6 +23,15 @@ tableextension 60003 "MFCC01 Vendor Bank Account" extends "Vendor Bank Account"
     {
         // Add changes to field groups here
     }
+    trigger OnBeforeinsert()
+    var
+        VBA: Record "Vendor Bank Account";
+    Begin
+        VBA.SetRange("Vendor No.", Rec."Vendor No.");
+        VBA.Setfilter(Code, '<>%1', Rec.Code);
+        IF VBA.IsEmpty() then
+            Rec."First Time Approval" := True;
+    End;
 
     trigger OnModify()
     Begin

@@ -2,6 +2,18 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
 {
     layout
     {
+        addlast(Control120)
+        {
+            field(GenJnlBatchApprovalStatus; StatJnlBatchApprovalStatus)
+            {
+                ApplicationArea = All;
+                Caption = 'Approval Status';
+                Editable = false;
+                Visible = EnabledStatJnlBatchWorkflowsExist;
+                ToolTip = 'Specifies the approval status for Statistical journal batch.';
+            }
+        }
+
         // Add changes to page layout here
         addafter("Document No.")
         {
@@ -15,6 +27,199 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
 
     actions
     {
+        modify(Register)
+        {
+            trigger OnBeforeAction()
+            Var
+                EventHandelr: Codeunit "Event handler";
+                StatJournalBatch: Record "Statistical Acc. Journal Batch";
+            BEgin
+                StatJournalBatch.Get(Rec."Journal Template Name", Rec."Journal Batch Name");
+                EventHandelr.CheckStatJournalBatchHasUsageRestrictions(StatJournalBatch);
+            End;
+        }
+
+        // Add changes to page actions here
+        addlast(navigation)
+        {
+            action(Approvals)
+            {
+                AccessByPermission = TableData "Approval Entry" = R;
+                ApplicationArea = Suite;
+                Caption = 'Approvals';
+                Image = Approvals;
+                ToolTip = 'View a list of the records that are waiting to be approved. For example, you can see who requested the record to be approved, when it was sent, and when it is due to be approved.';
+
+                trigger OnAction()
+                var
+                    [SecurityFiltering(SecurityFilter::Filtered)]
+                    StatJournalLine: Record "Statistical Acc. Journal Line";
+                    ApprovalsMgmt: Codeunit MFCC01Approvals;
+                begin
+                    GetCurrentlySelectedLines(StatJournalLine);
+                    ApprovalsMgmt.ShowJournalApprovalEntries(StatJournalLine);
+                end;
+            }
+        }
+        addlast(Process)
+        {
+
+            group("Request Approval")
+            {
+                Caption = 'Request Approval';
+                group(SendApprovalRequest)
+                {
+                    Caption = 'Send Approval Request';
+                    Image = SendApprovalRequest;
+                    action(SendApprovalRequestJournalBatch)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Journal Batch';
+                        Enabled = NOT OpenApprovalEntriesOnBatchOrAnyJnlLineExist AND CanRequestFlowApprovalForBatchAndAllLines AND EnabledStatJnlBatchWorkflowsExist;
+
+                        Image = SendApprovalRequest;
+                        ToolTip = 'Send all journal lines for approval, also those that you may not see because of filters.';
+
+                        trigger OnAction()
+                        var
+                            ApprovalsMgmt: Codeunit MFCC01Approvals;
+                        begin
+                            ApprovalsMgmt.TrySendJournalBatchApprovalRequest(Rec);
+                            SetControlAppearanceFromBatch();
+                        end;
+                    }
+                    action(SendApprovalRequestJournalLine)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Selected Journal Lines';
+                        Enabled = NOT OpenApprovalEntriesOnBatchOrCurrJnlLineExist AND CanRequestFlowApprovalForBatchAndCurrentLine AND EnabledStatJnlLineWorkflowsExist;
+                        Image = SendApprovalRequest;
+                        ToolTip = 'Send selected journal lines for approval.';
+                        Visible = false;
+                        trigger OnAction()
+                        var
+                            [SecurityFiltering(SecurityFilter::Filtered)]
+                            StatJournalLine: Record "Statistical Acc. Journal Line";
+                            ApprovalsMgmt: Codeunit MFCC01Approvals;
+                        begin
+                            GetCurrentlySelectedLines(StatJournalLine);
+                            ApprovalsMgmt.SendJournalLinesApprovalRequests(StatJournalLine);
+                            SetControlAppearanceFromBatch();
+                        end;
+                    }
+                }
+                group(CancelApprovalRequest)
+                {
+                    Caption = 'Cancel Approval Request';
+                    Image = Cancel;
+                    action(CancelApprovalRequestJournalBatch)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Journal Batch';
+                        Enabled = CanCancelApprovalForJnlBatch OR CanCancelFlowApprovalForBatch;
+                        Image = CancelApprovalRequest;
+                        ToolTip = 'Cancel sending all journal lines for approval, also those that you may not see because of filters.';
+
+                        trigger OnAction()
+                        var
+                            ApprovalsMgmt: Codeunit MFCC01Approvals;
+                        begin
+                            ApprovalsMgmt.TryCancelJournalBatchApprovalRequest(Rec);
+                            SetControlAppearanceFromBatch();
+                        end;
+                    }
+                    action(CancelApprovalRequestJournalLine)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Selected Journal Lines';
+                        Enabled = CanCancelApprovalForJnlLine OR CanCancelFlowApprovalForLine;
+                        Image = CancelApprovalRequest;
+                        ToolTip = 'Cancel sending selected journal lines for approval.';
+                        Visible = false;
+                        trigger OnAction()
+                        var
+                            [SecurityFiltering(SecurityFilter::Filtered)]
+                            StatJournalLine: Record "Statistical Acc. Journal Line";
+                            ApprovalsMgmt: Codeunit MFCC01Approvals;
+                        begin
+                            GetCurrentlySelectedLines(StatJournalLine);
+                            ApprovalsMgmt.TryCancelJournalLineApprovalRequests(StatJournalLine);
+                        end;
+                    }
+                }
+            }
+
+            group(Approval)
+            {
+                Caption = 'Approval';
+                action(Approve)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Approve';
+                    Image = Approve;
+                    ToolTip = 'Approve the requested changes.';
+                    Visible = OpenApprovalEntriesExistForCurrUser;
+
+                    trigger OnAction()
+                    var
+                        ApprovalsMgmt: Codeunit MFCC01Approvals;
+                    begin
+                        ApprovalsMgmt.ApproveStatJournalLineRequest(Rec);
+                    end;
+                }
+                action(Reject)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Reject';
+                    Image = Reject;
+                    ToolTip = 'Reject the approval request.';
+                    Visible = OpenApprovalEntriesExistForCurrUser;
+
+                    trigger OnAction()
+                    var
+                        ApprovalsMgmt: Codeunit MFCC01Approvals;
+                    begin
+                        ApprovalsMgmt.RejectStatJournalLineRequest(Rec);
+                    end;
+                }
+                action(Delegate)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Delegate';
+                    Image = Delegate;
+                    ToolTip = 'Delegate the approval to a substitute approver.';
+                    Visible = OpenApprovalEntriesExistForCurrUser;
+
+                    trigger OnAction()
+                    var
+                        ApprovalsMgmt: Codeunit MFCC01Approvals;
+                    begin
+                        ApprovalsMgmt.DelegateStatJournalLineRequest(Rec);
+                    end;
+                }
+                action(Comments)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Comments';
+                    Image = ViewComments;
+                    ToolTip = 'View or add comments for the record.';
+                    Visible = OpenApprovalEntriesExistForCurrUser or ApprovalEntriesExistSentByCurrentUser;
+
+                    trigger OnAction()
+                    var
+                        StatJournalBatch: Record "Statistical Acc. Journal Batch";
+                        ApprovalsMgmt: Codeunit "Approvals Mgmt.";
+                    begin
+                        if OpenApprovalEntriesOnJnlLineExist then
+                            ApprovalsMgmt.GetApprovalComment(Rec)
+                        else
+                            if OpenApprovalEntriesOnJnlBatchExist then
+                                if StatJournalBatch.Get(Rec."Journal Template Name", Rec."Journal Batch Name") then
+                                    ApprovalsMgmt.GetApprovalComment(StatJournalBatch);
+                    end;
+                }
+            }
+        }
     }
     var
         ClientTypeManagement: Codeunit "Client Type Management";
@@ -37,6 +242,14 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
         JournalErrorsMgt: Codeunit "Journal Errors Mgt.";
         BackgroundErrorHandlingMgt: Codeunit "Background Error Handling Mgt.";
         CanRequestFlowApprovalForBatch: Boolean;
+        StatJnlBatchApprovalStatus: Text[20];
+        JournalBatchName: Code[10];
+
+    trigger OnOpenPage()
+    Begin
+        SelectJournal();
+        SetControlAppearanceFromBatch();
+    End;
 
     trigger OnAfterGetRecord()
     Begin
@@ -51,14 +264,17 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
     local procedure SetControlAppearanceFromBatch()
     var
         StatJournalBatch: Record "Statistical Acc. Journal Batch";
+        MFCApproval: Codeunit MFCC01Approvals;
     begin
         if ClientTypeManagement.GetCurrentClientType() = CLIENTTYPE::ODataV4 then
             exit;
 
-        if not StatJournalBatch.Get(Rec."Journal Template Name", Rec."Journal Batch Name") then
+        if not StatJournalBatch.Get(Rec."Journal Template Name", JournalBatchName) then
             exit;
 
         SetApprovalStateForBatch(StatJournalBatch, Rec, OpenApprovalEntriesExistForCurrUser, OpenApprovalEntriesOnJnlBatchExist, OpenApprovalEntriesOnBatchOrAnyJnlLineExist, CanCancelApprovalForJnlBatch, CanRequestFlowApprovalForBatch, CanCancelFlowApprovalForBatch, CanRequestFlowApprovalForBatchAndAllLines, ApprovalEntriesExistSentByCurrentUser, EnabledStatJnlBatchWorkflowsExist, EnabledStatJnlLineWorkflowsExist);
+        MFCApproval.GetStatJnlBatchApprovalStatus(Rec, StatJnlBatchApprovalStatus, EnabledStatJnlBatchWorkflowsExist);
+
     end;
 
 
@@ -120,4 +336,14 @@ pageextension 60012 "MFCCI01StatisticalAccJournal" extends "Statistical Accounts
         CanRequestLineApprovals := true;
     end;
 
+    internal procedure SelectJournal()
+    var
+        DefaultStatisticalAccJournalBatch: Record "Statistical Acc. Journal Batch";
+    begin
+
+
+        if not DefaultStatisticalAccJournalBatch.FindFirst() then;
+
+        JournalBatchName := DefaultStatisticalAccJournalBatch.Name;
+    end;
 }

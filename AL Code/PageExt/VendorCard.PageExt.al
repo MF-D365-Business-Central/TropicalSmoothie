@@ -1,4 +1,4 @@
-pageextension 60017 MFCC01VendorList extends "Vendor List"
+pageextension 60018 MFCC01VendorCard extends "Vendor Card"
 {
     layout
     {
@@ -13,6 +13,7 @@ pageextension 60017 MFCC01VendorList extends "Vendor List"
             }
         }
     }
+
     actions
     {
         // Add changes to page actions here
@@ -29,7 +30,8 @@ pageextension 60017 MFCC01VendorList extends "Vendor List"
                     VendorBank.SetRange("First Time Approval", true);
                     VendorBank.SetRange(Status, VendorBank.Status::Open);
                     IF VendorBank.FindFirst() then
-                        MFCC01Approvals.OnSendVBADocForApproval(VendorBank);
+                        if MFCC01Approvals.IsVBAApprovalsWorkflowEnabled(VendorBank) then
+                            MFCC01Approvals.OnSendVBADocForApproval(VendorBank);
                 End;
 
             End;
@@ -47,13 +49,11 @@ pageextension 60017 MFCC01VendorList extends "Vendor List"
                 VendorBank.SetRange("First Time Approval", true);
                 VendorBank.SetRange(Status, VendorBank.Status::"Pending Approval");
                 IF VendorBank.FindFirst() then
-                    if MFCC01Approvals.IsVBAApprovalsWorkflowEnabled(VendorBank) then
-                        MFCC01Approvals.OnCancelVBAApprovalRequest(VendorBank);
+                    MFCC01Approvals.OnCancelVBAApprovalRequest(VendorBank);
 
             End;
         }
     }
-
 
 
 
