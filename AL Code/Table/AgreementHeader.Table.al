@@ -204,7 +204,7 @@ table 60003 "MFCC01 Agreement Header"
             Caption = 'Cancel Agreement Amount';
             Editable = false;
         }
-        field(67; "Cancled Commission Amount"; Decimal)
+        field(67; "Canceled Commission Amount"; Decimal)
         {
             Caption = 'Cancel Commission Amount';
             Editable = false;
@@ -219,6 +219,29 @@ table 60003 "MFCC01 Agreement Header"
         {
             Caption = 'Cancel Commission Expense  Amount';
             Editable = false;
+        }
+        field(70; "New Franchise Fee"; Decimal)
+        {
+            Caption = 'New Franchise Fee';
+        }
+        field(71; "New Commission Fee"; Decimal)
+        {
+            Caption = 'New Commission Fee';
+
+        }
+        field(72; "New End Date"; Date)
+        {
+            Caption = 'New End Date';
+
+            trigger OnValidate()
+            Begin
+                CheckDatesNewDate();
+            End;
+        }
+        field(73; "Canceled No. of Periods"; Decimal)
+        {
+            Editable = false;
+            DataClassification = CustomerContent;
         }
     }
 
@@ -238,6 +261,8 @@ table 60003 "MFCC01 Agreement Header"
         OpenDateStDateErrorLbl: Label 'Starting Date %1 must not be less then Franchise Revenue Start Date %2';
         RoyaltyDateStDateErrorLbl: Label 'Term Expiration Date %1 must not be less then Franchise Revenue Start Date %2';
         DuplicateAgreementErr: Label 'There is Agreement %1 is signed/open. you can not Setup Multiple signed/open Agreements.';
+        NewOpenDateEDDateErrorLbl: Label 'New Ending Date %1 must be greater then Franchise Revenue Start Date %2';
+        NewRoyaltyDateStDateErrorLbl: Label 'New End Date %1 must not be less then Franchise Revenue Start Date %2';
 
     trigger OnInsert()
     var
@@ -280,7 +305,41 @@ table 60003 "MFCC01 Agreement Header"
     begin
     end;
 
-    local procedure CheckDates()
+    procedure CheckDatesNewDate()
+    var
+        AgreementLine: Record "MFCC01 Agreement Line";
+        CZSetup: Record "MFCC01 Franchise Setup";
+        FromDate: Date;
+        ToDate: Date;
+        AllowedPeriodErr: Label 'New Ending Date should be between %1 & %2';
+    begin
+        CZSetup.Get();
+        CZSetup.TestField("End Date Allowed Period");
+        FromDate := CalcDate(StrSubstNo('<-%1>', CZSetup."End Date Allowed Period"), Rec."Term Expiration Date");
+        ToDate := CalcDate(StrSubstNo('<+%1>', CZSetup."End Date Allowed Period"), Rec."Term Expiration Date");
+
+        IF Not ("New End Date" IN [FromDate .. ToDate]) then
+            Error(AllowedPeriodErr, FromDate, ToDate);
+
+        IF (Rec."New End Date" <> 0D) And (
+                     Rec."New End Date" < Rec."Franchise Revenue Start Date") then
+            Error(RoyaltyDateStDateErrorLbl, Rec."New End Date", Rec."Franchise Revenue Start Date");
+
+        AgreementLine.SetRange("Customer No.", Rec."Customer No.");
+        AgreementLine.SetRange("Agreement No.", Rec."No.");
+        IF AgreementLine.FindSet() then
+            repeat
+                IF (AgreementLine."Ending Date" <> 0D) And (
+                     AgreementLine."Starting Date" < Rec."Franchise Revenue Start Date") then
+                    Error(OpenDateSTDateErrorLbl, AgreementLine."Starting Date", Rec."Franchise Revenue Start Date");
+
+                IF (AgreementLine."Ending Date" <> 0D) AND (AgreementLine."Ending Date" < Rec."Franchise Revenue Start Date")
+                     then
+                    Error(NewOpenDateEDDateErrorLbl, AgreementLine."Ending Date", Rec."Franchise Revenue Start Date");
+            Until AgreementLine.Next() = 0;
+    end;
+
+    procedure CheckDates()
     var
         AgreementLine: Record "MFCC01 Agreement Line";
     begin
@@ -329,7 +388,7 @@ table 60003 "MFCC01 Agreement Header"
         Rec."License Type" := Rec."License Type"::Transferred;
     end;
 
-    local procedure CalcPeriods()
+    procedure CalcPeriods()
     var
         DeferalUtilities: Codeunit "MFCC01 Deferral Utilities";
     begin
@@ -436,6 +495,8 @@ table 60003 "MFCC01 Agreement Header"
     var
         AgreementMgmt: Codeunit "MFCC01 Agreement Management";
         DefHeader: Record "MFCC01 Deferral Header";
+        DefLine: Record "MFCC01 Deferral Line";
+
         ConfirmTxt: Label 'Do you want to Terminate the Cafe.?';
     begin
         IF not Confirm(ConfirmTxt, false, true) then
@@ -450,8 +511,18 @@ table 60003 "MFCC01 Agreement Header"
             IF AgreementHeader.Status = AgreementHeader.Status::Signed then
                 AgreementMgmt.ProcessTerminateOnSign(AgreementHeader);
 
+            DefHeader.Reset();
             DefHeader.SetRange("Agreement No.", Rec."No.");
-            DefHeader.ModifyAll(Status, DefHeader.Status::Terminated);
+            IF DefHeader.FindSet() then
+                repeat
+                    DefLine.Reset();
+                    DefLine.SetRange("Document No.", DefHeader."Document No.");
+                    IF DefLine.FindSet() then
+                        DefLine.ModifyAll(Posted, true);
+                    DefHeader.Status := DefHeader.Status::Terminated;
+                    DefHeader.Modify();
+                Until DefHeader.Next() = 0;
+
 
             AgreementHeader.Status := AgreementHeader.Status::Terminated;
             AgreementHeader.Modify();
@@ -459,22 +530,71 @@ table 60003 "MFCC01 Agreement Header"
         end;
     end;
 
-    procedure SetStatusCancel(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    procedure CorrectCommissionFee(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    var
+        AgreementMgmt: Codeunit "MFCC01 Agreement Management";
+        CorrectionType: Enum CorrectionType;
+        ConfirmTxt: Label 'Do you want to Correct commission Fee.?';
+        Confirm2Txt: Label 'New Commission Fee is Zero. Do you want to Correct Commission Fee with Zero.?';
+        CompletedTxt: Label 'commission Fee Corrected.?';
+    begin
+        IF AgreementHeader."New Commission Fee" <> 0 then
+            IF not Confirm(ConfirmTxt, false, true) then
+                exit;
+        IF AgreementHeader."New Commission Fee" = 0 then
+            IF not Confirm(Confirm2Txt, false, true) then
+                exit;
+
+        IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
+            CorrectionType := CorrectionType::Commission;
+            AgreementMgmt.ProcessCancel(AgreementHeader, CorrectionType);
+            AgreementHeader.Modify();
+            Message(CompletedTxt);
+
+        end;
+    end;
+
+    procedure CorrectFranchiseFee(Var AgreementHeader: Record "MFCC01 Agreement Header")
     var
         AgreementMgmt: Codeunit "MFCC01 Agreement Management";
         DefHeader: Record "MFCC01 Deferral Header";
-        ConfirmTxt: Label 'Do you want to Cancel the Cafe.?';
+        CorrectionType: Enum CorrectionType;
+        ConfirmTxt: Label 'Do you want to Correct Franchise Fee.?';
+        Confirm2Txt: Label 'New Fee is Zero. Do you want to Correct Franchise Fee with Zero.?';
+        CompletedTxt: Label 'Franchise Fee Corrected.?';
+    begin
+        IF AgreementHeader."New Franchise Fee" <> 0 then
+            IF not Confirm(ConfirmTxt, false, true) then
+                exit;
+        IF AgreementHeader."New Franchise Fee" = 0 then
+            IF not Confirm(Confirm2Txt, false, true) then
+                exit;
+        IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
+            CorrectionType := CorrectionType::Fee;
+            AgreementMgmt.ProcessCancel(AgreementHeader, CorrectionType);
+            AgreementHeader.Modify();
+            Message(CompletedTxt);
+        end;
+    end;
+
+
+    procedure CorrectSchedules(Var AgreementHeader: Record "MFCC01 Agreement Header")
+    var
+        AgreementMgmt: Codeunit "MFCC01 Agreement Management";
+        DefHeader: Record "MFCC01 Deferral Header";
+        CorrectionType: Enum CorrectionType;
+        ConfirmTxt: Label 'Do you want to Correct Schedules.?';
+        Confirm2Txt: Label 'New Fee is Zero. Do you want to Correct Franchise Fee with Zero.?';
+        CompletedTxt: Label 'Schedules Corrected.?';
     begin
         IF not Confirm(ConfirmTxt, false, true) then
             exit;
-        //CheckLinesExist(AgreementHeader, true);
 
         IF AgreementHeader.Status IN [AgreementHeader.Status::Signed, AgreementHeader.Status::Opened] then begin
-
-            AgreementMgmt.ProcessCancel(AgreementHeader);
-            AgreementHeader.Status := AgreementHeader.Status::Corrected;
+            CorrectionType := CorrectionType::Schedules;
+            AgreementMgmt.ProcessCancel(AgreementHeader, CorrectionType);
             AgreementHeader.Modify();
-
+            Message(CompletedTxt);
         end;
     end;
 

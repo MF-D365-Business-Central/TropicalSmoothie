@@ -235,10 +235,13 @@ page 60004 "MFCC01 Agreements"
                 Promoted = true;
                 PromotedCategory = Process;
                 Visible = false;
+
                 trigger OnAction()
                 var
                     DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
+                    SingleInstance: Codeunit "MFCC01 Single Instance";
                 begin
+                    SingleInstance.SetUseCurretnDate(false);
                     DeferralUtility.CreatedeferralScheduleFromAgreement(Rec, false);
                 end;
             }

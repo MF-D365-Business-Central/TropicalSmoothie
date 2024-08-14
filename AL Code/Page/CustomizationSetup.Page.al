@@ -22,6 +22,10 @@ page 60000 "MFCC01 Franchise Setup"
                 {
                     ToolTip = 'Specifies the value of the Franchise Journal Batch field.';
                 }
+                field("End Date Allowed Period"; Rec."End Date Allowed Period")
+                {
+                    ToolTip = 'Specifies the value of the End Date Allowed Period field.', Comment = '%';
+                }
             }
             group(Numbering)
             {

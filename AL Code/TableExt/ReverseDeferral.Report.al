@@ -12,7 +12,7 @@ report 60016 "MFCC01 Reverse Deferral"
 
 
 
-    Local procedure PostDeferralLine(DeferralHeader: Record "MFCC01 Deferral Header"; DeferralLine: Record "MFCC01 Deferral Line")
+    Local procedure PostDeferralLine(DeferralHeader: Record "MFCC01 Deferral Header"; Var DeferralLine: Record "MFCC01 Deferral Line")
     var
         GenJnlLine: Record "Gen. Journal Line";
 
@@ -68,6 +68,7 @@ report 60016 "MFCC01 Reverse Deferral"
         GenJnlLine."Dimension Set ID", 0);
         GenJnlLine."Agreement No." := DeferralHeader."Agreement No.";
         DeferralLine.Posted := GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0;
+        DeferralLine.Canceled := True;
         DeferralLine.Modify();
         //Commit();
     end;
@@ -78,7 +79,7 @@ report 60016 "MFCC01 Reverse Deferral"
         DimMgt.AddDimSource(DefaultDimSource, Database::"Customer", DeferralHeader."Customer No.");
     end;
 
-    procedure ReverseDifferalLines(AgreementHeader: Record "MFCC01 Agreement Header")
+    procedure ReverseDifferalLines(AgreementHeader: Record "MFCC01 Agreement Header"; CorrectionType: Enum CorrectionType)
     var
         DeferralHeader: Record "MFCC01 Deferral Header";
     begin
@@ -91,17 +92,35 @@ report 60016 "MFCC01 Reverse Deferral"
         CZSetup.TestField(DefRevenueCafesinOperationGAAP);
 
         GLEntry.LockTable();
+        Case CorrectionType of
+            CorrectionType::Fee:
+                IF DeferralHeader.Get(AgreementHeader."FranchiseFeescheduleNo.") then Begin
+                    ProcesLines(DeferralHeader);
+                    DeferralHeader.Status := DeferralHeader.Status::Canceled;
+                    DeferralHeader.Modify();
+                End;
+            CorrectionType::Commission:
+                IF DeferralHeader.Get(AgreementHeader."CommissionscheduleNo.") then Begin
+                    ProcesLines(DeferralHeader);
+                    DeferralHeader.Status := DeferralHeader.Status::Canceled;
+                    DeferralHeader.Modify();
+                End;
+            CorrectionType::Schedules:
+                Begin
+                    IF DeferralHeader.Get(AgreementHeader."CommissionscheduleNo.") then Begin
+                        ProcesLines(DeferralHeader);
+                        DeferralHeader.Status := DeferralHeader.Status::Canceled;
+                        DeferralHeader.Modify();
+                    End;
+                    IF DeferralHeader.Get(AgreementHeader."FranchiseFeescheduleNo.") then Begin
+                        ProcesLines(DeferralHeader);
+                        DeferralHeader.Status := DeferralHeader.Status::Canceled;
+                        DeferralHeader.Modify();
+                    End;
+                End;
+        End;
 
-        IF DeferralHeader.Get(AgreementHeader."FranchiseFeescheduleNo.") then Begin
-            ProcesLines(DeferralHeader);
-            DeferralHeader.Status := DeferralHeader.Status::Canceled;
-            DeferralHeader.Modify();
-        End;
-        IF DeferralHeader.Get(AgreementHeader."CommissionscheduleNo.") then Begin
-            ProcesLines(DeferralHeader);
-            DeferralHeader.Status := DeferralHeader.Status::Canceled;
-            DeferralHeader.Modify();
-        End;
+
 
     end;
 
@@ -110,13 +129,12 @@ report 60016 "MFCC01 Reverse Deferral"
         DeferralLine: Record "MFCC01 Deferral Line";
     begin
         DeferralLine.SetRange("Document No.", DeferralHeader."Document No.");
-        DeferralLine.SetRange(Posted, true);
+        DeferralLine.SetRange(Posted, false);
         DeferralLine.SetRange(Canceled, false);
         IF DeferralLine.FindSet() then
             repeat
                 PostDeferralLine(DeferralHeader, DeferralLine);
-                DeferralLine.Canceled := true;
-                DeferralLine.Modify();
+
             Until DeferralLine.Next() = 0;
     end;
 

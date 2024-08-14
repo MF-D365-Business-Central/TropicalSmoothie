@@ -88,6 +88,10 @@ table 60002 "MFCC01 Deferral Line"
             Caption = 'Canceled';
             Editable = false;
         }
+
+        field(14; "New Posting Date"; Date)
+        {
+        }
     }
 
     keys

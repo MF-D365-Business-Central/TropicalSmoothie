@@ -15,6 +15,11 @@ page 60002 "MFCC01 DeferralScheduleSubform"
                     ApplicationArea = Suite;
                     ToolTip = 'Specifies the posting date for the entry.';
                 }
+                field("New Posting Date"; Rec."New Posting Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the New Posting Date field.', Comment = '%';
+                }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = Suite;

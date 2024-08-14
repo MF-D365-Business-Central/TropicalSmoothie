@@ -100,10 +100,13 @@ report 60000 "MFCC01 Process Deferral"
 
         GenJnlPostLine: Codeunit "Gen. Jnl.-Post Line";
         DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
+        PostDate: Date;
     begin
-
+        PostDate := "MFCC01 Deferral Line"."Posting Date";
+        IF "MFCC01 Deferral Line"."New Posting Date" <> 0D then
+            PostDate := "MFCC01 Deferral Line"."New Posting Date";
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
+        GenJnlLine."Posting Date" := PostDate;
         GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
         // IF "MFCC01 Deferral Header".Type = "MFCC01 Deferral Header".Type::Commission then
@@ -129,7 +132,7 @@ report 60000 "MFCC01 Process Deferral"
         "MFCC01 Deferral Line".Posted := GenJnlPostLine.RunWithCheck(GenJnlLine) <> 0;
 
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := "MFCC01 Deferral Line"."Posting Date";
+        GenJnlLine."Posting Date" := PostDate;
         GenJnlLine."Document No." := "MFCC01 Deferral Header"."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
         IF "MFCC01 Deferral Header".Type = "MFCC01 Deferral Header".Type::Commission then

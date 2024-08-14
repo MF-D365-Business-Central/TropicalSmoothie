@@ -678,4 +678,13 @@ codeunit 60005 "Event handler"
 
     end;
 
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"MFCC01 Deferral Utilities", OnCalculateDaysPerPeriodOnBeforeDeferralLineInsert, '', false, false)]
+    local procedure OnCalculateDaysPerPeriodOnBeforeDeferralLineInsert(DeferralHeader: Record "MFCC01 Deferral Header"; var DeferralLine: record "MFCC01 Deferral Line")
+    var
+        SingleInstance: Codeunit "MFCC01 Single Instance";
+    begin
+        IF SingleInstance.GetUseCurretnDate() And (DeferralLine."Posting Date" < WorkDate()) then
+            DeferralLine."New Posting Date" := WorkDate();
+    end;
 }

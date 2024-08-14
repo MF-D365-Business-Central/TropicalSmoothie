@@ -39,6 +39,7 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Term Expiration Date field.';
                 }
+
                 field("No. of Periods"; Rec."No. of Periods")
                 {
                     ToolTip = 'Specifies the value of the No. of Periods field.';
@@ -51,10 +52,12 @@ page 60005 "MFCC01 Agreement"
                 {
                     ToolTip = 'Specifies the value of the Agreement Amount field.';
                 }
+
                 field("SalesPerson Commission"; Rec."SalesPerson Commission")
                 {
                     ToolTip = 'Specifies the value of the SalesPerson Commission field.';
                 }
+
                 field(NonGapInitialRevenueRecognized; Rec.NonGapInitialRevenueRecognized)
                 {
                     ToolTip = 'Specifies the value of the Non Gap Initial Revenue Recognized GAAP field.';
@@ -96,6 +99,21 @@ page 60005 "MFCC01 Agreement"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Status field.';
+                }
+            }
+            group(Cancelation)
+            {
+                field("New End Date"; Rec."New End Date")
+                {
+                    ToolTip = 'Specifies the value of the New End Date field.', Comment = '%';
+                }
+                field("New Franchise Fee"; Rec."New Franchise Fee")
+                {
+                    ToolTip = 'Specifies the value of the New Franchise Fee field.', Comment = '%';
+                }
+                field("New Commission Fee"; Rec."New Commission Fee")
+                {
+                    ToolTip = 'Specifies the value of the New Commission Fee field.', Comment = '%';
                 }
             }
             part(Lines; "MFCC01 Agreement Lines")
@@ -185,6 +203,36 @@ page 60005 "MFCC01 Agreement"
         }
         area(Processing)
         {
+            group(Correction)
+            {
+                action("Correct Franchise Fee")
+                {
+                    ApplicationArea = All;
+                    Image = Cancel;
+                    trigger OnAction()
+                    begin
+                        Rec.CorrectFranchiseFee(Rec);
+                    end;
+                }
+                action("Correct Commission Fee")
+                {
+                    ApplicationArea = All;
+                    Image = Cancel;
+                    trigger OnAction()
+                    begin
+                        Rec.CorrectCommissionFee(Rec);
+                    end;
+                }
+                action("Correct Schedules")
+                {
+                    ApplicationArea = All;
+                    Image = Cancel;
+                    trigger OnAction()
+                    begin
+                        Rec.CorrectSchedules(Rec);
+                    end;
+                }
+            }
             action("Co&mments")
             {
                 ApplicationArea = Comments;
@@ -228,17 +276,8 @@ page 60005 "MFCC01 Agreement"
                     Rec.SetStatusTerminate(Rec);
                 end;
             }
-            action(Cancel)
-            {
-                ApplicationArea = All;
-                Image = Cancel;
-                Promoted = true;
-                PromotedCategory = Process;
-                trigger OnAction()
-                begin
-                    Rec.SetStatusCancel(Rec);
-                end;
-            }
+
+
             action(CreateSchedule)
             {
                 Caption = 'Create Schedule';
@@ -250,7 +289,9 @@ page 60005 "MFCC01 Agreement"
                 trigger OnAction()
                 var
                     DeferralUtility: Codeunit "MFCC01 Deferral Utilities";
+                    SingleInstance: Codeunit "MFCC01 Single Instance";
                 begin
+                    SingleInstance.SetUseCurretnDate(false);
                     DeferralUtility.CreatedeferralScheduleFromAgreement(Rec, false);
                 end;
             }
@@ -267,6 +308,7 @@ page 60005 "MFCC01 Agreement"
                     AgreementMgmt.ProcessCommission(Rec);
                 End;
             }
+
         }
     }
 }

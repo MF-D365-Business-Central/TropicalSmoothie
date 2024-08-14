@@ -217,6 +217,10 @@ table 60000 "MFCC01 Franchise Setup"
             DataClassification = CustomerContent;
             TableRelation = "Statistical Account"."No." where(Blocked = const(false));
         }
+        field(259; "End Date Allowed Period"; DateFormula)
+        {
+            DataClassification = CustomerContent;
+        }
     }
 
     keys
