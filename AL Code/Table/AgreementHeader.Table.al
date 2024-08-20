@@ -536,7 +536,7 @@ table 60003 "MFCC01 Agreement Header"
         CorrectionType: Enum CorrectionType;
         ConfirmTxt: Label 'Do you want to Correct commission Fee.?';
         Confirm2Txt: Label 'New Commission Fee is Zero. Do you want to Correct Commission Fee with Zero.?';
-        CompletedTxt: Label 'commission Fee Corrected.?';
+        CompletedTxt: Label 'commission Fee Corrected.';
     begin
         IF AgreementHeader."New Commission Fee" <> 0 then
             IF not Confirm(ConfirmTxt, false, true) then
@@ -561,7 +561,7 @@ table 60003 "MFCC01 Agreement Header"
         CorrectionType: Enum CorrectionType;
         ConfirmTxt: Label 'Do you want to Correct Franchise Fee.?';
         Confirm2Txt: Label 'New Fee is Zero. Do you want to Correct Franchise Fee with Zero.?';
-        CompletedTxt: Label 'Franchise Fee Corrected.?';
+        CompletedTxt: Label 'Franchise Fee Corrected.';
     begin
         IF AgreementHeader."New Franchise Fee" <> 0 then
             IF not Confirm(ConfirmTxt, false, true) then
@@ -585,7 +585,7 @@ table 60003 "MFCC01 Agreement Header"
         CorrectionType: Enum CorrectionType;
         ConfirmTxt: Label 'Do you want to Correct Schedules.?';
         Confirm2Txt: Label 'New Fee is Zero. Do you want to Correct Franchise Fee with Zero.?';
-        CompletedTxt: Label 'Schedules Corrected.?';
+        CompletedTxt: Label 'Schedules Corrected.';
     begin
         IF not Confirm(ConfirmTxt, false, true) then
             exit;
