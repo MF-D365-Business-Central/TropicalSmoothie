@@ -160,26 +160,9 @@ codeunit 60020 "CSVBuffer"
         ToDate: Date;
         AccPeriod: Record "Accounting Period";
     begin
-        AccPeriod.SetFilter("Starting Date", '<=%1', Today());
-        IF AccPeriod.FindLast() then
-            CurrPeriod := AccPeriod."Starting Date";
-
-        AccPeriod.SetFilter("Starting Date", '<%1', CurrPeriod);
-        IF AccPeriod.FindLast() then;
-
-
-
-        i := Today - AccPeriod."Starting Date";
-
-        TotalCounter := 5;
-
-
+        TotalCounter := 7;
         for i := 1 to TotalCounter DO Begin
-            ToDate := CalcDate(StrSubstNo('<+%1D>', i * 15), AccPeriod."Starting Date");
-            IF i = 1 then
-                FromDate := AccPeriod."Starting Date"
-            else
-                FromDate := CalcDate('<-14D>', ToDate);
+            GetDate(i, FromDate, ToDate);
             Message('%1 -- %2', FromDate, ToDate);
         End;
 
@@ -193,6 +176,11 @@ codeunit 60020 "CSVBuffer"
         AccPeriod: Record "Accounting Period";
     begin
         AccPeriod.SetFilter("Starting Date", '<=%1', Today());
+        IF AccPeriod.FindLast() then
+            CurrPeriod := AccPeriod."Starting Date";
+
+
+        AccPeriod.SetFilter("Starting Date", '<%1', CurrPeriod);
         IF AccPeriod.FindLast() then
             CurrPeriod := AccPeriod."Starting Date";
 
