@@ -255,6 +255,7 @@ codeunit 60002 "MFCC01 Agreement Management"
             CustLedgerEntry.SetRange("Customer No.", BalAccountNo);
             CustLedgerEntry.SetRange("Document No.", AgreementHeader."No.");
             CustLedgerEntry.SetRange("Document Type", CustLedgerEntry."Document Type"::Invoice);
+            CustLedgerEntry.SetRange(Open, True);
             IF Not CustLedgerEntry.IsEmpty() then Begin
                 GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Invoice;
                 GenJnlLine."Applies-to Doc. No." := AgreementHeader."No.";
@@ -490,10 +491,10 @@ codeunit 60002 "MFCC01 Agreement Management"
             CorrectionType::Fee:
                 Begin
                     IF AgreementHeader."Posted Agreement Amount" <> 0 then
-                        IF PostAgreementAmounts(AgreementHeader, BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AccountType::Customer, AgreementHeader."Customer No.", AgreementHeader."Agreement Amount", false, AgreementHeader."Franchise Bank Account", 0, false) then
+                        IF PostAgreementAmounts(AgreementHeader, BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AccountType::Customer, AgreementHeader."Customer No.", AgreementHeader."Agreement Amount", false, AgreementHeader."Franchise Bank Account", GetAgreementCounter(AgreementHeader), false) then
                             AgreementHeader."Cancled Agreement Amount" := AgreementHeader."Agreement Amount";
 
-                    IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AgreementHeader."New Franchise Fee", true, AgreementHeader."Franchise Bank Account", 0, false) then
+                    IF PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, AgreementHeader."New Franchise Fee", true, AgreementHeader."Franchise Bank Account", GetAgreementCounter(AgreementHeader), false) then
                         AgreementHeader."Posted Agreement Amount" := AgreementHeader."New Franchise Fee";
 
 
@@ -536,20 +537,20 @@ codeunit 60002 "MFCC01 Agreement Management"
 
             CorrectionType::Fee:
                 Begin
-                    IF PostAgreementAmounts(AgreementHeader, BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AccountType::Customer, AgreementHeader."Customer No.", AgreementHeader."Agreement Amount", false, AgreementHeader."Franchise Bank Account", 0, false) then
+                    IF PostAgreementAmounts(AgreementHeader, BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AccountType::Customer, AgreementHeader."Customer No.", AgreementHeader."Agreement Amount", false, AgreementHeader."Franchise Bank Account", GetAgreementCounter(AgreementHeader), false) then
                         AgreementHeader."Cancled Agreement Amount" := AgreementHeader."Agreement Amount";
 
-                    PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DeferredRevenueDevelopmentGAPP, BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AgreementHeader."New Franchise Fee", false, '', 0, false);
+                    PostAgreementAmounts(AgreementHeader, AccountType::Customer, AgreementHeader."Customer No.", BalAccountType::"G/L Account", CZSetup.DefRevenueCafesinOperationGAAP, AgreementHeader."New Franchise Fee", false, '', GetAgreementCounter(AgreementHeader), false);
 
                     AgreementHeader."Agreement Amount" := AgreementHeader."New Franchise Fee";
                     AgreementHeader."New Franchise Fee" := 0;
                 End;
             CorrectionType::Commission:
                 Begin
-                    IF PostAgreementAmounts(AgreementHeader, BalAccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, AccountType::"G/L Account", CZSetup."Accrued Fran Bonus GAAP", AgreementHeader."SalesPerson Commission", false, '', 0, true) then
+                    IF PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup."Accrued Fran Bonus GAAP", BalAccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, AgreementHeader."SalesPerson Commission", false, '', 0, true) then
                         AgreementHeader."Canceled Commission Amount" := AgreementHeader."SalesPerson Commission";
 
-                    PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, BalAccountType::"G/L Account", CZSetup.PrepaidCommisionLTGAAP, AgreementHeader."New Commission Fee", false, '', 0, true);
+                    PostAgreementAmounts(AgreementHeader, AccountType::"G/L Account", CZSetup.DefCommisionsinOperationsGAAP, BalAccountType::"G/L Account", CZSetup."Accrued Fran Bonus GAAP", AgreementHeader."New Commission Fee", false, '', 0, true);
 
                     AgreementHeader."SalesPerson Commission" := AgreementHeader."New Commission Fee";
                     AgreementHeader."New Commission Fee" := 0;
@@ -665,6 +666,23 @@ codeunit 60002 "MFCC01 Agreement Management"
             until DtldCustLedgEntry.Next() = 0;
         exit(ApplicationEntryNo);
     end;
+
+    local procedure GetAgreementCounter(Var AgreementHeader: Record "MFCC01 Agreement Header"): Integer
+    var
+        CustLedgerEntry: Record "Cust. Ledger Entry";
+        Counter: Integer;
+    begin
+
+        repeat
+            Counter += 1;
+            CustLedgerEntry.Reset();
+            CustLedgerEntry.SetRange("Customer No.", AgreementHeader."Customer No.");
+            CustLedgerEntry.SetRange("Document No.", AgreementHeader."No." + '/' + Format(counter));
+        Until Not CustLedgerEntry.FindFirst();
+        Exit(Counter);
+
+    end;
+
     #EndRegion Phase2Cancel
 
 }

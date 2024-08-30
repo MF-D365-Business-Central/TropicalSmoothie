@@ -21,7 +21,7 @@ report 60016 "MFCC01 Reverse Deferral"
     begin
 
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := DeferralLine."Posting Date";
+        GenJnlLine."Posting Date" := WorkDate();
         GenJnlLine."Document No." := DeferralHeader."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
 
@@ -44,7 +44,7 @@ report 60016 "MFCC01 Reverse Deferral"
 
         //Balancing
         GenJnlLine.Init();
-        GenJnlLine."Posting Date" := DeferralLine."Posting Date";
+        GenJnlLine."Posting Date" := WorkDate();
         GenJnlLine."Document No." := DeferralHeader."Document No.";
         GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::"G/L Account");
         IF DeferralHeader.Type = DeferralHeader.Type::Commission then
@@ -129,14 +129,21 @@ report 60016 "MFCC01 Reverse Deferral"
         DeferralLine: Record "MFCC01 Deferral Line";
     begin
         DeferralLine.SetRange("Document No.", DeferralHeader."Document No.");
-        DeferralLine.SetRange(Posted, false);
+        DeferralLine.SetRange(Posted, true);
         DeferralLine.SetRange(Canceled, false);
         IF DeferralLine.FindSet() then
             repeat
                 PostDeferralLine(DeferralHeader, DeferralLine);
-
             Until DeferralLine.Next() = 0;
+
+        DeferralLine.Reset();
+        DeferralLine.SetRange("Document No.", DeferralHeader."Document No.");
+        DeferralLine.SetRange(Posted, false);
+        IF DeferralLine.FindSet(True) then
+            DeferralLine.Modifyall(Posted, true);
+
     end;
+
 
     var
         CZSetup: Record "MFCC01 Franchise Setup";

@@ -289,7 +289,7 @@ report 60012 "MFCC01 Depreciation"
         Amt: Decimal;
     begin
         FAledger.SetRange("FA No.", "Fixed Asset"."No.");
-        FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::Depreciation);
+        FAledger.Setfilter("FA Posting Type", '%1|%2', FAledger."FA Posting Type"::Depreciation, FAledger."FA Posting Type"::"Write-Down");
         FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
         FAledger.SetRange("Posting Date", Fromdate, ToDate);
         FAledger.CalcSums("Amount (LCY)");
@@ -301,7 +301,7 @@ report 60012 "MFCC01 Depreciation"
         IF Component.FindFirst() then
             repeat
                 FAledger.SetRange("FA No.", Component."No.");
-                FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::Depreciation);
+                FAledger.Setfilter("FA Posting Type", '%1|%2', FAledger."FA Posting Type"::Depreciation, FAledger."FA Posting Type"::"Write-Down");
                 FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
                 FAledger.SetRange("Posting Date", Fromdate, ToDate);
                 FAledger.CalcSums("Amount (LCY)");
@@ -318,7 +318,7 @@ report 60012 "MFCC01 Depreciation"
         Amt: Decimal;
     begin
         FAledger.SetRange("FA No.", "Fixed Asset"."No.");
-        FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::Depreciation);
+        FAledger.Setfilter("FA Posting Type", '%1|%2', FAledger."FA Posting Type"::Depreciation, FAledger."FA Posting Type"::"Write-Down");
         FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
         FAledger.SetFilter("Posting Date", '..%1', ToDate);
         FAledger.CalcSums("Amount (LCY)");
@@ -330,7 +330,7 @@ report 60012 "MFCC01 Depreciation"
         IF Component.FindFirst() then
             repeat
                 FAledger.SetRange("FA No.", Component."No.");
-                FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::Depreciation);
+                FAledger.Setfilter("FA Posting Type", '%1|%2', FAledger."FA Posting Type"::Depreciation, FAledger."FA Posting Type"::"Write-Down");
                 FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
                 FAledger.SetFilter("Posting Date", '..%1', ToDate);
                 FAledger.CalcSums("Amount (LCY)");
