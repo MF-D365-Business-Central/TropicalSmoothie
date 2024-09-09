@@ -80,6 +80,12 @@ report 60000 "MFCC01 Process Deferral"
         End;
     }
 
+    trigger OnPostReport()
+    Begin
+
+        Message('Deferral Process Completed.');
+    End;
+
     trigger OnPreReport()
     Begin
         IF PostingDate = 0D then
