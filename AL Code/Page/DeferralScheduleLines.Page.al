@@ -1,17 +1,17 @@
 page 60023 "MFCC01 DeferralScheduleLines"
 {
     Caption = 'Deferral Schedule Lines';
-    PageType = ListPlus;
+    PageType = List;
     SourceTable = "MFCC01 Deferral Line";
+    SourceTableView = where(Amount = filter(<> 0));
     Editable = false;
+    ApplicationArea = All;
+    UsageCategory = Lists;
     layout
     {
         area(content)
         {
-            group(Filters)
-            {
 
-            }
             repeater(Group)
             {
                 field("Posting Date"; Rec."Posting Date")
@@ -19,11 +19,7 @@ page 60023 "MFCC01 DeferralScheduleLines"
                     ApplicationArea = Suite;
                     ToolTip = 'Specifies the posting date for the entry.';
                 }
-                field("New Posting Date"; Rec."New Posting Date")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the New Posting Date field.', Comment = '%';
-                }
+
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = Suite;

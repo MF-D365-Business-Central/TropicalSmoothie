@@ -678,4 +678,15 @@ codeunit 60005 "Event handler"
 
     end;
 
+    [EventSubscriber(ObjectType::Table, Database::"Approval Entry", OnAfterInsertEvent, '', false, false)]
+    local procedure TBL_454_OnAfterInsertEvent(var Rec: Record "Approval Entry"; RunTrigger: Boolean)
+    var
+        ErrText: Label 'Sender can not be approver.';
+    begin
+        IF Rec.IsTemporary() then
+            Exit;
+
+        IF Rec."Sender ID" = Rec."Approver ID" then
+            Error(ErrText);
+    end;
 }
