@@ -1,4 +1,4 @@
-page 60023 "MFCC01 DeferralScheduleLines"
+page 60024 "MFCC01 DeferralScheduleLines"
 {
     Caption = 'Deferral Schedule Lines';
     PageType = ListPlus;
