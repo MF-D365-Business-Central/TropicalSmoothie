@@ -193,6 +193,7 @@ report 60012 "MFCC01 Depreciation"
         Component: Record "Fixed Asset";
         Amt: Decimal;
     begin
+        FAledger.Reset();
         FAledger.SetRange("FA No.", "Fixed Asset"."No.");
         FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::"Acquisition Cost");
         FAledger.SetRange("FA Posting Category", FAledger."FA Posting Category"::Disposal);
@@ -204,6 +205,7 @@ report 60012 "MFCC01 Depreciation"
         Component.SetRange("Component of Main Asset", "Fixed Asset"."No.");
         IF Component.FindFirst() then
             repeat
+                FAledger.Reset();
                 FAledger.SetRange("FA No.", Component."No.");
                 FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::"Acquisition Cost");
                 FAledger.SetRange("FA Posting Category", FAledger."FA Posting Category"::Disposal);
@@ -212,6 +214,26 @@ report 60012 "MFCC01 Depreciation"
                 Amt += FAledger."Amount (LCY)";
             Until Component.Next() = 0;
 
+        FAledger.Reset();
+        FAledger.SetRange("FA No.", "Fixed Asset"."No.");
+        FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::"Write-Down");
+        //FAledger.SetRange("FA Posting Category", FAledger."FA Posting Category"::Disposal);
+        FAledger.SetRange("Posting Date", Fromdate, ToDate);
+        FAledger.CalcSums("Amount (LCY)");
+        Amt += FAledger."Amount (LCY)";
+        Component.Reset();
+        Component.SetRange("Main Asset/Component", Component."Main Asset/Component"::Component);
+        Component.SetRange("Component of Main Asset", "Fixed Asset"."No.");
+        IF Component.FindFirst() then
+            repeat
+                FAledger.Reset();
+                FAledger.SetRange("FA No.", Component."No.");
+                FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::"Write-Down");
+                //FAledger.SetRange("FA Posting Category", FAledger."FA Posting Category"::Disposal);
+                FAledger.SetRange("Posting Date", Fromdate, ToDate);
+                FAledger.CalcSums("Amount (LCY)");
+                Amt += FAledger."Amount (LCY)";
+            Until Component.Next() = 0;
         exit(Amt);
     end;
 
