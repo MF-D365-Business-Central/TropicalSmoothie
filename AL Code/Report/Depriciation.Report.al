@@ -76,22 +76,22 @@ report 60012 "MFCC01 Depreciation"
         ExcelBuffer.NewRow();
 
         //Value: Variant, IsFormula: Boolean, CommentText: Text, IsBold: Boolean, IsItalics: Boolean, IsUnderline: Boolean, NumFormat: Text[30], CellType: Option
-        ExcelBuffer.AddColumn('No.', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Category', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Description', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Useful Life In Months', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Method/Conv', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('In Service Date', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Disposal Date', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Beginning Acquisition Cost (gross)', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('In-Period Additions', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Acquisition Cost Disposals', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Ending Book Value (gross)', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Beginning Accum. Depr', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Accum. Depr Disposals', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('In-Period  Depreciation', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Ending Accum. Depreciation', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
-        ExcelBuffer.AddColumn('Ending Net Book Value', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);
+        ExcelBuffer.AddColumn('No.', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//A
+        ExcelBuffer.AddColumn('Category', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//B
+        ExcelBuffer.AddColumn('Description', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//C
+        ExcelBuffer.AddColumn('Useful Life In Months', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//C
+        ExcelBuffer.AddColumn('Method/Conv', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//D
+        ExcelBuffer.AddColumn('In Service Date', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//E
+        ExcelBuffer.AddColumn('Disposal Date', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//F
+        ExcelBuffer.AddColumn('Beginning Book Value (gross)', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//G
+        ExcelBuffer.AddColumn('In-Period Additions', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//H
+        ExcelBuffer.AddColumn('Acquisition Cost Disposals', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//I
+        ExcelBuffer.AddColumn('Ending Book Value (gross)', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//J
+        ExcelBuffer.AddColumn('Beginning Accum. Depr', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//K
+        ExcelBuffer.AddColumn('Accum. Depr Disposals', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//L
+        ExcelBuffer.AddColumn('In-Period  Depreciation', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//M
+        ExcelBuffer.AddColumn('Ending Accum. Depreciation', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//N
+        ExcelBuffer.AddColumn('Ending Net Book Value', false, '', True, false, false, '', ExcelBuffer."Cell Type"::Text);//O
     end;
 
     local procedure PrepareBody()
@@ -117,15 +117,15 @@ report 60012 "MFCC01 Depreciation"
         ExcelBuffer.AddColumn(I, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
         J := InPeriodDisposals();
         ExcelBuffer.AddColumn(J, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
-        ExcelBuffer.AddColumn(H + I + J, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
+        ExcelBuffer.AddColumn(H + I + J, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);//K
         L := BeginningAccumDepr();
         ExcelBuffer.AddColumn(L, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
         M := AccumDeprDisposals();
         ExcelBuffer.AddColumn(M, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
         N := InPeriodDepreciation;
         ExcelBuffer.AddColumn(N, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
-        ExcelBuffer.AddColumn(L + M + N, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
-        ExcelBuffer.AddColumn(H + I + J + L + M + N, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);
+        ExcelBuffer.AddColumn(L + M + N, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);//O
+        ExcelBuffer.AddColumn(H + I + J + L + M + N, false, '', false, false, false, '', ExcelBuffer."Cell Type"::Number);//P
     end;
 
     local procedure BeginingBookValueGross(): Decimal
@@ -136,8 +136,8 @@ report 60012 "MFCC01 Depreciation"
     begin
         FAledger.SetRange("FA No.", "Fixed Asset"."No.");
         FAledger.SetFilter("Posting Date", '<%1', Fromdate);
-        FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::"Acquisition Cost");
-        FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
+        FAledger.SetFilter("FA Posting Type", '<>%1', FAledger."FA Posting Type"::Depreciation);
+        //FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
         FAledger.CalcSums("Amount (LCY)");
         //exit(FAledger."Amount (LCY)");
 
@@ -149,8 +149,8 @@ report 60012 "MFCC01 Depreciation"
             repeat
                 FAledger.SetRange("FA No.", Component."No.");
                 FAledger.SetFilter("Posting Date", '<%1', Fromdate);
-                FAledger.SetRange("FA Posting Type", FAledger."FA Posting Type"::"Acquisition Cost");
-                FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
+                FAledger.SetFilter("FA Posting Type", '<>%1', FAledger."FA Posting Type"::Depreciation);
+                //FAledger.SetRange(FAledger."FA Posting Category", FAledger."FA Posting Category"::" ");
                 FAledger.CalcSums("Amount (LCY)");
                 Amt += FAledger."Amount (LCY)";
             Until Component.Next() = 0;
