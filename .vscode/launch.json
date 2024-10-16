@@ -7,8 +7,7 @@
             "type": "al",
             "tenant": "19c1a10d-6a49-4541-892b-7c45efdeca3a",
             "environmentType": "Sandbox",
-            //"environmentName": "sandbox_May06",//Sandbox_12Oct23",//SandboxMay21//Sandbox_Aug16
-            "environmentName": "Sandbox_Aug16",
+            "environmentName": "Franchiser",
             "startupObjectId": 22,
             "startupObjectType": "Page",
             "breakOnError": "All",
@@ -16,7 +15,6 @@
             "enableLongRunningSqlStatements": true,
             "enableSqlInformationDebugger": true,
             "schemaUpdateMode": "Synchronize"
-            
         }
     ]
 }

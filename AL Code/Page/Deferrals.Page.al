@@ -195,7 +195,7 @@ page 60003 "MFCC01 Deferrals"
         IF Rec.GetFilter("Date Filter") <> '' then Begin
             Cust.Setfilter("Date Filter", Rec.GetFilter("Date Filter"));
             Cust.FindFirst();
-            AsofDate := Cust.GetRangeMax("Date Filter");
+            AsofDate := Cust.GetRangeMin("Date Filter");
             DefLine.SetFilter("Posting Date", '..%1', CalcDate('<-1D>', AsofDate));
         End;
         DefLine.SetRange("Document No.", Rec."Document No.");
